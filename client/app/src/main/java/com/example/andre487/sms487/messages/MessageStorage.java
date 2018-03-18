@@ -17,8 +17,8 @@ import java.util.List;
 public class MessageStorage {
     @Dao
     public interface MessageDao {
-        @Query("SELECT * FROM message")
-        List<Message> getAll();
+        @Query("SELECT * FROM message ORDER BY id DESC LIMIT 30")
+        List<Message> getTail();
 
         @Insert
         void insert(Message message);
@@ -65,5 +65,22 @@ public class MessageStorage {
 
             messageDao.insert(entry);
         }
+    }
+
+    public ArrayList<MessageContainer> getMessagesTail() {
+        List<Message> messageEntries = messageDao.getTail();
+
+        ArrayList<MessageContainer> messages = new ArrayList<>();
+        for (Message messageEntry : messageEntries) {
+            messages.add(
+                    new MessageContainer(
+                            messageEntry.addressFrom,
+                            messageEntry.dateTime,
+                            messageEntry.body
+                    )
+            );
+        }
+
+        return messages;
     }
 }
