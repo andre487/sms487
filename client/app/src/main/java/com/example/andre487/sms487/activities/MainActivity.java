@@ -1,4 +1,4 @@
-package com.example.andre487.sms487;
+package com.example.andre487.sms487.activities;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -11,7 +11,11 @@ import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.Toast;
 
+import com.example.andre487.sms487.R;
 import com.example.andre487.sms487.messages.MessageContainer;
 import com.example.andre487.sms487.messages.MessageStorage;
 import com.example.andre487.sms487.services.SmsHandler;
@@ -121,6 +125,28 @@ public class MainActivity extends AppCompatActivity {
         incomingSmsHandler.destroy();
     }
 
+    public void showMessagesFromDb(View view) {
+        showMessagesFromDb();
+    }
+
+    public void saveServerUrl(View view) {
+        EditText serverUrlInput = findViewById(R.id.serverUrlInput);
+        if (serverUrlInput == null) {
+            return;
+        }
+
+        Toast.makeText(this, serverUrlInput.getText(), Toast.LENGTH_LONG).show();
+    }
+
+    public void saveServerKey(View view) {
+        EditText serverKeyInput = findViewById(R.id.serverKeyInput);
+        if (serverKeyInput == null) {
+            return;
+        }
+
+        Toast.makeText(this, serverKeyInput.getText(), Toast.LENGTH_LONG).show();
+    }
+
     protected void showMessagesFromDb() {
         Log.d("MainActivity", "Showing messages from DB");
 
@@ -130,14 +156,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        Log.d("MainActivity", "Messages are not null");
-
-        for (MessageContainer message : messages) {
-            Log.d(
-                    "MainActivity",
-                    "Message: " + message.getBody() + " " + message.getDateTime() + " " + message.getAddressFrom()
-            );
-        }
+        showMessages(messages);
     }
 
     private ArrayList<MessageContainer> getMessages() {
@@ -152,5 +171,26 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private void showMessages(ArrayList<MessageContainer> messages) {
+        EditText messagesField = findViewById(R.id.messagesField);
+        if (messagesField == null) {
+            return;
+        }
+
+        StringBuilder messagesString = new StringBuilder();
+
+        for (MessageContainer message : messages) {
+            messagesString.append(message.getAddressFrom());
+            messagesString.append('\t');
+            messagesString.append(message.getDateTime());
+            messagesString.append('\n');
+
+            messagesString.append(message.getBody());
+            messagesString.append("\n\n");
+        }
+
+        messagesField.setText(messagesString.toString());
     }
 }

@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">Sms487</string>
-    <string name="messagesPreloadMessage">Loading messages</string>
+    <string name="server_placeholder">Server URL</string>
+    <string name="server_key">Server key</string>
+    <string name="save_label">Save</string>
+    <string name="renew_label">Renew</string>
+    <string name="messages_label">Loading messages</string>
 </resources>
