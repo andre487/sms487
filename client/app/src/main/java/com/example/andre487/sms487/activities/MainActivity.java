@@ -18,6 +18,7 @@ import android.widget.Toast;
 import com.example.andre487.sms487.R;
 import com.example.andre487.sms487.messages.MessageContainer;
 import com.example.andre487.sms487.messages.MessageStorage;
+import com.example.andre487.sms487.preferences.AppSettings;
 import com.example.andre487.sms487.services.SmsHandler;
 
 import java.util.ArrayList;
@@ -91,6 +92,8 @@ public class MainActivity extends AppCompatActivity {
     protected SmsHandler smsHandler;
     protected boolean smsHandlerBound = false;
 
+    protected AppSettings appSettings;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d("MainActivity", "Activity is started");
 
         messageStorage = new MessageStorage(this);
+        appSettings = new AppSettings(this);
     }
 
     @Override
@@ -108,6 +112,9 @@ public class MainActivity extends AppCompatActivity {
 
         Intent intent = new Intent(this, SmsHandler.class);
         bindService(intent, smsHandlerConnection, Context.BIND_AUTO_CREATE);
+
+        showServerUrl();
+        showServerKey();
     }
 
     @Override
@@ -129,13 +136,31 @@ public class MainActivity extends AppCompatActivity {
         showMessagesFromDb();
     }
 
+    public void showServerUrl() {
+        EditText serverUrlInput = findViewById(R.id.serverUrlInput);
+        if (serverUrlInput == null) {
+            return;
+        }
+
+        serverUrlInput.setText(appSettings.getServerUrl());
+    }
+
     public void saveServerUrl(View view) {
         EditText serverUrlInput = findViewById(R.id.serverUrlInput);
         if (serverUrlInput == null) {
             return;
         }
 
-        Toast.makeText(this, serverUrlInput.getText(), Toast.LENGTH_LONG).show();
+        appSettings.saveServerUrl(serverUrlInput.getText().toString());
+    }
+
+    public void showServerKey() {
+        EditText serverKeyInput = findViewById(R.id.serverKeyInput);
+        if (serverKeyInput == null) {
+            return;
+        }
+
+        serverKeyInput.setText(appSettings.getServerKey());
     }
 
     public void saveServerKey(View view) {
@@ -144,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        Toast.makeText(this, serverKeyInput.getText(), Toast.LENGTH_LONG).show();
+        appSettings.saveServerKey(serverKeyInput.getText().toString());
     }
 
     protected void showMessagesFromDb() {
