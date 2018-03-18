@@ -1,6 +1,4 @@
 <resources>
     <string name="app_name">Sms487</string>
-    <string name="edit_message">Enter a message</string>
-    <string name="button_send">Send</string>
-    <string name="showMessageTextView">Default message</string>
+    <string name="messagesPreloadMessage">Loading messages</string>
 </resources>
