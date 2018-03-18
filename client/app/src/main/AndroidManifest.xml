@@ -26,6 +26,8 @@
                 android:value=".MainActivity" />
         </activity>
 
+        <service android:name=".services.SmsHandler" />
+
         <receiver android:name=".messages.SmsListener"
             android:permission="android.permission.BROADCAST_SMS">
             <intent-filter>
