@@ -10,10 +10,10 @@ import android.os.IBinder;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.AppCompatEditText;
+import android.support.v7.widget.AppCompatTextView;
 import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.Toast;
 
 import com.example.andre487.sms487.R;
 import com.example.andre487.sms487.messages.MessageContainer;
@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void showServerUrl() {
-        EditText serverUrlInput = findViewById(R.id.serverUrlInput);
+        AppCompatEditText serverUrlInput = findViewById(R.id.serverUrlInput);
         if (serverUrlInput == null) {
             return;
         }
@@ -146,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void saveServerUrl(View view) {
-        EditText serverUrlInput = findViewById(R.id.serverUrlInput);
+        AppCompatEditText serverUrlInput = findViewById(R.id.serverUrlInput);
         if (serverUrlInput == null) {
             return;
         }
@@ -155,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void showServerKey() {
-        EditText serverKeyInput = findViewById(R.id.serverKeyInput);
+        AppCompatEditText serverKeyInput = findViewById(R.id.serverKeyInput);
         if (serverKeyInput == null) {
             return;
         }
@@ -164,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void saveServerKey(View view) {
-        EditText serverKeyInput = findViewById(R.id.serverKeyInput);
+        AppCompatEditText serverKeyInput = findViewById(R.id.serverKeyInput);
         if (serverKeyInput == null) {
             return;
         }
@@ -199,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showMessages(ArrayList<MessageContainer> messages) {
-        EditText messagesField = findViewById(R.id.messagesField);
+        AppCompatTextView messagesField = findViewById(R.id.messagesField);
         if (messagesField == null) {
             return;
         }
