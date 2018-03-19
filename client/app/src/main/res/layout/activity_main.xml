@@ -25,7 +25,6 @@
             android:id="@+id/serverUrlSave"
             android:layout_height="48dp"
             android:layout_width="80dp"
-            android:onClick="saveServerUrl"
             android:text="@string/save_label" />
     </android.support.v7.widget.LinearLayoutCompat>
 
@@ -46,7 +45,6 @@
             android:id="@+id/serverKeySave"
             android:layout_height="48dp"
             android:layout_width="80dp"
-            android:onClick="saveServerKey"
             android:text="@string/save_label" />
     </android.support.v7.widget.LinearLayoutCompat>
 
@@ -76,7 +74,6 @@
             android:id="@+id/renewMessages"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="showMessagesFromDb"
             android:text="@string/renew_label" />
 
     </android.support.v7.widget.LinearLayoutCompat>
