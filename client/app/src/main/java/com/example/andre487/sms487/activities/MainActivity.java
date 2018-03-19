@@ -8,12 +8,12 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.AppCompatEditText;
+import android.support.v7.widget.AppCompatTextView;
 import android.util.Log;
-import android.view.View;
-import android.widget.EditText;
-import android.widget.Toast;
 
 import com.example.andre487.sms487.R;
 import com.example.andre487.sms487.messages.MessageContainer;
@@ -22,7 +22,12 @@ import com.example.andre487.sms487.preferences.AppSettings;
 import com.example.andre487.sms487.services.SmsHandler;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity {
     static class GetMessageParams {
@@ -94,10 +99,20 @@ public class MainActivity extends AppCompatActivity {
 
     protected AppSettings appSettings;
 
+    @Nullable @BindView(R.id.messagesField)
+    AppCompatTextView messagesField;
+
+    @Nullable @BindView(R.id.serverKeyInput)
+    AppCompatEditText serverKeyInput;
+
+    @Nullable @BindView(R.id.serverUrlInput)
+    AppCompatEditText serverUrlInput;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
 
         Log.d("MainActivity", "Activity is started");
 
@@ -132,12 +147,28 @@ public class MainActivity extends AppCompatActivity {
         incomingSmsHandler.destroy();
     }
 
-    public void showMessagesFromDb(View view) {
-        showMessagesFromDb();
+    @OnClick(R.id.renewMessages)
+    void showMessagesFromDb() {
+        final List<MessageContainer> messages = getMessages();
+        if (messages == null) {
+            Log.w("MainActivity", "Messages are null");
+            return;
+        }
+        Log.w("MainActivity", "show messages");
+        showMessages(messages);
+    }
+
+    @OnClick(R.id.serverKeySave)
+    void saveServerKey() {
+        AppCompatEditText serverKeyInput = findViewById(R.id.serverKeyInput);
+        if (serverKeyInput == null) {
+            return;
+        }
+        appSettings.saveServerKey(serverKeyInput.getText().toString());
     }
 
     public void showServerUrl() {
-        EditText serverUrlInput = findViewById(R.id.serverUrlInput);
+        AppCompatEditText serverUrlInput = findViewById(R.id.serverUrlInput);
         if (serverUrlInput == null) {
             return;
         }
@@ -145,8 +176,9 @@ public class MainActivity extends AppCompatActivity {
         serverUrlInput.setText(appSettings.getServerUrl());
     }
 
-    public void saveServerUrl(View view) {
-        EditText serverUrlInput = findViewById(R.id.serverUrlInput);
+    @OnClick(R.id.serverUrlSave)
+    void saveServerUrl() {
+        AppCompatEditText serverUrlInput = findViewById(R.id.serverUrlInput);
         if (serverUrlInput == null) {
             return;
         }
@@ -155,33 +187,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void showServerKey() {
-        EditText serverKeyInput = findViewById(R.id.serverKeyInput);
+        AppCompatEditText serverKeyInput = findViewById(R.id.serverKeyInput);
         if (serverKeyInput == null) {
             return;
         }
 
         serverKeyInput.setText(appSettings.getServerKey());
-    }
-
-    public void saveServerKey(View view) {
-        EditText serverKeyInput = findViewById(R.id.serverKeyInput);
-        if (serverKeyInput == null) {
-            return;
-        }
-
-        appSettings.saveServerKey(serverKeyInput.getText().toString());
-    }
-
-    protected void showMessagesFromDb() {
-        Log.d("MainActivity", "Showing messages from DB");
-
-        ArrayList<MessageContainer> messages = getMessages();
-        if (messages == null) {
-            Log.w("MainActivity", "Messages are null");
-            return;
-        }
-
-        showMessages(messages);
     }
 
     private ArrayList<MessageContainer> getMessages() {
@@ -198,8 +209,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void showMessages(ArrayList<MessageContainer> messages) {
-        EditText messagesField = findViewById(R.id.messagesField);
+    private void showMessages(List<MessageContainer> messages) {
+        AppCompatTextView messagesField = findViewById(R.id.messagesField);
         if (messagesField == null) {
             return;
         }
