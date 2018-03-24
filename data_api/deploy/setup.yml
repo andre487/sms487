@@ -1,0 +1,98 @@
+- hosts: sms487
+  remote_user: '{{ remote_user }}'
+  become: True
+  become_method: sudo
+
+  vars:
+    container_name: sms487-api
+    network_name: sms487_net
+    mongo_name: common-mongo
+    service_port: 10200
+
+  tasks:
+    - name: Check SSL certificates
+      stat:
+        path: /etc/letsencrypt/live/{{ http_domain }}
+      register: nginx_ssl_result
+
+    - name: Setup NGINX no SSL host config
+      template:
+        src: provision/nginx-no-ssl.conf.j2
+        dest: /etc/nginx/sites-available/{{ container_name }}.conf
+      when: nginx_ssl_result.stat.exists == False
+      register: no_ssl_config_res
+
+    - name: Enable NGINX host config
+      file:
+        state: link
+        src: /etc/nginx/sites-available/{{ container_name }}.conf
+        dest: /etc/nginx/sites-enabled/{{ container_name }}.conf
+      when: no_ssl_config_res.changed
+
+    - name: Reload NGINX
+      service:
+        name: nginx
+        state: reloaded
+      when: no_ssl_config_res.changed
+
+    - name: Install certificate
+      shell: |
+        certbot --nginx \
+          -d {{ http_domain }} \
+          -n \
+          --agree-tos \
+          -m '{{ admin_email }}'
+      when: nginx_ssl_result.stat.exists == False
+      register: certificate_res
+
+    - name: Create web root
+      file:
+        dest: /var/www/{{ http_domain }}
+        state: directory
+        owner: www-data
+        group: www-data
+
+    - name: Setup NGINX host config
+      template:
+        src: provision/nginx.conf.j2
+        dest: /etc/nginx/sites-available/{{ container_name }}.conf
+      register: config_res
+
+    - name: Enable NGINX host config
+      file:
+        state: link
+        src: /etc/nginx/sites-available/{{ container_name }}.conf
+        dest: /etc/nginx/sites-enabled/{{ container_name }}.conf
+
+    - name: Reload NGINX
+      service:
+        name: nginx
+        state: reloaded
+      when: config_res.changed or certificate_res.changed
+
+    - name: Create docker network for all services
+      shell: docker network create --driver bridge '{{ network_name }}' || true
+
+    - name: Connect MongoDB to network
+      shell: docker network connect '{{ network_name }}' '{{ mongo_name }}' || true
+
+    - name: Update image
+      shell: docker pull andre487/{{ container_name }}
+
+    - name: Stop container
+      shell: |
+        docker stop {{ container_name }} || true
+        docker rm {{ container_name }} || true
+
+    - name: Start container
+      shell: |
+        docker run \
+          -d \
+          --restart always \
+          --network {{ network_name }} \
+          --name {{ container_name }} \
+          -e MONGO_HOST={{ mongo_name }} \
+          -e "SMS_USER_NAME={{ lookup('file', '~/.private/SMS_USER_NAME') }}" \
+          -e "SMS_USER_KEY={{ lookup('file', '~/.private/SMS_USER_KEY') }}" \
+          -p 127.0.0.1:{{ service_port }}:5000 \
+          andre487/{{ container_name }}

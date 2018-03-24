@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -e -o pipefail
+set -x
+
+docker run --rm --link dev-mongo \
+    -e 'FLASK_DEBUG=1' \
+    -e 'MONGO_HOST=dev-mongo' \
+    -e "SMS_USER_NAME=$(cat ~/.private/SMS_USER_NAME)" \
+    -e "SMS_USER_KEY=$(cat ~/.private/SMS_USER_KEY)" \
+    -p '127.0.0.1:5001:5000' \
+    -ti \
+    'andre487/sms487-api:latest'

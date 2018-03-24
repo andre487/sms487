@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -e -o pipefail
+set -x
+
+cd "$(dirname "$0")/.."
+
+docker build \
+    -t 'andre487/sms487-api:latest' \
+    --force-rm \
+    .

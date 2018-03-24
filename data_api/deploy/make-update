@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -e -o pipefail
+set -x
+
+cd "$(dirname "$0")/.."
+
+./deploy/docker-build
+set +e
+./deploy/docker-test
+set -e
+./deploy/docker-push
+
+ansible-playbook -i ~/.private/ansible-inventory.yml deploy/setup.yml

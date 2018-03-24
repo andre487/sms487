@@ -2,6 +2,7 @@ import flask
 import json
 import logging
 import os
+import sys
 from functools import wraps
 
 import data_handler
@@ -9,11 +10,16 @@ from flask import request
 
 app = flask.Flask(__name__)
 
-correct_user_name = os.environ.get('SMS_USER_NAME')
-correct_user_key = os.environ.get('SMS_USER_KEY')
+LOG_FORMAT = '%(asctime)s %(levelname)s\t%(message)s\t%(pathname)s:%(lineno)d %(funcName)s %(process)d %(threadName)s'
+LOG_LEVEL = os.environ.get('LOG_LEVEL', logging.INFO)
+
+correct_user_name = os.environ.get('SMS_USER_NAME', '').strip()
+correct_user_key = os.environ.get('SMS_USER_KEY', '').strip()
 
 if not correct_user_name or not correct_user_key:
     raise EnvironmentError('You should provide SMS_USER_NAME and SMS_USER_KEY')
+
+logging.basicConfig(format=LOG_FORMAT, level=LOG_LEVEL)
 
 
 def requires_auth(func):
@@ -21,12 +27,20 @@ def requires_auth(func):
     def decorated(*args, **kwargs):
         auth = request.authorization
         if not auth:
+            logging.info('No auth')
+
             return create_json_response(
                 {'error': 'Not authorized'}, status=401,
                 headers={'WWW-Authenticate': 'Basic realm="SMS Login Required"'}
             )
 
         if not (auth.username == correct_user_name and auth.password == correct_user_key):
+            logging.info(
+                'Auth not working: %s != %s or %s != %s',
+                auth.username, correct_user_name,
+                auth.password, correct_user_key,
+            )
+
             return create_json_response(
                 {'error': 'Not authorized'}, status=403,
                 headers={'WWW-Authenticate': 'Basic realm="SMS Login Required"'}
