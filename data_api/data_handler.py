@@ -11,7 +11,7 @@ mongo_port = int(os.environ.get('MONGO_PORT', 27017))
 mongo_login = os.environ.get('MONGO_LOGIN')
 mongo_password = os.environ.get('MONGO_PASSWORD')
 
-date_time_pattern = re.compile(r'^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}(?:\s[+-]\d+)?$')
+date_time_pattern = re.compile(r'^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}(?::\d{2})?(?:\s[+-]\d+)?$')
 
 _mongo_client = None
 
