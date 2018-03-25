@@ -3,6 +3,7 @@ package com.example.andre487.sms487.services;
 import android.app.Service;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -21,10 +22,12 @@ public class SmsAdder extends Service {
     static class AddSmsParams {
         Intent intent;
         SmsApi smsApi;
+        String deviceId;
 
-        AddSmsParams(Intent intent, SmsApi smsApi) {
+        AddSmsParams(Intent intent, SmsApi smsApi, String deviceId) {
             this.intent = intent;
             this.smsApi = smsApi;
+            this.deviceId = deviceId;
         }
     }
 
@@ -46,15 +49,15 @@ public class SmsAdder extends Service {
                 return null;
             }
 
-            handleIntentData(mainParams.smsApi, intentData);
+            handleIntentData(mainParams.smsApi, mainParams.deviceId, intentData);
 
             return null;
         }
 
-        private void handleIntentData(SmsApi smsApi, ArrayList<String> intentData) {
+        private void handleIntentData(SmsApi smsApi, String deviceId, ArrayList<String> intentData) {
             for (MessageContainer message : extractMessages(intentData)) {
                 smsApi.addSms(
-                        "test2",
+                        deviceId,
                         message.getDateTime(),
                         message.getAddressFrom(),
                         message.getBody()
@@ -86,23 +89,24 @@ public class SmsAdder extends Service {
         }
     }
 
-    SmsApi smsApi;
+    private AppSettings appSettings;
 
     @Override
     public void onCreate() {
         Log.d("SmsAdder", "Service started");
 
-        AppSettings appSettings = new AppSettings(this);
-        smsApi = new SmsApi(
+        appSettings = new AppSettings(this);
+    }
+
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        SmsApi smsApi = new SmsApi(
                 this,
                 appSettings.getServerUrl(),
                 "sms487",
                 appSettings.getServerKey()
         );
-    }
 
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        AddSmsParams params = new AddSmsParams(intent, smsApi);
+        AddSmsParams params = new AddSmsParams(intent, smsApi, Build.MODEL);
         new AddSmsAction().execute(params);
 
         return Service.START_STICKY;

@@ -1,8 +1,10 @@
 package com.example.andre487.sms487.network;
 
 import android.content.Context;
+import android.util.Base64;
 import android.util.Log;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -16,15 +18,32 @@ import java.util.Map;
 public class SmsApi {
     protected static class AddSmsApiRequest extends StringRequest {
         private HashMap<String, String> requestParams;
+        private String authHeaderString;
 
-        AddSmsApiRequest(String serverUrl, HashMap<String, String> requestParams) {
+        AddSmsApiRequest(
+                String serverUrl, String userName, String serverKey,
+                HashMap<String, String> requestParams
+        ) {
             super(
                     Request.Method.POST,
                     serverUrl + "/add-sms",
                     new ApiResponseListener(),
                     new ApiErrorListener()
             );
+
             this.requestParams = requestParams;
+
+            byte[] authData = (userName + ':' + serverKey).getBytes();
+            authHeaderString = "Basic " + Base64.encodeToString(authData, Base64.DEFAULT);
+        }
+
+        @Override
+        public Map<String, String> getHeaders() throws AuthFailureError {
+            HashMap<String, String> headers = new HashMap<>();
+
+            headers.put("Authorization", authHeaderString);
+
+            return headers;
         }
 
         @Override
@@ -47,7 +66,6 @@ public class SmsApi {
         }
     }
 
-    private Context ctx;
     private String serverUrl;
     private String userName;
     private String serverKey;
@@ -74,7 +92,9 @@ public class SmsApi {
         requestParams.put("tel", tel);
         requestParams.put("text", text);
 
-        AddSmsApiRequest request = new AddSmsApiRequest(serverUrl, requestParams);
+        AddSmsApiRequest request = new AddSmsApiRequest(
+                serverUrl, userName, serverKey, requestParams
+        );
 
         this.requestQueue.add(request);
     }
