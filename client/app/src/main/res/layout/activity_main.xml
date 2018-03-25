@@ -34,12 +34,20 @@
         android:layout_marginTop="12dp">
 
         <android.support.v7.widget.AppCompatEditText
-            android:id="@+id/serverKeyInput"
+            android:id="@+id/userNameInput"
             android:layout_weight="1"
             android:layout_height="48dp"
             android:layout_width="wrap_content"
-            android:hint="@string/server_key"
+            android:hint="@string/user_name"
             android:inputType="text" />
+
+        <android.support.v7.widget.AppCompatEditText
+            android:id="@+id/serverKeyInput"
+            android:layout_weight="2"
+            android:layout_height="48dp"
+            android:layout_width="wrap_content"
+            android:hint="@string/server_key"
+            android:inputType="textVisiblePassword" />
 
         <android.support.v7.widget.AppCompatButton
             android:id="@+id/serverKeySave"
@@ -58,16 +66,16 @@
         <android.support.v7.widget.AppCompatTextView
             android:id="@+id/messagesField"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_height="match_parent"
             android:layout_marginBottom="16dp"
             android:layout_marginTop="12dp"
-            android:fontFamily="monospace"
+            android:layout_weight="2"
+            android:fontFamily="sans-serif"
             android:hint="@string/messages_label"
             android:inputType="textMultiLine"
+            android:padding="3dp"
             android:singleLine="false"
             android:textAlignment="viewStart"
-            android:padding="3dp"
             android:typeface="normal" />
 
         <android.support.v7.widget.AppCompatButton
@@ -76,6 +84,26 @@
             android:layout_height="wrap_content"
             android:text="@string/renew_label" />
 
+        <android.support.v7.widget.AppCompatTextView
+            android:id="@+id/logsField"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="2"
+            android:layout_marginBottom="16dp"
+            android:layout_marginTop="12dp"
+            android:fontFamily="monospace"
+            android:hint="@string/logs_label"
+            android:inputType="textMultiLine"
+            android:singleLine="true"
+            android:textAlignment="viewStart"
+            android:padding="3dp"
+            android:typeface="normal" />
+
+        <android.support.v7.widget.AppCompatButton
+            android:id="@+id/renewLogs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/renew_label" />
     </android.support.v7.widget.LinearLayoutCompat>
 
 </android.support.v7.widget.LinearLayoutCompat>

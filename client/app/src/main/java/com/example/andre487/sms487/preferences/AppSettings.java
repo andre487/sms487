@@ -3,8 +3,9 @@ package com.example.andre487.sms487.preferences;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.util.Log;
 import android.widget.Toast;
+
+import com.example.andre487.sms487.logging.Logger;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -17,6 +18,7 @@ import java.util.concurrent.ExecutionException;
 public class AppSettings {
     private static final String PREFERENCES_KEY = "com.example.andre487.sms487.preferences";
     private static final String SERVER_URL = "server_url";
+    private static final String USER_NAME = "user_name";
     private static final String SERVER_KEY = "server_key";
 
     private SharedPreferences sharedPreferences;
@@ -42,7 +44,7 @@ public class AppSettings {
         @Override
         protected String doInBackground(SaveSettingParams... params) {
             if (params.length == 0) {
-                Log.w("SaveSettingAction", "Params length is 0");
+                Logger.w("SaveSettingAction", "Params length is 0");
                 return null;
             }
 
@@ -51,6 +53,8 @@ public class AppSettings {
             switch (mainParams.key) {
                 case SERVER_URL:
                     return saveServerUrl(mainParams);
+                case USER_NAME:
+                    return saveUserName(mainParams);
                 case SERVER_KEY:
                     return saveServerKey(mainParams);
             }
@@ -72,6 +76,17 @@ public class AppSettings {
             params.sharedPreferences.edit().putString(SERVER_URL, params.value).apply();
 
             return "Server URL saved";
+        }
+
+        private String saveUserName(SaveSettingParams params) {
+            String userName = params.value.trim();
+            if (userName.length() == 0) {
+                return "Error: user name is empty";
+            }
+
+            params.sharedPreferences.edit().putString(USER_NAME, userName).apply();
+
+            return "User name saved";
         }
 
         private String saveServerKey(SaveSettingParams params) {
@@ -112,6 +127,26 @@ public class AppSettings {
 
     public String getServerUrl() {
         return sharedPreferences.getString(SERVER_URL, "");
+    }
+
+    public void saveUserName(String userName) {
+        SaveSettingParams params = new SaveSettingParams(
+                sharedPreferences, context,
+                USER_NAME, userName
+        );
+
+        SaveSettingAction action = new SaveSettingAction();
+        action.execute(params);
+
+        try {
+            showMessage(action.get());
+        } catch (InterruptedException | ExecutionException e) {
+            showMessage(e.toString());
+        }
+    }
+
+    public String getUserName() {
+        return sharedPreferences.getString(USER_NAME, "");
     }
 
     public void saveServerKey(String serverKey) {

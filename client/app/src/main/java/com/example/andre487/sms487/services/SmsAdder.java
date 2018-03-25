@@ -6,8 +6,8 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
+import com.example.andre487.sms487.logging.Logger;
 import com.example.andre487.sms487.messages.MessageContainer;
 import com.example.andre487.sms487.messages.SmsListener;
 import com.example.andre487.sms487.network.SmsApi;
@@ -35,7 +35,7 @@ public class SmsAdder extends Service {
         @Override
         protected Void doInBackground(AddSmsParams... params) {
             if (params.length == 0) {
-                Log.w("SmsAdder", "Params length is 0");
+                Logger.w("SmsAdder", "Params length is 0");
                 return null;
             }
             AddSmsParams mainParams = params[0];
@@ -45,7 +45,7 @@ public class SmsAdder extends Service {
             );
 
             if (intentData == null) {
-                Log.w("SmsAdder", "Intent data is null");
+                Logger.w("SmsAdder", "Intent data is null");
                 return null;
             }
 
@@ -69,7 +69,7 @@ public class SmsAdder extends Service {
             ArrayList<MessageContainer> data = new ArrayList<>();
 
             for (String messageJson : intentData) {
-                Log.d("SmsAdder", "Got message: " + messageJson);
+                Logger.d("SmsAdder", "Got message: " + messageJson);
 
                 try {
                     JSONObject obj = new JSONObject(messageJson);
@@ -93,7 +93,7 @@ public class SmsAdder extends Service {
 
     @Override
     public void onCreate() {
-        Log.d("SmsAdder", "Service started");
+        Logger.d("SmsAdder", "Service started");
 
         appSettings = new AppSettings(this);
     }
@@ -102,7 +102,7 @@ public class SmsAdder extends Service {
         SmsApi smsApi = new SmsApi(
                 this,
                 appSettings.getServerUrl(),
-                "sms487",
+                appSettings.getUserName(),
                 appSettings.getServerKey()
         );
 

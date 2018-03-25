@@ -5,17 +5,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.AppCompatTextView;
 import android.util.Log;
 
 import com.example.andre487.sms487.R;
+import com.example.andre487.sms487.logging.Logger;
 import com.example.andre487.sms487.messages.MessageContainer;
 import com.example.andre487.sms487.messages.MessageStorage;
 import com.example.andre487.sms487.preferences.AppSettings;
@@ -42,13 +43,20 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected ArrayList<MessageContainer> doInBackground(GetMessageParams... params) {
             if (params.length == 0) {
-                Log.w("GetMessageAction", "Params length is 0");
+                Logger.w("GetMessageAction", "Params length is 0");
                 return null;
             }
 
             GetMessageParams mainParams = params[0];
 
             return mainParams.messageStorage.getMessagesTail();
+        }
+    }
+
+    static class GetLogsAction extends AsyncTask<Void, Void, List<String>> {
+        @Override
+        protected List<String> doInBackground(Void... params) {
+            return Logger.getMessages();
         }
     }
 
@@ -62,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void handleMessage(Message msg) {
-            Log.d("MainActivity", "Got incoming SMS: " + msg.toString());
+            Logger.d("MainActivity", "Got incoming SMS: " + msg.toString());
             // TODO: Implement auto refresh
         }
 
@@ -81,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
             smsHandler.setNewSmsHandler(MainActivity.this, incomingSmsHandler);
             smsHandlerBound = true;
 
-            Log.d("MainActivity", "SmsHandler bound");
+            Logger.d("MainActivity", "SmsHandler bound");
         }
 
         @Override
@@ -89,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
             smsHandlerBound = false;
             smsHandler.removeNewSmsHandler(MainActivity.this);
 
-            Log.d("MainActivity", "SmsHandler unbound");
+            Logger.d("MainActivity", "SmsHandler unbound");
         }
     };
 
@@ -101,6 +109,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Nullable @BindView(R.id.messagesField)
     AppCompatTextView messagesField;
+
+    @Nullable @BindView(R.id.userNameInput)
+    AppCompatEditText userNameInput;
 
     @Nullable @BindView(R.id.serverKeyInput)
     AppCompatEditText serverKeyInput;
@@ -114,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        Log.d("MainActivity", "Activity is started");
+        Logger.d("MainActivity", "Activity is started");
 
         messageStorage = new MessageStorage(this);
         appSettings = new AppSettings(this);
@@ -123,7 +134,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+
         showMessagesFromDb();
+        showLogsFromLogger();
 
         Intent intent = new Intent(this, SmsHandler.class);
         bindService(intent, smsHandlerConnection, Context.BIND_AUTO_CREATE);
@@ -151,19 +164,37 @@ public class MainActivity extends AppCompatActivity {
     void showMessagesFromDb() {
         final List<MessageContainer> messages = getMessages();
         if (messages == null) {
+            Logger.w("MainActivity", "Messages are null");
+            return;
+        }
+        Logger.w("MainActivity", "show messages");
+        showMessages(messages);
+    }
+
+    @OnClick(R.id.renewLogs)
+    void showLogsFromLogger() {
+        final List<String> logs = getLogs();
+        if (logs == null) {
             Log.w("MainActivity", "Messages are null");
             return;
         }
-        Log.w("MainActivity", "show messages");
-        showMessages(messages);
+        Log.i("MainActivity", "Show logs");
+        showLogs(logs);
     }
 
     @OnClick(R.id.serverKeySave)
     void saveServerKey() {
+        AppCompatEditText userNameInput = findViewById(R.id.userNameInput);
+        if (userNameInput == null) {
+            return;
+        }
+
         AppCompatEditText serverKeyInput = findViewById(R.id.serverKeyInput);
         if (serverKeyInput == null) {
             return;
         }
+
+        appSettings.saveUserName(userNameInput.getText().toString());
         appSettings.saveServerKey(serverKeyInput.getText().toString());
     }
 
@@ -187,11 +218,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void showServerKey() {
+        AppCompatEditText userNameInput = findViewById(R.id.userNameInput);
+        if (userNameInput == null) {
+            return;
+        }
+
         AppCompatEditText serverKeyInput = findViewById(R.id.serverKeyInput);
         if (serverKeyInput == null) {
             return;
         }
 
+        userNameInput.setText(appSettings.getUserName());
         serverKeyInput.setText(appSettings.getServerKey());
     }
 
@@ -203,7 +240,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             return action.get();
         } catch (InterruptedException | ExecutionException e) {
-            Log.w("MainActivity", "Get messages error: " + e.toString());
+            Logger.w("MainActivity", "Get messages error: " + e.toString());
             e.printStackTrace();
             return null;
         }
@@ -228,5 +265,34 @@ public class MainActivity extends AppCompatActivity {
         }
 
         messagesField.setText(messagesString.toString());
+    }
+
+    private List<String> getLogs() {
+        GetLogsAction action = new GetLogsAction();
+        action.execute();
+
+        try {
+            return action.get();
+        } catch (InterruptedException | ExecutionException e) {
+            Log.w("MainActivity", "Get logs error: " + e.toString());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private void showLogs(List<String> logs) {
+        AppCompatTextView logsField = findViewById(R.id.logsField);
+        if (logsField == null) {
+            return;
+        }
+
+        StringBuilder logsString = new StringBuilder();
+
+        for (String logLine : logs) {
+            logsString.append(logLine);
+            logsString.append('\n');
+        }
+
+        logsField.setText(logsString.toString());
     }
 }

@@ -2,7 +2,6 @@ package com.example.andre487.sms487.network;
 
 import android.content.Context;
 import android.util.Base64;
-import android.util.Log;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -11,6 +10,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.andre487.sms487.logging.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -55,14 +55,14 @@ public class SmsApi {
     protected static class ApiResponseListener implements Response.Listener<String> {
         @Override
         public void onResponse(String response) {
-            Log.i("SmsApi", "Response: " + response);
+            Logger.i("SmsApi", "Response: " + response);
         }
     }
 
     protected static class ApiErrorListener implements Response.ErrorListener {
         @Override
         public void onErrorResponse(VolleyError error) {
-            Log.w("SmsApi", "Response error: " + error.toString());
+            Logger.w("SmsApi", "Response error: " + error.toString());
         }
     }
 
@@ -81,7 +81,7 @@ public class SmsApi {
     }
 
     public void addSms(String deviceId, String dateTime, String tel, String text) {
-        Log.i(
+        Logger.i(
                 "SmsApi",
                 "Sending SMS: " + deviceId + ", " + dateTime + ", " + tel + ", " + text
         );

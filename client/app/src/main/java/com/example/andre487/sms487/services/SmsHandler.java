@@ -10,8 +10,8 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
+import com.example.andre487.sms487.logging.Logger;
 import com.example.andre487.sms487.messages.MessageContainer;
 import com.example.andre487.sms487.messages.MessageStorage;
 import com.example.andre487.sms487.messages.SmsListener;
@@ -40,7 +40,7 @@ public class SmsHandler extends Service {
         @Override
         protected Void doInBackground(HandleMessageParams... params) {
             if (params.length == 0) {
-                Log.w("SmsHandler", "Params length is 0");
+                Logger.w("SmsHandler", "Params length is 0");
                 return null;
             }
 
@@ -50,7 +50,7 @@ public class SmsHandler extends Service {
             );
 
             if (intentData == null) {
-                Log.w("SmsHandler", "Intent data is null");
+                Logger.w("SmsHandler", "Intent data is null");
                 return null;
             }
 
@@ -71,7 +71,7 @@ public class SmsHandler extends Service {
             ArrayList<MessageContainer> data = new ArrayList<>();
 
             for (String messageJson : intentData) {
-                Log.d("SmsHandler", "Got message: " + messageJson);
+                Logger.d("SmsHandler", "Got message: " + messageJson);
 
                 try {
                     JSONObject obj = new JSONObject(messageJson);
@@ -109,7 +109,7 @@ public class SmsHandler extends Service {
 
     @Override
     public void onCreate() {
-        Log.d("SmsHandler", "Service started");
+        Logger.d("SmsHandler", "Service started");
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {

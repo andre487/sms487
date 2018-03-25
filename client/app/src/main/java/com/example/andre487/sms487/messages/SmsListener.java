@@ -6,8 +6,8 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Telephony;
-import android.util.Log;
 
+import com.example.andre487.sms487.logging.Logger;
 import com.example.andre487.sms487.services.SmsAdder;
 import com.example.andre487.sms487.services.SmsHandler;
 
@@ -30,7 +30,7 @@ public class SmsListener extends BroadcastReceiver {
         @Override
         protected Void doInBackground(HandleMessageParams... params) {
             if (params.length == 0) {
-                Log.w("SmsListener", "Params length is 0");
+                Logger.w("SmsListener", "Params length is 0");
                 return null;
             }
             HandleMessageParams mainParams = params[0];
@@ -51,14 +51,14 @@ public class SmsListener extends BroadcastReceiver {
 
             Bundle bundle = intent.getExtras();
             if (bundle == null) {
-                Log.w("SmsListener", "Bundle is null");
+                Logger.w("SmsListener", "Bundle is null");
                 return null;
             }
 
             Object[] pdus = (Object[]) bundle.get("pdus");
             String format = bundle.getString("format");
             if (pdus == null || format == null) {
-                Log.w("SmsListener", "PDUs or format is null");
+                Logger.w("SmsListener", "PDUs or format is null");
                 return null;
             }
 
@@ -66,11 +66,11 @@ public class SmsListener extends BroadcastReceiver {
             for (int i = 0; i < messages.length; ++i) {
                 MessageContainer message = messages[i] = new MessageContainer(pdus[i], format);
 
-                Log.d("SmsListener", "Message address: " + message.getAddressFrom());
-                Log.d("SmsListener", "Message body: " + message.getBody());
+                Logger.d("SmsListener", "Message address: " + message.getAddressFrom());
+                Logger.d("SmsListener", "Message body: " + message.getBody());
             }
 
-            Log.i("SmsListener", "Receive messages");
+            Logger.i("SmsListener", "Receive messages");
 
             return messages;
         }
