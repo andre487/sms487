@@ -66,6 +66,7 @@ def get_sms():
     try:
         result = data_handler.get_sms(device_id, limit)
     except data_handler.FormDataError as e:
+        logging.info('Client error: %s', e)
         return create_json_response([{'error': e.message}], status=400)
 
     return create_json_response(result)
@@ -78,6 +79,7 @@ def add_sms():
         data_handler.add_sms(request.form)
         return create_json_response([{'status': 'OK'}])
     except data_handler.FormDataError as e:
+        logging.info('Client error: %s', e)
         return create_json_response([{'error': e.message}], status=400)
 
 
