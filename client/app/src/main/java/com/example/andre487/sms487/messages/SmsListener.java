@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.provider.Telephony;
 import android.util.Log;
 
+import com.example.andre487.sms487.services.SmsAdder;
 import com.example.andre487.sms487.services.SmsHandler;
 
 import java.util.ArrayList;
@@ -75,7 +76,7 @@ public class SmsListener extends BroadcastReceiver {
         }
 
         private void sendMessagesToHandler(Context context, MessageContainer[] messages) {
-            Intent intent = new Intent(context, SmsHandler.class);
+            Intent baseIntent = new Intent();
 
             ArrayList<String> intentData = new ArrayList<>();
             for (MessageContainer message : messages) {
@@ -85,8 +86,15 @@ public class SmsListener extends BroadcastReceiver {
                 }
             }
 
-            intent.putStringArrayListExtra(EXTRA_GOT_SMS, intentData);
-            context.startService(intent);
+            baseIntent.putStringArrayListExtra(EXTRA_GOT_SMS, intentData);
+
+            Intent smsHandlerIntent = new Intent(baseIntent);
+            smsHandlerIntent.setClass(context, SmsHandler.class);
+            context.startService(smsHandlerIntent);
+
+            Intent smsAdderIntent = new Intent(baseIntent);
+            smsAdderIntent.setClass(context, SmsAdder.class);
+            context.startService(smsAdderIntent);
         }
     }
 
