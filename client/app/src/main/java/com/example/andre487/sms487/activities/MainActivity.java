@@ -1,15 +1,19 @@
 package com.example.andre487.sms487.activities;
 
+import android.Manifest;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.AppCompatTextView;
@@ -135,6 +139,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
 
+        requestPermissions();
+
         showMessagesFromDb();
         showLogsFromLogger();
 
@@ -158,6 +164,31 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         incomingSmsHandler.destroy();
+    }
+
+    void requestPermissions() {
+        List<String> permList = new ArrayList<>();
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS)
+                != PackageManager.PERMISSION_GRANTED) {
+            permList.add(Manifest.permission.RECEIVE_SMS);
+        }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET)
+                != PackageManager.PERMISSION_GRANTED) {
+            permList.add(Manifest.permission.INTERNET);
+        }
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE)
+                != PackageManager.PERMISSION_GRANTED) {
+            permList.add(Manifest.permission.ACCESS_NETWORK_STATE);
+        }
+
+        int permCount = permList.size();
+        if (permCount > 0) {
+            String[] permArr = permList.toArray(new String[permCount]);
+            ActivityCompat.requestPermissions(this, permArr, 487);
+        }
     }
 
     @OnClick(R.id.renewMessages)
