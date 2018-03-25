@@ -1,6 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'android.key'
+            storeFile file('/Users/andre487/.private/android.key')
+        }
+    }
     compileSdkVersion 26
     defaultConfig {
         applicationId "com.example.andre487.sms487"
@@ -19,10 +25,10 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
-    implementation "android.arch.persistence.room:runtime:1.0.0"
+    implementation 'android.arch.persistence.room:runtime:1.0.0'
     compile 'com.jakewharton:butterknife:8.6.0'
     compile 'com.android.volley:volley:1.1.0'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.6.0'
