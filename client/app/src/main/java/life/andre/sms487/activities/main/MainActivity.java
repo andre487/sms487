@@ -1,4 +1,4 @@
-package life.andre.sms487.activities;
+package life.andre.sms487.activities.main;
 
 import android.Manifest;
 import android.content.ComponentName;
@@ -21,8 +21,8 @@ import android.util.Log;
 
 import life.andre.sms487.R;
 import life.andre.sms487.logging.Logger;
-import life.andre.sms487.messages.MessageContainer;
-import life.andre.sms487.messages.MessageStorage;
+import life.andre.sms487.messageStorage.MessageContainer;
+import life.andre.sms487.messageStorage.MessageStorage;
 import life.andre.sms487.preferences.AppSettings;
 import life.andre.sms487.services.SmsHandler;
 

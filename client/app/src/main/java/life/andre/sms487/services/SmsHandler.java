@@ -11,10 +11,10 @@ import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
 
+import life.andre.sms487.IntentTypes;
 import life.andre.sms487.logging.Logger;
-import life.andre.sms487.messages.MessageContainer;
-import life.andre.sms487.messages.MessageStorage;
-import life.andre.sms487.messages.SmsListener;
+import life.andre.sms487.messageStorage.MessageContainer;
+import life.andre.sms487.messageStorage.MessageStorage;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -46,7 +46,7 @@ public class SmsHandler extends Service {
 
             HandleMessageParams mainParams = params[0];
             ArrayList<String> intentData = mainParams.intent.getStringArrayListExtra(
-                    SmsListener.EXTRA_GOT_SMS
+                    IntentTypes.EXTRA_GOT_SMS
             );
 
             if (intentData == null) {
