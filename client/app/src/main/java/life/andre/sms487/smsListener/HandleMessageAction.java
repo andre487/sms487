@@ -8,7 +8,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Telephony;
 
-import life.andre.sms487.IntentTypes;
+import life.andre.sms487.AppConstants;
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messageStorage.MessageContainer;
 import life.andre.sms487.services.SmsAdder;
@@ -74,7 +74,7 @@ class HandleMessageAction extends AsyncTask<HandleMessageParams, Void, Void> {
             }
         }
 
-        baseIntent.putStringArrayListExtra(IntentTypes.EXTRA_GOT_SMS, intentData);
+        baseIntent.putStringArrayListExtra(AppConstants.EXTRA_GOT_SMS, intentData);
 
         Intent smsHandlerIntent = new Intent(baseIntent);
         smsHandlerIntent.setClass(context, SmsHandler.class);
