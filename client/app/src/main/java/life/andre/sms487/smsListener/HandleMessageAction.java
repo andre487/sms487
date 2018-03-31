@@ -12,7 +12,7 @@ import life.andre.sms487.AppConstants;
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messageStorage.MessageContainer;
 import life.andre.sms487.services.SmsAdder;
-import life.andre.sms487.services.SmsHandler;
+import life.andre.sms487.services.smsDbHandler.SmsDbHandler;
 
 class HandleMessageAction extends AsyncTask<HandleMessageParams, Void, Void> {
     @Override
@@ -77,7 +77,7 @@ class HandleMessageAction extends AsyncTask<HandleMessageParams, Void, Void> {
         baseIntent.putStringArrayListExtra(AppConstants.EXTRA_GOT_SMS, intentData);
 
         Intent smsHandlerIntent = new Intent(baseIntent);
-        smsHandlerIntent.setClass(context, SmsHandler.class);
+        smsHandlerIntent.setClass(context, SmsDbHandler.class);
         context.startService(smsHandlerIntent);
 
         Intent smsAdderIntent = new Intent(baseIntent);

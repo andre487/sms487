@@ -55,7 +55,7 @@ public class MessageStorage {
         messageDao = db.messageDao();
     }
 
-    public void addMessages(ArrayList<MessageContainer> messages) {
+    public void addMessages(List<MessageContainer> messages) {
         for (MessageContainer message : messages) {
             Message entry = new Message();
 
@@ -69,8 +69,8 @@ public class MessageStorage {
 
     public List<MessageContainer> getMessagesTail() {
         List<Message> messageEntries = messageDao.getTail();
+        List<MessageContainer> messages = new ArrayList<>();
 
-        ArrayList<MessageContainer> messages = new ArrayList<>();
         for (Message messageEntry : messageEntries) {
             messages.add(
                     new MessageContainer(
