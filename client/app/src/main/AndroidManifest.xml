@@ -25,7 +25,7 @@
         </activity>
 
         <service android:name=".services.smsDbHandler.SmsDbHandler" />
-        <service android:name=".services.SmsAdder" />
+        <service android:name=".services.smsApiSender.SmsApiSender" />
 
         <receiver android:name=".smsListener.SmsListener"
             android:permission="android.permission.BROADCAST_SMS">

@@ -11,7 +11,7 @@ import android.provider.Telephony;
 import life.andre.sms487.AppConstants;
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messageStorage.MessageContainer;
-import life.andre.sms487.services.SmsAdder;
+import life.andre.sms487.services.smsApiSender.SmsApiSender;
 import life.andre.sms487.services.smsDbHandler.SmsDbHandler;
 
 class HandleMessageAction extends AsyncTask<HandleMessageParams, Void, Void> {
@@ -81,7 +81,7 @@ class HandleMessageAction extends AsyncTask<HandleMessageParams, Void, Void> {
         context.startService(smsHandlerIntent);
 
         Intent smsAdderIntent = new Intent(baseIntent);
-        smsAdderIntent.setClass(context, SmsAdder.class);
+        smsAdderIntent.setClass(context, SmsApiSender.class);
         context.startService(smsAdderIntent);
     }
 }
