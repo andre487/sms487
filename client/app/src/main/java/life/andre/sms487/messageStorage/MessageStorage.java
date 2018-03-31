@@ -67,7 +67,7 @@ public class MessageStorage {
         }
     }
 
-    public ArrayList<MessageContainer> getMessagesTail() {
+    public List<MessageContainer> getMessagesTail() {
         List<Message> messageEntries = messageDao.getTail();
 
         ArrayList<MessageContainer> messages = new ArrayList<>();
