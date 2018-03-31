@@ -11,6 +11,7 @@ import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.AppCompatTextView;
 import android.util.Log;
 
+import life.andre.sms487.AppConstants;
 import life.andre.sms487.R;
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messageStorage.MessageContainer;
@@ -67,27 +68,31 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void requestPermissions() {
-        List<String> permList = new ArrayList<>();
+        List<String> requiredPermissions = new ArrayList<>();
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS)
                 != PackageManager.PERMISSION_GRANTED) {
-            permList.add(Manifest.permission.RECEIVE_SMS);
+            requiredPermissions.add(Manifest.permission.RECEIVE_SMS);
         }
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET)
                 != PackageManager.PERMISSION_GRANTED) {
-            permList.add(Manifest.permission.INTERNET);
+            requiredPermissions.add(Manifest.permission.INTERNET);
         }
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE)
                 != PackageManager.PERMISSION_GRANTED) {
-            permList.add(Manifest.permission.ACCESS_NETWORK_STATE);
+            requiredPermissions.add(Manifest.permission.ACCESS_NETWORK_STATE);
         }
 
-        int permCount = permList.size();
+        int permCount = requiredPermissions.size();
         if (permCount > 0) {
-            String[] permArr = permList.toArray(new String[permCount]);
-            ActivityCompat.requestPermissions(this, permArr, 487);
+            String[] permArr = requiredPermissions.toArray(new String[permCount]);
+            ActivityCompat.requestPermissions(
+                    this,
+                    permArr,
+                    AppConstants.PERMISSIONS_REQUEST_ID
+            );
         }
     }
 
@@ -163,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
         serverKeyInput.setText(appSettings.getServerKey());
     }
 
-    private ArrayList<MessageContainer> getMessages() {
+    private List<MessageContainer> getMessages() {
         GetMessagesParams params = new GetMessagesParams(messageStorage);
         GetMessagesAction action = new GetMessagesAction();
         action.execute(params);
