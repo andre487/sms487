@@ -8,7 +8,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import life.andre.sms487.AppConstants;
+import life.andre.sms487.system.AppConstants;
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messageStorage.MessageContainer;
 import life.andre.sms487.messageStorage.MessageStorage;

@@ -1,4 +1,4 @@
-package life.andre.sms487;
+package life.andre.sms487.system;
 
 public class AppConstants {
     public static final String PREFERENCES_KEY = "life.andre.sms487.preferences";

@@ -6,7 +6,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.widget.Toast;
 
-import life.andre.sms487.AppConstants;
+import life.andre.sms487.system.AppConstants;
 
 
 public class AppSettings {

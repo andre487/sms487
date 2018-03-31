@@ -1,34 +1,31 @@
 package life.andre.sms487.activities.main;
 
-import android.Manifest;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.AppCompatTextView;
 import android.util.Log;
 
-import life.andre.sms487.AppConstants;
 import life.andre.sms487.R;
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messageStorage.MessageContainer;
 import life.andre.sms487.messageStorage.MessageStorage;
 import life.andre.sms487.preferences.AppSettings;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import life.andre.sms487.system.PermissionsChecker;
 
 public class MainActivity extends AppCompatActivity {
-    protected MessageStorage messageStorage;
-    protected AppSettings appSettings;
+    private PermissionsChecker permissionsChecker = new PermissionsChecker(this);
+
+    private MessageStorage messageStorage;
+    private AppSettings appSettings;
 
     @Nullable @BindView(R.id.messagesField)
     AppCompatTextView messagesField;
@@ -57,43 +54,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-
-        requestPermissions();
+        permissionsChecker.checkPermissions();
 
         showMessagesFromDb();
         showLogsFromLogger();
 
         showServerUrl();
         showServerKey();
-    }
-
-    void requestPermissions() {
-        List<String> requiredPermissions = new ArrayList<>();
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_SMS)
-                != PackageManager.PERMISSION_GRANTED) {
-            requiredPermissions.add(Manifest.permission.RECEIVE_SMS);
-        }
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET)
-                != PackageManager.PERMISSION_GRANTED) {
-            requiredPermissions.add(Manifest.permission.INTERNET);
-        }
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE)
-                != PackageManager.PERMISSION_GRANTED) {
-            requiredPermissions.add(Manifest.permission.ACCESS_NETWORK_STATE);
-        }
-
-        int permCount = requiredPermissions.size();
-        if (permCount > 0) {
-            String[] permArr = requiredPermissions.toArray(new String[permCount]);
-            ActivityCompat.requestPermissions(
-                    this,
-                    permArr,
-                    AppConstants.PERMISSIONS_REQUEST_ID
-            );
-        }
     }
 
     @OnClick(R.id.renewMessages)
