@@ -8,7 +8,6 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class Logger {
-    // TODO: use disk
     private static ConcurrentLinkedDeque<String> messages = new ConcurrentLinkedDeque<>();
 
     public static void v(String tag, String msg) {
@@ -37,9 +36,7 @@ public class Logger {
     }
 
     public static List<String> getMessages() {
-        ArrayList<String> result = new ArrayList<>();
-        result.addAll(messages);
-        return result;
+        return new ArrayList<>(messages);
     }
 
     private static void addMessageToQueue(String level, String tag, String msg) {
