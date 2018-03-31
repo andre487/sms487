@@ -1,16 +1,8 @@
 package life.andre.sms487.activities.main;
 
 import android.Manifest;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.IBinder;
-import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -24,7 +16,6 @@ import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messageStorage.MessageContainer;
 import life.andre.sms487.messageStorage.MessageStorage;
 import life.andre.sms487.preferences.AppSettings;
-import life.andre.sms487.services.SmsHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,80 +26,7 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity {
-    static class GetMessageParams {
-        MessageStorage messageStorage;
-
-        GetMessageParams(MessageStorage messageStorage) {
-            this.messageStorage = messageStorage;
-        }
-    }
-
-    static class GetMessageAction extends AsyncTask<GetMessageParams, Void, ArrayList<MessageContainer>> {
-        @Override
-        protected ArrayList<MessageContainer> doInBackground(GetMessageParams... params) {
-            if (params.length == 0) {
-                Logger.w("GetMessageAction", "Params length is 0");
-                return null;
-            }
-
-            GetMessageParams mainParams = params[0];
-
-            return mainParams.messageStorage.getMessagesTail();
-        }
-    }
-
-    static class GetLogsAction extends AsyncTask<Void, Void, List<String>> {
-        @Override
-        protected List<String> doInBackground(Void... params) {
-            return Logger.getMessages();
-        }
-    }
-
-    static class NewSmsHandler extends Handler {
-        MainActivity activity;
-
-        NewSmsHandler(MainActivity activity) {
-            super();
-            this.activity = activity;
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            Logger.d("MainActivity", "Got incoming SMS: " + msg.toString());
-            // TODO: Implement auto refresh
-        }
-
-        void destroy() {
-            activity = null;
-        }
-    }
-
-    protected NewSmsHandler incomingSmsHandler = new NewSmsHandler(this);
-
-    protected ServiceConnection smsHandlerConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            SmsHandler.SmsBridge binder = (SmsHandler.SmsBridge) service;
-            smsHandler = binder.getService();
-            smsHandler.setNewSmsHandler(MainActivity.this, incomingSmsHandler);
-            smsHandlerBound = true;
-
-            Logger.d("MainActivity", "SmsHandler bound");
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            smsHandlerBound = false;
-            smsHandler.removeNewSmsHandler(MainActivity.this);
-
-            Logger.d("MainActivity", "SmsHandler unbound");
-        }
-    };
-
     protected MessageStorage messageStorage;
-    protected SmsHandler smsHandler;
-    protected boolean smsHandlerBound = false;
-
     protected AppSettings appSettings;
 
     @Nullable @BindView(R.id.messagesField)
@@ -144,26 +62,8 @@ public class MainActivity extends AppCompatActivity {
         showMessagesFromDb();
         showLogsFromLogger();
 
-        Intent intent = new Intent(this, SmsHandler.class);
-        bindService(intent, smsHandlerConnection, Context.BIND_AUTO_CREATE);
-
         showServerUrl();
         showServerKey();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (smsHandlerBound) {
-            unbindService(smsHandlerConnection);
-            smsHandlerBound = false;
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        incomingSmsHandler.destroy();
     }
 
     void requestPermissions() {
@@ -264,8 +164,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private ArrayList<MessageContainer> getMessages() {
-        GetMessageParams params = new GetMessageParams(messageStorage);
-        GetMessageAction action = new GetMessageAction();
+        GetMessagesParams params = new GetMessagesParams(messageStorage);
+        GetMessagesAction action = new GetMessagesAction();
         action.execute(params);
 
         try {
