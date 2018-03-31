@@ -6,6 +6,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import life.andre.sms487.system.AppConstants;
 import life.andre.sms487.logging.Logger;
@@ -21,7 +22,7 @@ class SendSmsAction extends AsyncTask<SendSmsParams, Void, Void> {
         }
         SendSmsParams mainParams = params[0];
 
-        ArrayList<String> intentData = mainParams.intent.getStringArrayListExtra(
+        List<String> intentData = mainParams.intent.getStringArrayListExtra(
                 AppConstants.EXTRA_GOT_SMS
         );
 
@@ -35,7 +36,7 @@ class SendSmsAction extends AsyncTask<SendSmsParams, Void, Void> {
         return null;
     }
 
-    private void handleIntentData(SmsApi smsApi, String deviceId, ArrayList<String> intentData) {
+    private void handleIntentData(SmsApi smsApi, String deviceId, List<String> intentData) {
         for (MessageContainer message : extractMessages(intentData)) {
             smsApi.addSms(
                     deviceId,
@@ -46,8 +47,8 @@ class SendSmsAction extends AsyncTask<SendSmsParams, Void, Void> {
         }
     }
 
-    private ArrayList<MessageContainer> extractMessages(ArrayList<String> intentData) {
-        ArrayList<MessageContainer> data = new ArrayList<>();
+    private List<MessageContainer> extractMessages(List<String> intentData) {
+        List<MessageContainer> data = new ArrayList<>();
 
         for (String messageJson : intentData) {
             Logger.d("SendSmsAction", "Got message: " + messageJson);

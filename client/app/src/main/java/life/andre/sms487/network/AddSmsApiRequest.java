@@ -48,7 +48,7 @@ class AddSmsApiRequest extends StringRequest {
 
     @Override
     public Map<String, String> getHeaders() {
-        HashMap<String, String> headers = new HashMap<>();
+        Map<String, String> headers = new HashMap<>();
 
         headers.put("Authorization", authHeaderString);
 
