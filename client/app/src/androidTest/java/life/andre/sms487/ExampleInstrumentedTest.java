@@ -1,4 +1,4 @@
-package com.example.andre487.sms487;
+package life.andre.sms487;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.example.andre487.sms487", appContext.getPackageName());
+        assertEquals("life.andre.sms487", appContext.getPackageName());
     }
 }

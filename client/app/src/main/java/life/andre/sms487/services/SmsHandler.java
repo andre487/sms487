@@ -1,4 +1,4 @@
-package com.example.andre487.sms487.services;
+package life.andre.sms487.services;
 
 
 import android.app.Activity;
@@ -11,10 +11,10 @@ import android.os.IBinder;
 import android.os.Message;
 import android.support.annotation.Nullable;
 
-import com.example.andre487.sms487.logging.Logger;
-import com.example.andre487.sms487.messages.MessageContainer;
-import com.example.andre487.sms487.messages.MessageStorage;
-import com.example.andre487.sms487.messages.SmsListener;
+import life.andre.sms487.logging.Logger;
+import life.andre.sms487.messages.MessageContainer;
+import life.andre.sms487.messages.MessageStorage;
+import life.andre.sms487.messages.SmsListener;
 
 import org.json.JSONException;
 import org.json.JSONObject;

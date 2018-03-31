@@ -1,4 +1,4 @@
-package com.example.andre487.sms487.network;
+package life.andre.sms487.network;
 
 import android.content.Context;
 import android.util.Base64;
@@ -10,7 +10,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.andre487.sms487.logging.Logger;
+import life.andre.sms487.logging.Logger;
 
 import java.util.HashMap;
 import java.util.Map;

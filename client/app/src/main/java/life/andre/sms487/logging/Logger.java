@@ -1,4 +1,4 @@
-package com.example.andre487.sms487.logging;
+package life.andre.sms487.logging;
 
 import android.util.Log;
 

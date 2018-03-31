@@ -1,11 +1,11 @@
-package com.example.andre487.sms487.preferences;
+package life.andre.sms487.preferences;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.widget.Toast;
 
-import com.example.andre487.sms487.logging.Logger;
+import life.andre.sms487.logging.Logger;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -16,7 +16,7 @@ import java.util.concurrent.ExecutionException;
 
 @SuppressWarnings("UnusedReturnValue")
 public class AppSettings {
-    private static final String PREFERENCES_KEY = "com.example.andre487.sms487.preferences";
+    private static final String PREFERENCES_KEY = "life.andre.sms487.preferences";
     private static final String SERVER_URL = "server_url";
     private static final String USER_NAME = "user_name";
     private static final String SERVER_KEY = "server_key";

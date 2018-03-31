@@ -2,5 +2,5 @@
 <full-backup-content>
     <exclude
         domain="sharedpref"
-        path="com.example.andre487.sms487.preferences.xml" />
+        path="life.andre.sms487.preferences.xml" />
 </full-backup-content>

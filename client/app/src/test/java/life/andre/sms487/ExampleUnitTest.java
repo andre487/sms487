@@ -1,4 +1,4 @@
-package com.example.andre487.sms487;
+package life.andre.sms487;
 
 import org.junit.Test;
 

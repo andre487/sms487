@@ -1,4 +1,4 @@
-package com.example.andre487.sms487.messages;
+package life.andre.sms487.messages;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -7,14 +7,14 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Telephony;
 
-import com.example.andre487.sms487.logging.Logger;
-import com.example.andre487.sms487.services.SmsAdder;
-import com.example.andre487.sms487.services.SmsHandler;
+import life.andre.sms487.logging.Logger;
+import life.andre.sms487.services.SmsAdder;
+import life.andre.sms487.services.SmsHandler;
 
 import java.util.ArrayList;
 
 public class SmsListener extends BroadcastReceiver {
-    public static final String EXTRA_GOT_SMS = "com.example.andre487.EXTRA_GOT_SMS";
+    public static final String EXTRA_GOT_SMS = "life.andre.EXTRA_GOT_SMS";
 
     class HandleMessageParams {
         Context context;

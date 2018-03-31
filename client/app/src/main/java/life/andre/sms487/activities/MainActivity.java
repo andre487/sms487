@@ -1,4 +1,4 @@
-package com.example.andre487.sms487.activities;
+package life.andre.sms487.activities;
 
 import android.Manifest;
 import android.content.ComponentName;
@@ -19,12 +19,12 @@ import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.AppCompatTextView;
 import android.util.Log;
 
-import com.example.andre487.sms487.R;
-import com.example.andre487.sms487.logging.Logger;
-import com.example.andre487.sms487.messages.MessageContainer;
-import com.example.andre487.sms487.messages.MessageStorage;
-import com.example.andre487.sms487.preferences.AppSettings;
-import com.example.andre487.sms487.services.SmsHandler;
+import life.andre.sms487.R;
+import life.andre.sms487.logging.Logger;
+import life.andre.sms487.messages.MessageContainer;
+import life.andre.sms487.messages.MessageStorage;
+import life.andre.sms487.preferences.AppSettings;
+import life.andre.sms487.services.SmsHandler;
 
 import java.util.ArrayList;
 import java.util.List;
