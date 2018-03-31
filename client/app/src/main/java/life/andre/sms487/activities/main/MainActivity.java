@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatEditText;
-import android.support.v7.widget.AppCompatTextView;
 import android.util.Log;
 
 import life.andre.sms487.R;
@@ -27,9 +26,6 @@ public class MainActivity extends AppCompatActivity {
     private MessageStorage messageStorage;
     private AppSettings appSettings;
 
-    @Nullable @BindView(R.id.messagesField)
-    AppCompatTextView messagesField;
-
     @Nullable @BindView(R.id.userNameInput)
     AppCompatEditText userNameInput;
 
@@ -38,6 +34,12 @@ public class MainActivity extends AppCompatActivity {
 
     @Nullable @BindView(R.id.serverUrlInput)
     AppCompatEditText serverUrlInput;
+
+    @Nullable @BindView(R.id.messagesField)
+    AppCompatEditText messagesField;
+
+    @Nullable @BindView(R.id.logsField)
+    AppCompatEditText logsField;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,12 +89,10 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.serverKeySave)
     void saveServerKey() {
-        AppCompatEditText userNameInput = findViewById(R.id.userNameInput);
         if (userNameInput == null) {
             return;
         }
 
-        AppCompatEditText serverKeyInput = findViewById(R.id.serverKeyInput);
         if (serverKeyInput == null) {
             return;
         }
@@ -102,7 +102,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void showServerUrl() {
-        AppCompatEditText serverUrlInput = findViewById(R.id.serverUrlInput);
         if (serverUrlInput == null) {
             return;
         }
@@ -112,7 +111,6 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.serverUrlSave)
     void saveServerUrl() {
-        AppCompatEditText serverUrlInput = findViewById(R.id.serverUrlInput);
         if (serverUrlInput == null) {
             return;
         }
@@ -121,12 +119,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void showServerKey() {
-        AppCompatEditText userNameInput = findViewById(R.id.userNameInput);
         if (userNameInput == null) {
             return;
         }
-
-        AppCompatEditText serverKeyInput = findViewById(R.id.serverKeyInput);
         if (serverKeyInput == null) {
             return;
         }
@@ -150,7 +145,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showMessages(List<MessageContainer> messages) {
-        AppCompatTextView messagesField = findViewById(R.id.messagesField);
         if (messagesField == null) {
             return;
         }
@@ -184,7 +178,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showLogs(List<String> logs) {
-        AppCompatTextView logsField = findViewById(R.id.logsField);
         if (logsField == null) {
             return;
         }
