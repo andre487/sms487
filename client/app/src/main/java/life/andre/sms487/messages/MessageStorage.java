@@ -24,7 +24,6 @@ public class MessageStorage {
         void insert(Message message);
     }
 
-    @SuppressWarnings("WeakerAccess")
     @Entity
     public static class Message {
         @PrimaryKey(autoGenerate = true)

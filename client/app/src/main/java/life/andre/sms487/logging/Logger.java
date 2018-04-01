@@ -6,14 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
-@SuppressWarnings({"WeakerAccess", "unused"})
 public class Logger {
     private static ConcurrentLinkedDeque<String> messages = new ConcurrentLinkedDeque<>();
-
-    public static void v(String tag, String msg) {
-        addMessageToQueue("VERBOSE", tag, msg);
-        Log.v(tag, msg);
-    }
 
     public static void d(String tag, String msg) {
         addMessageToQueue("DEBUG", tag, msg);
