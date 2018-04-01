@@ -22,7 +22,7 @@ class HandleMessageAction extends AsyncTask<HandleMessageParams, Void, Void> {
     @Override
     protected Void doInBackground(HandleMessageParams... params) {
         if (params.length == 0) {
-            Logger.w("SmsListener", "Params length is 0");
+            Logger.w("HandleMessageAction", "Params length is 0");
             return null;
         }
         HandleMessageParams mainParams = params[0];
@@ -43,20 +43,20 @@ class HandleMessageAction extends AsyncTask<HandleMessageParams, Void, Void> {
 
         Bundle bundle = intent.getExtras();
         if (bundle == null) {
-            Logger.w("SmsListener", "Bundle is null");
+            Logger.w("HandleMessageAction", "Bundle is null");
             return null;
         }
 
         Object[] pdus = (Object[]) bundle.get("pdus");
         String format = bundle.getString("format");
         if (pdus == null || format == null) {
-            Logger.w("SmsListener", "PDUs or format is null");
+            Logger.w("HandleMessageAction", "PDUs or format is null");
             return null;
         }
 
         List<MessageContainer> messages = converter.convert(pdus, format);
 
-        Logger.i("SmsListener", "Receive messages");
+        Logger.i("HandleMessageAction", "Receive messages");
 
         return messages;
     }

@@ -47,7 +47,7 @@ class HandleMessageAction extends AsyncTask<HandleMessageParams, Void, Void> {
         List<MessageContainer> data = new ArrayList<>();
 
         for (String messageJson : intentData) {
-            Logger.d("SmsDbHandler", "Got message: " + messageJson);
+            Logger.d("HandleMessageAction", "Got message: " + messageJson);
 
             try {
                 JSONObject obj = new JSONObject(messageJson);

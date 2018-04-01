@@ -15,14 +15,14 @@ class AddSmsApiRequest extends StringRequest {
     protected static class ApiResponseListener implements Response.Listener<String> {
         @Override
         public void onResponse(String response) {
-            Logger.i("SmsApi", "Response: " + response);
+            Logger.i("AddSmsApiRequest", "Response: " + response);
         }
     }
 
     protected static class ApiErrorListener implements Response.ErrorListener {
         @Override
         public void onErrorResponse(VolleyError error) {
-            Logger.w("SmsApi", "Response error: " + error.toString());
+            Logger.w("AddSmsApiRequest", "Response error: " + error.toString());
         }
     }
 
