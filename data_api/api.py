@@ -1,4 +1,5 @@
 import flask
+import hashlib
 import json
 import logging
 import os
@@ -33,13 +34,8 @@ def requires_auth(func):
                 headers={'WWW-Authenticate': 'Basic realm="SMS Login Required"'}
             )
 
-        if not (auth.username == correct_user_name and auth.password == correct_user_key):
-            logging.info(
-                'Auth not working: %s != %s or %s != %s',
-                auth.username, correct_user_name,
-                auth.password, correct_user_key,
-            )
-
+        user_key_hash = create_user_key_hash(auth.password)
+        if not (auth.username == correct_user_name and user_key_hash == correct_user_key):
             return create_json_response(
                 {'error': 'Not authorized'}, status=403,
                 headers={'WWW-Authenticate': 'Basic realm="SMS Login Required"'}
@@ -48,6 +44,12 @@ def requires_auth(func):
         return func(*args, **kwargs)
 
     return decorated
+
+
+def create_user_key_hash(current_user_key):
+    h = hashlib.sha256()
+    h.update(current_user_key)
+    return h.hexdigest()
 
 
 @app.route('/get-sms')
