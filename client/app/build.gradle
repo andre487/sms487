@@ -27,6 +27,7 @@ dependencies {
     implementation 'android.arch.persistence.room:runtime:1.0.0'
     implementation 'com.jakewharton:butterknife:8.6.0'
     implementation 'com.android.volley:volley:1.1.0'
+    implementation 'cat.ereza:customactivityoncrash:2.2.0'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.6.0'
     annotationProcessor "android.arch.persistence.room:compiler:1.0.0"
     testImplementation 'junit:junit:4.12'
