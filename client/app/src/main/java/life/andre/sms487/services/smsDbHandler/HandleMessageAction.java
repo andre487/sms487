@@ -1,5 +1,6 @@
 package life.andre.sms487.services.smsDbHandler;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 
 import org.json.JSONException;
@@ -22,7 +23,14 @@ class HandleMessageAction extends AsyncTask<HandleMessageParams, Void, Void> {
         }
 
         HandleMessageParams mainParams = params[0];
-        List<String> intentData = mainParams.intent.getStringArrayListExtra(
+
+        Intent intent = mainParams.intent;
+        if (intent == null) {
+            Logger.w("SmsDbHandler", "Intent is null");
+            return null;
+        }
+
+        List<String> intentData = intent.getStringArrayListExtra(
                 AppConstants.EXTRA_GOT_SMS
         );
 
