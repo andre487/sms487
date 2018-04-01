@@ -52,11 +52,42 @@ def create_user_key_hash(current_user_key):
     return h.hexdigest()
 
 
+@app.route('/')
+@requires_auth
+def index():
+    device_id = request.args.get('device_id', '').strip()
+    limit = request.args.get('limit', '30')
+
+    if device_id == 'All':
+        device_id = None
+
+    if limit:
+        try:
+            limit = int(limit)
+        except ValueError:
+            return create_html_response('error.html', {'code': 400, 'message': 'Incorrect limit'}, status=400)
+
+    try:
+        result = data_handler.get_sms(device_id, limit)
+    except data_handler.FormDataError as e:
+        logging.info('Client error: %s', e)
+        return create_html_response('error.html', {'code': 400, 'message': e.message}, status=400)
+
+    device_ids = [('All', not device_id)] + [
+        (name, name == device_id) for name in data_handler.get_device_ids()
+    ]
+
+    return create_html_response('index.html', {
+        'messages': result, 'limit': limit,
+        'device_id': device_id, 'device_ids': device_ids,
+    })
+
+
 @app.route('/get-sms')
 @requires_auth
 def get_sms():
     device_id = request.args.get('device_id', '').strip()
-    limit = request.args.get('limit')
+    limit = request.args.get('limit', '30')
 
     if limit:
         try:
@@ -102,6 +133,21 @@ def create_json_response(data, status=200, headers=None):
 
     resp = flask.make_response(json.dumps(data, ensure_ascii=False), status)
     resp.headers['content-type'] = 'application/json; charset=utf-8'
+    for name, val in headers.iteritems():
+        resp.headers[name] = val
+
+    return resp
+
+
+def create_html_response(template_name, data, status=200, headers=None):
+    if headers is None:
+        headers = {}
+
+    html = flask.render_template(template_name, **data)
+
+    resp = flask.make_response(html, status)
+    resp.headers['content-type'] = 'text/html; charset=utf-8'
+
     for name, val in headers.iteritems():
         resp.headers[name] = val
 

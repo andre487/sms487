@@ -72,6 +72,12 @@ def dress_item(doc):
     return result
 
 
+def get_device_ids():
+    device_ids = _get_sms_collection().distinct('device_id')
+    device_ids.sort()
+    return device_ids
+
+
 def _get_mongo_client():
     global _mongo_client
     if _mongo_client:
