@@ -34,6 +34,7 @@ def get_sms(device_id, limit=None):
 
     return [dress_item(doc) for doc in cursor]
 
+
 def add_sms(data):
     device_id = data.get('device_id', '').strip()
     tel = data.get('tel', '').strip()

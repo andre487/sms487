@@ -2,7 +2,6 @@ import flask
 import json
 import logging
 import os
-import sys
 from functools import wraps
 
 import data_handler
@@ -83,11 +82,13 @@ def add_sms():
         return create_json_response([{'error': e.message}], status=400)
 
 
+# noinspection PyUnusedLocal
 @app.errorhandler(404)
 def error_404(*args):
     return create_json_response([{'error': 'Not found'}], status=404)
 
 
+# noinspection PyUnusedLocal
 @app.errorhandler(405)
 def error_405(*args):
     return create_json_response([{'error': 'Method is not allowed'}], status=405)
