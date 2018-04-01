@@ -6,7 +6,7 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 
 import life.andre.sms487.logging.Logger;
-import life.andre.sms487.messageStorage.MessageStorage;
+import life.andre.sms487.messages.MessageStorage;
 
 public class SmsDbHandler extends Service {
     protected MessageStorage messageStorage = new MessageStorage(this);

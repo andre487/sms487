@@ -10,7 +10,7 @@ import java.util.List;
 
 import life.andre.sms487.system.AppConstants;
 import life.andre.sms487.logging.Logger;
-import life.andre.sms487.messageStorage.MessageContainer;
+import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.network.SmsApi;
 
 class SendSmsAction extends AsyncTask<SendSmsParams, Void, Void> {

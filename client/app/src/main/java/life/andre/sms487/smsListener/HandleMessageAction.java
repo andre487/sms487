@@ -9,13 +9,16 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Telephony;
 
+import life.andre.sms487.messages.PduConverter;
 import life.andre.sms487.system.AppConstants;
 import life.andre.sms487.logging.Logger;
-import life.andre.sms487.messageStorage.MessageContainer;
+import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.services.smsApiSender.SmsApiSender;
 import life.andre.sms487.services.smsDbHandler.SmsDbHandler;
 
 class HandleMessageAction extends AsyncTask<HandleMessageParams, Void, Void> {
+    private static PduConverter converter = new PduConverter();
+
     @Override
     protected Void doInBackground(HandleMessageParams... params) {
         if (params.length == 0) {
@@ -24,7 +27,7 @@ class HandleMessageAction extends AsyncTask<HandleMessageParams, Void, Void> {
         }
         HandleMessageParams mainParams = params[0];
 
-        MessageContainer[] messages = extractMessages(mainParams.intent);
+        List<MessageContainer> messages = extractMessages(mainParams.intent);
         if (messages != null) {
             sendMessagesToHandler(mainParams.context, messages);
         }
@@ -32,7 +35,7 @@ class HandleMessageAction extends AsyncTask<HandleMessageParams, Void, Void> {
         return null;
     }
 
-    private MessageContainer[] extractMessages(Intent intent) {
+    private List<MessageContainer> extractMessages(Intent intent) {
         String action = intent.getAction();
         if (action == null || !action.equals(Telephony.Sms.Intents.SMS_RECEIVED_ACTION)) {
             return null;
@@ -51,20 +54,14 @@ class HandleMessageAction extends AsyncTask<HandleMessageParams, Void, Void> {
             return null;
         }
 
-        MessageContainer[] messages = new MessageContainer[pdus.length];
-        for (int i = 0; i < messages.length; ++i) {
-            MessageContainer message = messages[i] = new MessageContainer(pdus[i], format);
-
-            Logger.d("SmsListener", "Message address: " + message.getAddressFrom());
-            Logger.d("SmsListener", "Message body: " + message.getBody());
-        }
+        List<MessageContainer> messages = converter.convert(pdus, format);
 
         Logger.i("SmsListener", "Receive messages");
 
         return messages;
     }
 
-    private void sendMessagesToHandler(Context context, MessageContainer[] messages) {
+    private void sendMessagesToHandler(Context context, List<MessageContainer> messages) {
         Intent baseIntent = new Intent();
 
         ArrayList<String> intentData = new ArrayList<>();

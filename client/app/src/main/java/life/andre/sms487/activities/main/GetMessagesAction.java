@@ -5,7 +5,7 @@ import android.os.AsyncTask;
 import java.util.List;
 
 import life.andre.sms487.logging.Logger;
-import life.andre.sms487.messageStorage.MessageContainer;
+import life.andre.sms487.messages.MessageContainer;
 
 class GetMessagesAction extends AsyncTask<GetMessagesParams, Void, List<MessageContainer>> {
     @Override

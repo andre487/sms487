@@ -2,7 +2,7 @@ package life.andre.sms487.services.smsDbHandler;
 
 import android.content.Intent;
 
-import life.andre.sms487.messageStorage.MessageStorage;
+import life.andre.sms487.messages.MessageStorage;
 
 class HandleMessageParams {
     Intent intent;

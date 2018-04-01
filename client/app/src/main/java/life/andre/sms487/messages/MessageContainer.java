@@ -1,16 +1,10 @@
-package life.andre.sms487.messageStorage;
-
-import android.telephony.SmsMessage;
+package life.andre.sms487.messages;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
+import life.andre.sms487.logging.Logger;
 
-@SuppressWarnings("WeakerAccess")
 public class MessageContainer {
     private String addressFrom;
     private String dateTime;
@@ -20,22 +14,6 @@ public class MessageContainer {
         this.addressFrom = addressFrom;
         this.dateTime = dateTime;
         this.body = body;
-    }
-
-    public MessageContainer(Object pdu, String format) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat(
-                "yyyy-MM-dd HH:mm Z",
-                new Locale("UTC")
-        );
-        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-
-        byte[] bPdu = (byte[]) pdu;
-        SmsMessage message = SmsMessage.createFromPdu(bPdu, format);
-        Date messageDate = new Date(message.getTimestampMillis());
-
-        this.addressFrom = message.getOriginatingAddress();
-        this.dateTime = dateFormat.format(messageDate);
-        this.body = message.getMessageBody();
     }
 
     public String toString() {
@@ -48,6 +26,7 @@ public class MessageContainer {
 
             return obj.toString();
         } catch (JSONException e) {
+            Logger.w("MessageContainer", e.toString());
             e.printStackTrace();
         }
 

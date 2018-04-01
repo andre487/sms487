@@ -10,8 +10,8 @@ import java.util.List;
 
 import life.andre.sms487.system.AppConstants;
 import life.andre.sms487.logging.Logger;
-import life.andre.sms487.messageStorage.MessageContainer;
-import life.andre.sms487.messageStorage.MessageStorage;
+import life.andre.sms487.messages.MessageContainer;
+import life.andre.sms487.messages.MessageStorage;
 
 class HandleMessageAction extends AsyncTask<HandleMessageParams, Void, Void> {
     @Override

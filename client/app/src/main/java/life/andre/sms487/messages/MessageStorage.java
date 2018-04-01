@@ -1,4 +1,4 @@
-package life.andre.sms487.messageStorage;
+package life.andre.sms487.messages;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Dao;

@@ -1,6 +1,6 @@
 package life.andre.sms487.activities.main;
 
-import life.andre.sms487.messageStorage.MessageStorage;
+import life.andre.sms487.messages.MessageStorage;
 
 class GetMessagesParams {
     MessageStorage messageStorage;
