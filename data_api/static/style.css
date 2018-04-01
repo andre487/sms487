@@ -1,0 +1,117 @@
+.page
+{
+    box-sizing: border-box;
+
+    margin: 0;
+    padding: 10px 0;
+
+    font-family: sans-serif;
+    font-size: 16px;
+    color: #444;
+}
+
+.page__header
+{
+    margin: 0 10px 15px 10px;
+
+    font-size: 28px;
+    color: #666;
+}
+
+.message-params
+{
+    display: flex;
+    align-items: center;
+    margin: 15px 0;
+
+    font-size: 15px;
+    background: #666;
+    color: white;
+
+    padding: 12px 10px;
+}
+
+.message-params__item_label
+{
+    margin-right: 5px;
+}
+
+.message-params__item + .message-params__item_label
+{
+    margin-left: 15px;
+}
+
+.message-params__item_limit
+{
+    box-sizing: border-box;
+    width: 50px;
+    font-size: 14px;
+    padding: 3px;
+
+    border: 1px solid #666;
+}
+
+.message-params__item_submit
+{
+    box-sizing: border-box;
+    margin-left: 15px;
+    padding: 0 10px;
+    font-size: 14px;
+}
+
+.message-params__control
+{
+    box-sizing: border-box;
+    height: 30px;
+}
+
+.message-params__device-id
+{
+    min-width: 100px;
+    font-size: 14px;
+}
+
+.message-list
+{
+    margin: 0 10px;
+    padding: 0;
+    list-style: none;
+}
+
+.message-list__item
+{
+    margin: 0;
+}
+
+.message-list__item + .message-list__item
+{
+    margin-top: 30px;
+}
+
+.message-view__header
+{
+    display: flex;
+    align-items: center;
+}
+
+.message-view__device-id
+{
+    color: #aaa;
+}
+
+.message-view__tel
+{
+    margin-left: 10px;
+    color: #666;
+}
+
+.message-view__content
+{
+    margin-top: 5px;
+}
+
+.message-view__date-time
+{
+    margin: 5px 0;
+    font-size: 12px;
+}

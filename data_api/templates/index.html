@@ -1,14 +1,18 @@
 <!DOCTYPE html>
 <html lang="ru">
     <head>
-        <title>SMS messages</title>
+        <title>SMS487</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     </head>
     <body class="page">
-        <h1 class="page__header">SMS487</h1>
+        <h1 class="page__header">Messages</h1>
 
         <form class="message-params">
-            <label for="message-params__device-id">Device ID:</label>
-            <select name="device_id" id="message-params__device-id">
+            <label for="message-params__device-id"
+                   class="message-params__item message-params__item_label">Device ID:</label>
+            <select name="device_id"
+                    id="message-params__device-id"
+                    class="message-params__item message-params__control message-params__device-id">
                 {% for device_id_data in device_ids %}
                 <option value="{{ device_id_data[0] }}" {% if device_id_data[1] %}selected{%endif%}>
                     {{ device_id_data[0] }}
@@ -16,21 +20,28 @@
                 {% endfor %}
             </select>
 
-            <label for="message-params__limit">Limit:</label>
-            <input name="limit" type="number" placeholder="Limit" id="message-params__limit" value="{{ limit }}">
+            <label for="message-params__limit"
+                   class="message-params__item message-params__item_label">Limit:</label>
+            <input name="limit" type="number" placeholder="Limit"
+                   id="message-params__limit"
+                   class="message-params__item message-params__item_limit message-params__control message-params__limit"
+                   value="{{ limit }}">
 
-            <button type="submit">Setup</button>
+            <button type="submit"
+                    class="message-params__item message-params__item_submit message-params__control message-params__setup">Setup</button>
         </form>
 
         <ul class="page__content message-list">
             {% for message in messages %}
             <li class="message-list__item message-view">
                 <div class="message-view__header">
-                    <div class="message-view__tel">{{ message.device_id }}</div>
+                    <div class="message-view__device-id">{{ message.device_id }}</div>
                     <div class="message-view__tel">{{ message.tel }}</div>
                 </div>
-                <div class="message-view__date-time">{{ message.date_time }}</div>
-                <div class="message-view__date-time">{{ message.text }}</div>
+                <div class="message-view__content">
+                    <div class="message-view__date-time">{{ message.date_time }}</div>
+                    <div class="message-view__text">{{ message.text }}</div>
+                </div>
             </li>
             {% endfor %}
         </ul>
