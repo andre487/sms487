@@ -22,6 +22,25 @@ if not correct_user_name or not correct_user_key:
 logging.basicConfig(format=LOG_FORMAT, level=LOG_LEVEL)
 
 
+def protected_from_brute_force(func):
+    @wraps(func)
+    def decorated(*args, **kwargs):
+        remote_addr = request.remote_addr
+        if not data_handler.is_remote_addr_clean(remote_addr):
+            logging.info('Addr %s is not clean, so ban', remote_addr)
+            data_handler.mark_auth_mistake(remote_addr)
+            return create_json_response([{'error': 'Banned'}], status=403)
+
+        result = func(*args, **kwargs)
+        if result.status.startswith('401') or result.status.startswith('403'):
+            logging.info('Addr %s has auth mistake: %s', remote_addr, result.status)
+            data_handler.mark_auth_mistake(remote_addr)
+
+        return result
+
+    return decorated
+
+
 def requires_auth(func):
     @wraps(func)
     def decorated(*args, **kwargs):
@@ -53,6 +72,7 @@ def create_user_key_hash(current_user_key):
 
 
 @app.route('/')
+@protected_from_brute_force
 @requires_auth
 def index():
     device_id = request.args.get('device_id', '').strip()
@@ -84,6 +104,7 @@ def index():
 
 
 @app.route('/get-sms')
+@protected_from_brute_force
 @requires_auth
 def get_sms():
     device_id = request.args.get('device_id', '').strip()
@@ -105,6 +126,7 @@ def get_sms():
 
 
 @app.route('/add-sms', methods=['POST'])
+@protected_from_brute_force
 @requires_auth
 def add_sms():
     try:
@@ -113,6 +135,14 @@ def add_sms():
     except data_handler.FormDataError as e:
         logging.info('Client error: %s', e)
         return create_json_response([{'error': e.message}], status=400)
+
+
+@app.route('/get-banned-addresses')
+@protected_from_brute_force
+@requires_auth
+def get_banned_addresses():
+    result = data_handler.get_banned_addresses()
+    return create_json_response(result)
 
 
 # noinspection PyUnusedLocal

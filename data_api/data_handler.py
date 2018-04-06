@@ -5,6 +5,8 @@ import re
 import pymongo
 
 CONNECT_TIMEOUT = 2000
+AUTH_MISTAKES_TO_BAN = int(os.environ.get('AUTH_MISTAKES_TO_BAN', 15))
+AUTH_BAN_TIME = int(os.environ.get('AUTH_BAN_TIME', 86400))
 
 mongo_host = os.environ.get('MONGO_HOST', 'localhost')
 mongo_port = int(os.environ.get('MONGO_PORT', 27017))
@@ -78,6 +80,33 @@ def get_device_ids():
     return device_ids
 
 
+def is_remote_addr_clean(remote_addr):
+    collection = _get_remote_addr_collection()
+
+    addr_data = collection.find_one({'remote_addr': remote_addr})
+    if addr_data is None:
+        return True
+
+    if addr_data['mistakes'] >= AUTH_MISTAKES_TO_BAN:
+        return False
+
+    return True
+
+
+def mark_auth_mistake(remote_addr):
+    collection = _get_remote_addr_collection()
+    result = collection.update({'remote_addr': remote_addr}, {'$inc': {'mistakes': 1}})
+
+    if not result['updatedExisting']:
+        collection.insert({'remote_addr': remote_addr, 'mistakes': 1})
+
+
+def get_banned_addresses():
+    collection = _get_remote_addr_collection()
+
+    return [doc['remote_addr'] for doc in collection.find({})]
+
+
 def _get_mongo_client():
     global _mongo_client
     if _mongo_client:
@@ -116,5 +145,16 @@ def _get_sms_collection():
         ('date_time', pymongo.DESCENDING),
         ('device_id', pymongo.ASCENDING),
     ], background=True)
+
+    return collection
+
+
+def _get_remote_addr_collection():
+    client = _get_mongo_client()
+    collection = client['sms487']['remote_addresses']
+
+    collection.create_index([
+        ('remote_addr', pymongo.ASCENDING),
+    ], background=True, unique=True, expireAfterSeconds=AUTH_BAN_TIME)
 
     return collection
