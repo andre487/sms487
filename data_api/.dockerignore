@@ -1,0 +1,13 @@
+.deploy
+.dev
+__pycache__
+*.pyc
+.dockerignore
+.gitignore
+endpoint-specs.yml
+requirements-dev.txt
+run-test
+start-dev
+Dockerfile
+**/.DS_Store
+**/*.iml

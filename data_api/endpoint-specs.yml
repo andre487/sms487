@@ -54,7 +54,7 @@
     - validators:
         - compare: {header: 'content-type', expected: 'application/json; charset=utf-8'}
         - extract_test: {jsonpath_mini: '0', test: 'exists'}
-        - compare: {jsonpath_mini: '0', expected: '127.0.0.1'}
+        - compare: {jsonpath_mini: '0', expected: '8.8.8.8'}
 
 - test:
     - name: Endpoint /add-sms

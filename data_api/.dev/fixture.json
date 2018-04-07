@@ -5,6 +5,6 @@
     {"date_time": "2018-01-01 00:03:00 +0000", "tel": "000", "device_id": "Test_3", "text": "Baz"}
   ],
   "remote_addresses": [
-    {"remote_addr": "127.0.0.1", "mistakes": 1}
+    {"remote_addr": "8.8.8.8", "mistakes": 1}
   ]
 }

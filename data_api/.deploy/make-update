@@ -2,12 +2,11 @@
 set -ex -o pipefail
 
 cur_dir="$(cd "$(dirname "$0")" && pwd)"
-cd "$cur_dir/.."
+project_dir="$cur_dir/.."
+cd "$project_dir"
 
 "$cur_dir/docker-build"
-set +e
 "$cur_dir/docker-test"
-set -e
 "$cur_dir/docker-push"
 
 ansible-playbook -i ~/.private/ansible-inventory.yml "$cur_dir/setup.yml"
