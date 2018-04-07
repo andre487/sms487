@@ -5,7 +5,7 @@ import re
 import pymongo
 
 CONNECT_TIMEOUT = 2000
-AUTH_MISTAKES_TO_BAN = int(os.environ.get('AUTH_MISTAKES_TO_BAN', 15))
+AUTH_MISTAKES_TO_BAN = int(os.environ.get('AUTH_MISTAKES_TO_BAN', 3))
 AUTH_BAN_TIME = int(os.environ.get('AUTH_BAN_TIME', 86400))
 
 mongo_host = os.environ.get('MONGO_HOST', 'localhost')

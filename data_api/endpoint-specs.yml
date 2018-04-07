@@ -153,9 +153,11 @@
         - compare: {jsonpath_mini: '0.error', expected: 'There is no text'}
 
 - test:
-    - name: Endpoint /get-sms – no auth
+    - name: Endpoint /get-sms – incorrect password
     - url: /get-sms
-    - expected_status: 401
+    - auth_username: 'test-user'
+    - auth_password: 'incorrect-password'
+    - expected_status: 403
 
 - test:
     - name: Endpoint /get-sms – ban
@@ -163,3 +165,32 @@
     - auth_username: 'test-user'
     - auth_password: 'password'
     - expected_status: 403
+    - validators:
+        - compare: {header: 'content-type', expected: 'application/json; charset=utf-8'}
+        - extract_test: {jsonpath_mini: '0.error', test: 'exists'}
+        - compare: {jsonpath_mini: '0.error', expected: 'Banned'}
+
+- test:
+    - name: Endpoint /get-banned-addresses – ban
+    - url: /get-banned-addresses
+    - auth_username: 'test-user'
+    - auth_password: 'password'
+    - expected_status: 403
+    - validators:
+        - compare: {header: 'content-type', expected: 'application/json; charset=utf-8'}
+        - extract_test: {jsonpath_mini: '0.error', test: 'exists'}
+        - compare: {jsonpath_mini: '0.error', expected: 'Banned'}
+
+- test:
+    - name: Endpoint /add-sms – ban
+    - url: /add-sms
+    - method: POST
+    - body: 'date_time=2018-01-01%2000%3A04%3A00%20%2B0000&tel=000&text=Quux'
+    - headers: {Content-Type: application/x-www-form-urlencoded}
+    - auth_username: 'test-user'
+    - auth_password: 'password'
+    - expected_status: 403
+    - validators:
+        - compare: {header: 'content-type', expected: 'application/json; charset=utf-8'}
+        - extract_test: {jsonpath_mini: '0.error', test: 'exists'}
+        - compare: {jsonpath_mini: '0.error', expected: 'Banned'}

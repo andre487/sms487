@@ -37,7 +37,7 @@ def protected_from_brute_force(func):
             return create_json_response([{'error': 'Banned'}], status=403)
 
         result = func(*args, **kwargs)
-        if result.status.startswith('401') or result.status.startswith('403'):
+        if result.status.startswith('403'):
             logging.info('Addr %s has auth mistake: %s', remote_addr, result.status)
             data_handler.mark_auth_mistake(remote_addr)
 
