@@ -15,8 +15,8 @@ RUN set -x && \
     find /tmp -type f -delete && \
     find /var/tmp -type f -delete
 
-ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
 
 ADD . /usr/local/bin/app
 CMD FLASK_APP=/usr/local/bin/app/api.py flask run --host=0.0.0.0

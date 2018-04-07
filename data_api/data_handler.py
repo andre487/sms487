@@ -1,12 +1,14 @@
 import logging
 import os
 import re
+from datetime import datetime, timedelta, timezone
 
 import pymongo
 
 CONNECT_TIMEOUT = 2000
 AUTH_MISTAKES_TO_BAN = int(os.environ.get('AUTH_MISTAKES_TO_BAN', 3))
 AUTH_BAN_TIME = int(os.environ.get('AUTH_BAN_TIME', 86400))
+TZ_OFFSET = int(os.environ.get('TZ_OFFSET', 3))
 
 mongo_host = os.environ.get('MONGO_HOST', 'localhost')
 mongo_port = int(os.environ.get('MONGO_PORT', 27017))
@@ -14,7 +16,8 @@ mongo_login = os.environ.get('MONGO_LOGIN')
 mongo_password = os.environ.get('MONGO_PASSWORD')
 mongo_db_name = os.environ.get('MONGO_DB_NAME', 'sms487')
 
-date_time_pattern = re.compile(r'^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}(?::\d{2})?(?:\s[+-]\d+)?$')
+date_time_pattern = re.compile(r'^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}(?::\d{2})?)(?:\s[+-]\d+)?$')
+time_zone = timezone(offset=timedelta(hours=TZ_OFFSET))
 
 _mongo_client = None
 
@@ -35,7 +38,7 @@ def get_sms(device_id, limit=None):
         [('date_time', pymongo.DESCENDING), ('device_id', pymongo.ASCENDING)]
     ).limit(limit)
 
-    return [dress_item(doc) for doc in cursor]
+    return [dress_sms_doc(doc) for doc in cursor]
 
 
 def add_sms(data):
@@ -67,11 +70,17 @@ def add_sms(data):
     })
 
 
-def dress_item(doc):
+def dress_sms_doc(doc):
     result = {}
+
     for n, v in doc.items():
         if not n.startswith('_'):
             result[n] = v
+
+    if 'date_time' in result:
+        date_time = datetime.strptime(result['date_time'], '%Y-%m-%d %H:%M:%S %z')
+        result['date_time'] = date_time.astimezone(time_zone).strftime('%d %b %Y %H:%M')
+
     return result
 
 

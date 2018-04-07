@@ -30,7 +30,7 @@
         - extract_test: {jsonpath_mini: '0.tel', test: 'exists'}
         - extract_test: {jsonpath_mini: '0.device_id', test: 'exists'}
         - extract_test: {jsonpath_mini: '0.text', test: 'exists'}
-        - compare: {jsonpath_mini: '0.date_time', expected: '2018-01-01 00:03:00 +0000'}
+        - compare: {jsonpath_mini: '0.date_time', expected: '01 Jan 2018 03:03'}
         - compare: {jsonpath_mini: '0.tel', expected: '000'}
         - compare: {jsonpath_mini: '0.device_id', expected: 'Test_3'}
         - compare: {jsonpath_mini: '0.text', expected: 'Baz'}
@@ -80,7 +80,7 @@
         - extract_test: {jsonpath_mini: '0.tel', test: 'exists'}
         - extract_test: {jsonpath_mini: '0.device_id', test: 'exists'}
         - extract_test: {jsonpath_mini: '0.text', test: 'exists'}
-        - compare: {jsonpath_mini: '0.date_time', expected: '2018-01-01 00:04:00 +0000'}
+        - compare: {jsonpath_mini: '0.date_time', expected: '01 Jan 2018 03:04'}
         - compare: {jsonpath_mini: '0.tel', expected: '000'}
         - compare: {jsonpath_mini: '0.device_id', expected: 'Test_4'}
         - compare: {jsonpath_mini: '0.text', expected: 'Quux'}
