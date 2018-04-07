@@ -171,6 +171,17 @@
         - compare: {jsonpath_mini: '0.error', expected: 'Banned'}
 
 - test:
+    - name: Home page – ban
+    - url: /
+    - auth_username: 'test-user'
+    - auth_password: 'password'
+    - expected_status: 403
+    - validators:
+        - compare: {header: 'content-type', expected: 'application/json; charset=utf-8'}
+        - extract_test: {jsonpath_mini: '0.error', test: 'exists'}
+        - compare: {jsonpath_mini: '0.error', expected: 'Banned'}
+
+- test:
     - name: Endpoint /get-banned-addresses – ban
     - url: /get-banned-addresses
     - auth_username: 'test-user'
