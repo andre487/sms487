@@ -4,33 +4,44 @@
         <title>SMS487</title>
         <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
         <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" />
+        <meta name="viewport" content="width=device-width,initial-scale=1">
     </head>
     <body class="page">
-        <h1 class="page__header">Messages</h1>
+        <div class="header">
+            <input type="checkbox" title="Params" class="header__params-checkbox" id="header__params-checkbox">
+            <label for="header__params-checkbox" class="header__params-label">
+                <svg fill="#f1f1f1" color="#f1f1f1" viewBox="0 0 24 24">
+                    <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"></path>
+                </svg>
+                <span class="header__params-label-area"></span>
+            </label>
 
-        <form class="message-params">
-            <label for="message-params__device-id"
-                   class="message-params__item message-params__item_label">Device ID:</label>
-            <select name="device_id"
-                    id="message-params__device-id"
-                    class="message-params__item message-params__control message-params__device-id">
-                {% for device_id_data in device_ids %}
-                <option value="{{ device_id_data[0] }}" {% if device_id_data[1] %}selected{%endif%}>
-                    {{ device_id_data[0] }}
-                </option>
-                {% endfor %}
-            </select>
+            <h1 class="page__header header__app-name">Messages</h1>
 
-            <label for="message-params__limit"
-                   class="message-params__item message-params__item_label">Limit:</label>
-            <input name="limit" type="number" placeholder="Limit"
-                   id="message-params__limit"
-                   class="message-params__item message-params__item_limit message-params__control message-params__limit"
-                   value="{{ limit }}">
+            <form class="message-params">
+                <label for="message-params__device-id"
+                       class="message-params__item message-params__item_label">Device ID:</label>
+                <select name="device_id"
+                        id="message-params__device-id"
+                        class="message-params__item message-params__control message-params__device-id">
+                    {% for device_id_data in device_ids %}
+                    <option value="{{ device_id_data[0] }}" {% if device_id_data[1] %}selected{%endif%}>
+                        {{ device_id_data[0] }}
+                    </option>
+                    {% endfor %}
+                </select>
 
-            <button type="submit"
-                    class="message-params__item message-params__item_submit message-params__control message-params__setup">Setup</button>
-        </form>
+                <label for="message-params__limit"
+                       class="message-params__item message-params__item_label">Limit:</label>
+                <input name="limit" type="number" placeholder="Limit"
+                       id="message-params__limit"
+                       class="message-params__item message-params__item_limit message-params__control message-params__limit"
+                       value="{{ limit }}">
+
+                <button type="submit"
+                        class="message-params__item message-params__item_submit message-params__control message-params__setup">Setup</button>
+            </form>
+        </div>
 
         <ul class="page__content message-list">
             {% for message in messages %}
