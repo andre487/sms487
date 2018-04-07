@@ -208,6 +208,7 @@
 
 .message-view
 {
+    max-width: 900px;
     background: #f1f1f1;
     padding: 5px;
     border-radius: 2px;
