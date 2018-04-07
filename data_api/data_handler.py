@@ -12,6 +12,7 @@ mongo_host = os.environ.get('MONGO_HOST', 'localhost')
 mongo_port = int(os.environ.get('MONGO_PORT', 27017))
 mongo_login = os.environ.get('MONGO_LOGIN')
 mongo_password = os.environ.get('MONGO_PASSWORD')
+mongo_db_name = os.environ.get('MONGO_DB_NAME', 'sms487')
 
 date_time_pattern = re.compile(r'^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}(?::\d{2})?(?:\s[+-]\d+)?$')
 
@@ -68,7 +69,7 @@ def add_sms(data):
 
 def dress_item(doc):
     result = {}
-    for n, v in doc.iteritems():
+    for n, v in doc.items():
         if not n.startswith('_'):
             result[n] = v
     return result
@@ -127,7 +128,7 @@ def _get_mongo_client():
 
 def _get_sms_collection():
     client = _get_mongo_client()
-    collection = client['sms487']['sms_items']
+    collection = client[mongo_db_name]['sms_items']
 
     collection.create_index([
         ('device_id', pymongo.ASCENDING),
@@ -151,7 +152,7 @@ def _get_sms_collection():
 
 def _get_remote_addr_collection():
     client = _get_mongo_client()
-    collection = client['sms487']['remote_addresses']
+    collection = client[mongo_db_name]['remote_addresses']
 
     collection.create_index([
         ('remote_addr', pymongo.ASCENDING),

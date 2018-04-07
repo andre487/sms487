@@ -1,0 +1,86 @@
+- config:
+    - testset: SMS487 API
+    - timeout: 1
+
+- test:
+    - name: Home page
+    - url: /
+    - auth_username: 'test-user'
+    - auth_password: 'password'
+    - validators:
+        - compare: {header: 'content-type', expected: 'text/html; charset=utf-8'}
+
+- test:
+    - name: Error 404 returns error message
+    - url: /404
+    - expected_status: 404
+    - validators:
+        - compare: {header: 'content-type', expected: 'application/json; charset=utf-8'}
+        - extract_test: {jsonpath_mini: '0.error', test: 'exists'}
+        - compare: {jsonpath_mini: '0.error', expected: 'Not found'}
+
+- test:
+    - name: Endpoint /get-sms
+    - url: /get-sms
+    - auth_username: 'test-user'
+    - auth_password: 'password'
+    - validators:
+        - compare: {header: 'content-type', expected: 'application/json; charset=utf-8'}
+        - extract_test: {jsonpath_mini: '0.date_time', test: 'exists'}
+        - extract_test: {jsonpath_mini: '0.tel', test: 'exists'}
+        - extract_test: {jsonpath_mini: '0.device_id', test: 'exists'}
+        - extract_test: {jsonpath_mini: '0.text', test: 'exists'}
+        - compare: {jsonpath_mini: '0.date_time', expected: '2018-01-01 00:03:00 +0000'}
+        - compare: {jsonpath_mini: '0.tel', expected: '000'}
+        - compare: {jsonpath_mini: '0.device_id', expected: 'Test_3'}
+        - compare: {jsonpath_mini: '0.text', expected: 'Baz'}
+
+- test:
+    - name: Endpoint /get-banned-addresses
+    - url: /get-banned-addresses
+    - auth_username: 'test-user'
+    - auth_password: 'password'
+    - validators:
+        - compare: {header: 'content-type', expected: 'application/json; charset=utf-8'}
+        - extract_test: {jsonpath_mini: '0', test: 'exists'}
+        - compare: {jsonpath_mini: '0', expected: '127.0.0.1'}
+
+- test:
+    - name: Endpoint /add-sms
+    - url: /add-sms
+    - method: POST
+    - body: 'date_time=2018-01-01%2000%3A04%3A00%20%2B0000&tel=000&device_id=Test_4&text=Quux'
+    - headers: {Content-Type: application/x-www-form-urlencoded}
+    - auth_username: 'test-user'
+    - auth_password: 'password'
+    - validators:
+        - compare: {header: 'content-type', expected: 'application/json; charset=utf-8'}
+        - extract_test: {jsonpath_mini: '0.status', test: 'exists'}
+        - compare: {jsonpath_mini: '0.status', expected: 'OK'}
+
+- test:
+    - name: Check added SMS
+    - url: /get-sms
+    - auth_username: 'test-user'
+    - auth_password: 'password'
+    - validators:
+        - compare: {header: 'content-type', expected: 'application/json; charset=utf-8'}
+        - extract_test: {jsonpath_mini: '0.date_time', test: 'exists'}
+        - extract_test: {jsonpath_mini: '0.tel', test: 'exists'}
+        - extract_test: {jsonpath_mini: '0.device_id', test: 'exists'}
+        - extract_test: {jsonpath_mini: '0.text', test: 'exists'}
+        - compare: {jsonpath_mini: '0.date_time', expected: '2018-01-01 00:04:00 +0000'}
+        - compare: {jsonpath_mini: '0.tel', expected: '000'}
+        - compare: {jsonpath_mini: '0.device_id', expected: 'Test_4'}
+        - compare: {jsonpath_mini: '0.text', expected: 'Quux'}
+
+- test:
+    - name: Endpoint /add-sms wrong method (GET)
+    - url: /add-sms
+    - auth_username: 'test-user'
+    - auth_password: 'password'
+    - expected_status: 405
+    - validators:
+        - compare: {header: 'content-type', expected: 'application/json; charset=utf-8'}
+        - extract_test: {jsonpath_mini: '0.error', test: 'exists'}
+        - compare: {jsonpath_mini: '0.error', expected: 'Method is not allowed'}

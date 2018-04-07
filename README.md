@@ -9,7 +9,7 @@ Android client located in `client` dir. Requires Android 8.
 
 ## Data API
 
-Flask server located in `data_api` dir.
+Flask server located in `data_api` dir. It uses Python 3.
 
 For working needs environment vars:
 

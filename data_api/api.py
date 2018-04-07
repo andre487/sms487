@@ -3,13 +3,18 @@ import hashlib
 import json
 import logging
 import os
+import sys
 from functools import wraps
 
 import data_handler
 from flask import request
 
+if sys.version_info[0] != 3:
+    raise EnvironmentError('Use Python 3')
+
 app = flask.Flask(__name__)
 
+# noinspection SpellCheckingInspection
 LOG_FORMAT = '%(asctime)s %(levelname)s\t%(message)s\t%(pathname)s:%(lineno)d %(funcName)s %(process)d %(threadName)s'
 LOG_LEVEL = os.environ.get('LOG_LEVEL', logging.INFO)
 
@@ -67,7 +72,7 @@ def requires_auth(func):
 
 def create_user_key_hash(current_user_key):
     h = hashlib.sha256()
-    h.update(current_user_key)
+    h.update(current_user_key.encode())
     return h.hexdigest()
 
 
@@ -91,7 +96,7 @@ def index():
         result = data_handler.get_sms(device_id, limit)
     except data_handler.FormDataError as e:
         logging.info('Client error: %s', e)
-        return create_html_response('error.html', {'code': 400, 'message': e.message}, status=400)
+        return create_html_response('error.html', {'code': 400, 'message': str(e)}, status=400)
 
     device_ids = [('All', not device_id)] + [
         (name, name == device_id) for name in data_handler.get_device_ids()
@@ -120,7 +125,7 @@ def get_sms():
         result = data_handler.get_sms(device_id, limit)
     except data_handler.FormDataError as e:
         logging.info('Client error: %s', e)
-        return create_json_response([{'error': e.message}], status=400)
+        return create_json_response([{'error': str(e)}], status=400)
 
     return create_json_response(result)
 
@@ -134,7 +139,7 @@ def add_sms():
         return create_json_response([{'status': 'OK'}])
     except data_handler.FormDataError as e:
         logging.info('Client error: %s', e)
-        return create_json_response([{'error': e.message}], status=400)
+        return create_json_response([{'error': str(e)}], status=400)
 
 
 @app.route('/get-banned-addresses')
@@ -163,7 +168,7 @@ def create_json_response(data, status=200, headers=None):
 
     resp = flask.make_response(json.dumps(data, ensure_ascii=False), status)
     resp.headers['content-type'] = 'application/json; charset=utf-8'
-    for name, val in headers.iteritems():
+    for name, val in headers.items():
         resp.headers[name] = val
 
     return resp
@@ -178,7 +183,7 @@ def create_html_response(template_name, data, status=200, headers=None):
     resp = flask.make_response(html, status)
     resp.headers['content-type'] = 'text/html; charset=utf-8'
 
-    for name, val in headers.iteritems():
+    for name, val in headers.items():
         resp.headers[name] = val
 
     return resp

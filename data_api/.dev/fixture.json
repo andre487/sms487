@@ -1,0 +1,10 @@
+{
+  "sms_items": [
+    {"date_time": "2018-01-01 00:00:00 +0000", "tel": "000", "device_id": "Test_1", "text": "Foo"},
+    {"date_time": "2018-01-01 00:01:00 +0000", "tel": "000", "device_id": "Test_2", "text": "Bar"},
+    {"date_time": "2018-01-01 00:03:00 +0000", "tel": "000", "device_id": "Test_3", "text": "Baz"}
+  ],
+  "remote_addresses": [
+    {"remote_addr": "127.0.0.1", "mistakes": 1}
+  ]
+}
