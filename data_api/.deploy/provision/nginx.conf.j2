@@ -15,14 +15,16 @@ server {
     add_header X-Content-Type-Options nosniff;
 
     location ~ \.(jpe?g|png|svg|css|js) {
+        proxy_pass http://127.0.0.1:{{ service_port }};
+        include proxy_params;
+
+        add_header Cache-Control "public, immutable, max-age=315360000";
         add_header X-XSS-Protection "1; mode=block";
         add_header Strict-Transport-Security "max-age=86400";
         add_header X-Frame-Options "SAMEORIGIN";
         add_header X-Content-Type-Options nosniff;
-        add_header Cache-Control public, immutable, max-age=315360000;
 
-        proxy_pass http://127.0.0.1:{{ service_port }};
-        include proxy_params;
+        proxy_hide_header Cache-Control;
     }
 
     location / {
