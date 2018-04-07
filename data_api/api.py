@@ -7,6 +7,7 @@ import sys
 from functools import wraps
 
 import data_handler
+import templating
 from flask import request
 
 if sys.version_info[0] != 3:
@@ -25,6 +26,7 @@ if not correct_user_name or not correct_user_key:
     raise EnvironmentError('You should provide SMS_USER_NAME and SMS_USER_KEY')
 
 logging.basicConfig(format=LOG_FORMAT, level=LOG_LEVEL)
+templating.setup_filters(app)
 
 
 def protected_from_brute_force(func):
