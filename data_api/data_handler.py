@@ -78,7 +78,10 @@ def dress_sms_doc(doc):
             result[n] = v
 
     if 'date_time' in result:
-        date_time = datetime.strptime(result['date_time'], '%Y-%m-%d %H:%M:%S %z')
+        try:
+            date_time = datetime.strptime(result['date_time'], '%Y-%m-%d %H:%M:%S %z')
+        except ValueError:
+            date_time = datetime.strptime(result['date_time'], '%Y-%m-%d %H:%M %z')
         result['date_time'] = date_time.astimezone(time_zone).strftime('%d %b %Y %H:%M')
 
     return result
