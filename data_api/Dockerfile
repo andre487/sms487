@@ -8,7 +8,7 @@ RUN set -x && \
     pip3 install --no-cache-dir -r /usr/local/bin/app/requirements.txt && \
     apt-get purge -y python3-pip && \
     apt-get autoremove -y && \
-    apt-get install -y python3 && \
+    apt-get install -y python3.6 libpython3.6 && \
     apt-get clean -y && \
     apt-get autoclean -y && \
     rm -f /var/cache/apt/*.bin && \
@@ -19,6 +19,6 @@ ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 
 ADD . /usr/local/bin/app
-CMD FLASK_APP=/usr/local/bin/app/api.py flask run --host=0.0.0.0
+CMD /usr/local/bin/app/start-prod
 
 EXPOSE 5000
