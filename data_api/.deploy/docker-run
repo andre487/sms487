@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -e -o pipefail
+
+cur_dir="$(cd "$(dirname "$0")" && pwd)"
+project_dir="$cur_dir/.."
+
+source "$project_dir/.dev/common.sh"
+
+docker run --rm --name sms487-server-test --link dev-mongo \
+    -e 'FLASK_DEBUG=1' \
+    -e 'MONGO_HOST=dev-mongo' \
+    -e "SMS_USER_NAME=$SMS_USER_NAME" \
+    -e "SMS_USER_KEY=$SMS_USER_KEY" \
+    -e "MONGO_DB_NAME=$MONGO_DB_NAME"\
+    -e "AUTH_MISTAKES_TO_BAN=$AUTH_MISTAKES_TO_BAN" \
+    -p "127.0.0.1:5000:5000" \
+    -ti \
+    'andre487/sms487-api:latest'
