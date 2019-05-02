@@ -7,9 +7,14 @@ project_dir="$cur_dir/.."
 source "$project_dir/.dev/common.sh"
 
 docker run --rm --name sms487-server-test --link dev-mongo \
+    -v "$HOME/.private:/usr/local/private" \
+    -e 'AUTH_PUBLIC_KEY_FILE=/usr/local/private/auth487/public_key.pem' \
+    -e 'FLASK_APP=app.py' \
+    -e 'FLASK_ENV=dev' \
     -e 'FLASK_DEBUG=1' \
     -e 'MONGO_HOST=dev-mongo' \
-    -e "MONGO_DB_NAME=$MONGO_DB_NAME"\
+    -e "MONGO_DB_NAME=$MONGO_DB_NAME" \
+    -e "AUTH_MONGO_DB_NAME=$MONGO_DB_NAME" \
     -p "127.0.0.1:5000:5000" \
     -ti \
     'andre487/sms487-api:latest'

@@ -9,21 +9,28 @@ export MONGO_DB_NAME='sms487_docker_test'
 web_port=5001
 
 docker run -d --rm --name sms487-server-test --link dev-mongo \
+    -v "$HOME/.private:/usr/local/private" \
+    -e 'AUTH_PUBLIC_KEY_FILE=/usr/local/private/auth487/public_key.pem' \
+    -e 'FLASK_APP=app.py' \
+    -e 'FLASK_ENV=dev' \
     -e 'FLASK_DEBUG=1' \
     -e 'MONGO_HOST=dev-mongo' \
-    -e "SMS_USER_NAME=$SMS_USER_NAME" \
-    -e "SMS_USER_KEY=$SMS_USER_KEY" \
-    -e "MONGO_DB_NAME=$MONGO_DB_NAME"\
-    -e "AUTH_MISTAKES_TO_BAN=$AUTH_MISTAKES_TO_BAN" \
+    -e "MONGO_DB_NAME=$MONGO_DB_NAME" \
+    -e "AUTH_MONGO_DB_NAME=$MONGO_DB_NAME" \
     -p "127.0.0.1:$web_port:5000" \
     -ti \
     'andre487/sms487-api:latest' > /dev/null
 
 sleep 2
 
+test_auth_token="$(cat "$project_dir/.dev/test-auth-token.txt")"
+test_vars="{
+    'test_auth_token': '$test_auth_token',
+}"
+
 "$dev_env/bin/python" "$project_dir/.dev/manage-db.py" setup
 set +e
-"$dev_env/bin/pyresttest" "http://127.0.0.1:$web_port" "$project_dir/endpoint-specs.yml"
+"$dev_env/bin/pyresttest" "http://127.0.0.1:$web_port" "$project_dir/endpoint-specs.yml" --vars="$test_vars"
 result="$?"
 set -e
 "$dev_env/bin/python" "$project_dir/.dev/manage-db.py" tear-down
