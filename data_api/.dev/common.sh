@@ -6,7 +6,9 @@ export FLASK_APP=api.py
 export FLASK_ENV=dev
 export FLASK_DEBUG=1
 
-export AUTH_PUBLIC_KEY_FILE="$HOME/.private/auth487/public_key.pem"
+if [[ -z "$NO_PUBLIC_KEY_FILE" ]]; then
+    export AUTH_PUBLIC_KEY_FILE="$HOME/.private/auth487/public_key.pem"
+fi
 export AUTH_DOMAIN="https://auth.andre.life"
 
 if [[ -n "$(lsof -i :5487)" ]]; then
