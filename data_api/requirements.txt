@@ -1,3 +1,4 @@
-Flask==0.12.2
-pymongo==3.6.1
-uWSGI==2.0.17
+Flask==1.0.2
+pymongo==3.8.0
+uWSGI==2.0.18
+git+https://github.com/andre487/auth487.git@c345502#egg=auth487&subdirectory=lib

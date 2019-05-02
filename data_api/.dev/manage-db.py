@@ -5,11 +5,12 @@ import os
 
 import pymongo
 
-mongo_host = os.environ.get('MONGO_HOST', 'localhost')
-mongo_port = int(os.environ.get('MONGO_PORT', 27017))
-mongo_login = os.environ.get('MONGO_LOGIN')
-mongo_password = os.environ.get('MONGO_PASSWORD')
-mongo_db_name = os.environ.get('MONGO_DB_NAME', 'sms487_test')
+MONGO_HOST = os.environ.get('MONGO_HOST', 'localhost')
+MONGO_PORT = int(os.environ.get('MONGO_PORT', 27017))
+MONGO_LOGIN = os.environ.get('MONGO_LOGIN')
+MONGO_PASSWORD = os.environ.get('MONGO_PASSWORD')
+MONGO_DB_NAME = os.environ.get('MONGO_DB_NAME', 'sms487_test')
+AUTH_MONGO_DB_NAME = os.environ.get('AUTH_MONGO_DB_NAME', 'sms487_test')
 
 logging.basicConfig(level=logging.INFO)
 
@@ -29,7 +30,7 @@ def main():
 def setup():
     tear_down()
 
-    logging.info('Setting up DB %s', mongo_db_name)
+    logging.info('Setting up DB %s', MONGO_DB_NAME)
 
     fixture_file = os.path.join(os.path.dirname(__file__), 'fixture.json')
     with open(fixture_file) as fd:
@@ -45,23 +46,24 @@ def setup():
 
 
 def tear_down():
-    logging.info('Tearing down DB %s', mongo_db_name)
+    logging.info('Tearing down DB %s', MONGO_DB_NAME)
 
     client = get_mongo_client()
-    client.drop_database(mongo_db_name)
+    client.drop_database(MONGO_DB_NAME)
+    client.drop_database(AUTH_MONGO_DB_NAME)
 
 
 def get_mongo_db():
     mongo_client = get_mongo_client()
-    return mongo_client[mongo_db_name]
+    return mongo_client[MONGO_DB_NAME]
 
 
 def get_mongo_client():
     return pymongo.MongoClient(
-        mongo_host, mongo_port,
+        MONGO_HOST, MONGO_PORT,
         connect=True,
-        username=mongo_login,
-        password=mongo_password,
+        username=MONGO_LOGIN,
+        password=MONGO_PASSWORD,
     )
 
 

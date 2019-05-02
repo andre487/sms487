@@ -1,12 +1,11 @@
 - config:
-    - testset: SMS487 API
+    - testset: SMS 487 API
     - timeout: 1
 
 - test:
     - name: Home page
     - url: /
-    - auth_username: 'test-user'
-    - auth_password: 'password'
+    - headers:  {template: {'cookie': 'AUTH_TOKEN=$test_auth_token'}}
     - validators:
         - compare: {header: 'content-type', expected: 'text/html; charset=utf-8'}
 
@@ -22,8 +21,7 @@
 - test:
     - name: Endpoint /get-sms
     - url: /get-sms
-    - auth_username: 'test-user'
-    - auth_password: 'password'
+    - headers:  {template: {'cookie': 'AUTH_TOKEN=$test_auth_token'}}
     - validators:
         - compare: {header: 'content-type', expected: 'application/json; charset=utf-8'}
         - extract_test: {jsonpath_mini: '0.date_time', test: 'exists'}
@@ -38,8 +36,7 @@
 - test:
     - name: Endpoint /get-sms – incorrect limit
     - url: /get-sms?limit=qwerty
-    - auth_username: 'test-user'
-    - auth_password: 'password'
+    - headers:  {template: {'cookie': 'AUTH_TOKEN=$test_auth_token'}}
     - expected_status: 400
     - validators:
         - compare: {header: 'content-type', expected: 'application/json; charset=utf-8'}
@@ -47,21 +44,13 @@
         - compare: {jsonpath_mini: '0.error', expected: 'Incorrect limit'}
 
 - test:
-    - name: Endpoint /get-banned-addresses
-    - url: /get-banned-addresses
-    - auth_username: 'test-user'
-    - auth_password: 'password'
-    - validators:
-        - compare: {header: 'content-type', expected: 'application/json; charset=utf-8'}
-        - extract_test: {jsonpath_mini: '0', test: 'exists'}
-        - compare: {jsonpath_mini: '0', expected: '8.8.8.8'}
-
-- test:
     - name: Endpoint /add-sms
     - url: /add-sms
     - method: POST
     - body: 'date_time=2018-01-01%2000%3A04%3A00%20%2B0000&tel=000&device_id=Test_4&text=Quux'
-    - headers: {Content-Type: application/x-www-form-urlencoded}
+    - headers:
+        - template: {cookie: 'AUTH_TOKEN=$test_auth_token'}
+        - content-type: 'application/x-www-form-urlencoded'
     - auth_username: 'test-user'
     - auth_password: 'password'
     - validators:
@@ -72,8 +61,7 @@
 - test:
     - name: Check added SMS
     - url: /get-sms
-    - auth_username: 'test-user'
-    - auth_password: 'password'
+    - headers:  {template: {'cookie': 'AUTH_TOKEN=$test_auth_token'}}
     - validators:
         - compare: {header: 'content-type', expected: 'application/json; charset=utf-8'}
         - extract_test: {jsonpath_mini: '0.date_time', test: 'exists'}
@@ -88,8 +76,7 @@
 - test:
     - name: Endpoint /add-sms – wrong method (GET)
     - url: /add-sms
-    - auth_username: 'test-user'
-    - auth_password: 'password'
+    - headers:  {template: {'cookie': 'AUTH_TOKEN=$test_auth_token'}}
     - expected_status: 405
     - validators:
         - compare: {header: 'content-type', expected: 'application/json; charset=utf-8'}
@@ -101,7 +88,9 @@
     - url: /add-sms
     - method: POST
     - body: 'date_time=2018-01-01%2000%3A04%3A00%20%2B0000&tel=000&text=Quux'
-    - headers: {Content-Type: application/x-www-form-urlencoded}
+    - headers:
+        - template: {cookie: 'AUTH_TOKEN=$test_auth_token'}
+        - content-type: 'application/x-www-form-urlencoded'
     - auth_username: 'test-user'
     - auth_password: 'password'
     - expected_status: 400
@@ -115,9 +104,9 @@
     - url: /add-sms
     - method: POST
     - body: 'date_time=2018-01-01%2000%3A04%3A00%20%2B0000&device_id=Test_4&text=Quux'
-    - headers: {Content-Type: application/x-www-form-urlencoded}
-    - auth_username: 'test-user'
-    - auth_password: 'password'
+    - headers:
+        - template: {cookie: 'AUTH_TOKEN=$test_auth_token'}
+        - content-type: 'application/x-www-form-urlencoded'
     - expected_status: 400
     - validators:
         - compare: {header: 'content-type', expected: 'application/json; charset=utf-8'}
@@ -129,9 +118,9 @@
     - url: /add-sms
     - method: POST
     - body: 'tel=000&device_id=Test_4&text=Quux'
-    - headers: {Content-Type: application/x-www-form-urlencoded}
-    - auth_username: 'test-user'
-    - auth_password: 'password'
+    - headers:
+        - template: {cookie: 'AUTH_TOKEN=$test_auth_token'}
+        - content-type: 'application/x-www-form-urlencoded'
     - expected_status: 400
     - validators:
         - compare: {header: 'content-type', expected: 'application/json; charset=utf-8'}
@@ -143,9 +132,9 @@
     - url: /add-sms
     - method: POST
     - body: 'date_time=2018-01-01%2000%3A04%3A00%20%2B0000&tel=000&device_id=Test_4'
-    - headers: {Content-Type: application/x-www-form-urlencoded}
-    - auth_username: 'test-user'
-    - auth_password: 'password'
+    - headers:
+        - template: {cookie: 'AUTH_TOKEN=$test_auth_token'}
+        - content-type: 'application/x-www-form-urlencoded'
     - expected_status: 400
     - validators:
         - compare: {header: 'content-type', expected: 'application/json; charset=utf-8'}
@@ -153,55 +142,18 @@
         - compare: {jsonpath_mini: '0.error', expected: 'There is no text'}
 
 - test:
-    - name: Endpoint /get-sms – incorrect password
+    - name: Endpoint /get-sms – incorrect token
     - url: /get-sms
-    - auth_username: 'test-user'
-    - auth_password: 'incorrect-password'
+    - headers:  {template: {'cookie': 'AUTH_TOKEN=1$test_auth_token'}}
     - expected_status: 403
 
 - test:
-    - name: Endpoint /get-sms – ban
-    - url: /get-sms
-    - auth_username: 'test-user'
-    - auth_password: 'password'
-    - expected_status: 403
-    - validators:
-        - compare: {header: 'content-type', expected: 'application/json; charset=utf-8'}
-        - extract_test: {jsonpath_mini: '0.error', test: 'exists'}
-        - compare: {jsonpath_mini: '0.error', expected: 'Banned'}
-
-- test:
-    - name: Home page – ban
-    - url: /
-    - auth_username: 'test-user'
-    - auth_password: 'password'
-    - expected_status: 403
-    - validators:
-        - compare: {header: 'content-type', expected: 'application/json; charset=utf-8'}
-        - extract_test: {jsonpath_mini: '0.error', test: 'exists'}
-        - compare: {jsonpath_mini: '0.error', expected: 'Banned'}
-
-- test:
-    - name: Endpoint /get-banned-addresses – ban
-    - url: /get-banned-addresses
-    - auth_username: 'test-user'
-    - auth_password: 'password'
-    - expected_status: 403
-    - validators:
-        - compare: {header: 'content-type', expected: 'application/json; charset=utf-8'}
-        - extract_test: {jsonpath_mini: '0.error', test: 'exists'}
-        - compare: {jsonpath_mini: '0.error', expected: 'Banned'}
-
-- test:
-    - name: Endpoint /add-sms – ban
+    - name: Endpoint /add-sms – incorrect token
     - url: /add-sms
     - method: POST
-    - body: 'date_time=2018-01-01%2000%3A04%3A00%20%2B0000&tel=000&text=Quux'
-    - headers: {Content-Type: application/x-www-form-urlencoded}
-    - auth_username: 'test-user'
-    - auth_password: 'password'
+    - body: 'date_time=2018-01-01%2000%3A04%3A00%20%2B0000&tel=000&device_id=Test_4'
+    - headers:
+        - template: {cookie: 'AUTH_TOKEN=1$test_auth_token'}
+        - content-type: 'application/x-www-form-urlencoded'
     - expected_status: 403
-    - validators:
-        - compare: {header: 'content-type', expected: 'application/json; charset=utf-8'}
-        - extract_test: {jsonpath_mini: '0.error', test: 'exists'}
-        - compare: {jsonpath_mini: '0.error', expected: 'Banned'}
+

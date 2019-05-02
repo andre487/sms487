@@ -9,10 +9,20 @@ source "$cur_dir/.dev/common.sh"
 server_pid="$!"
 sleep 1
 
+proc_status="$(ps "$server_pid")"
+if [[ -z "$proc_status" ]]; then
+    exit 1
+fi
+
+test_auth_token="$(cat "$cur_dir/.dev/test-auth-token.txt")"
+test_vars="{
+    'test_auth_token': '$test_auth_token',
+}"
+
 "$dev_env/bin/python" "$cur_dir/.dev/manage-db.py" setup
 
 set +e
-"$dev_env/bin/pyresttest" "http://127.0.0.1:5000" endpoint-specs.yml
+"$dev_env/bin/pyresttest" "http://127.0.0.1:5000" endpoint-specs.yml --vars="$test_vars"
 result="$?"
 set -e
 
