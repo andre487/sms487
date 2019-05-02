@@ -148,6 +148,18 @@
     - expected_status: 403
 
 - test:
+    - name: Endpoint /get-sms – np auth
+    - url: /get-sms
+    - expected_status: 302
+    - validators:
+        - compare: {header: 'content-type', expected: 'text/html; charset=utf-8'}
+        - compare:
+            header: 'location'
+            expected:
+              template: 'https://auth.andre.life?return-path=http%3A//127.0.0.1%3A$web_port/get-sms'
+        - compare: {raw_body: '', comparator: 'contains', expected: 'Redirecting...'}
+
+- test:
     - name: Endpoint /add-sms – incorrect token
     - url: /add-sms
     - method: POST

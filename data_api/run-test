@@ -14,15 +14,17 @@ if [[ -z "$proc_status" ]]; then
     exit 1
 fi
 
+web_port=5000
 test_auth_token="$(cat "$cur_dir/.dev/test-auth-token.txt")"
 test_vars="{
     'test_auth_token': '$test_auth_token',
+    'web_port': '$web_port',
 }"
 
 "$dev_env/bin/python" "$cur_dir/.dev/manage-db.py" setup
 
 set +e
-"$dev_env/bin/pyresttest" "http://127.0.0.1:5000" endpoint-specs.yml --vars="$test_vars"
+"$dev_env/bin/pyresttest" "http://127.0.0.1:$web_port" endpoint-specs.yml --vars="$test_vars"
 result="$?"
 set -e
 

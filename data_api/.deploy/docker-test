@@ -17,6 +17,7 @@ docker run -d --rm --name sms487-server-test --link dev-mongo \
     -e 'MONGO_HOST=dev-mongo' \
     -e "MONGO_DB_NAME=$MONGO_DB_NAME" \
     -e "AUTH_MONGO_DB_NAME=$MONGO_DB_NAME" \
+    -e "AUTH_DOMAIN=$AUTH_DOMAIN" \
     -p "127.0.0.1:$web_port:5000" \
     -ti \
     'andre487/sms487-api:latest' > /dev/null
@@ -26,6 +27,7 @@ sleep 2
 test_auth_token="$(cat "$project_dir/.dev/test-auth-token.txt")"
 test_vars="{
     'test_auth_token': '$test_auth_token',
+    'web_port': '$web_port',
 }"
 
 "$dev_env/bin/python" "$project_dir/.dev/manage-db.py" setup
