@@ -7,7 +7,7 @@
     container_name: sms487-api
     network_name: sms487_net
     mongo_name: common-mongo
-    service_port: 10200
+    service_port: 10500
 
   tasks:
     - name: Check SSL certificates
