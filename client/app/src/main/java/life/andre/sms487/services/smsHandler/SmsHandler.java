@@ -23,6 +23,9 @@ public class SmsHandler extends Service {
         appSettings = new AppSettings(this);
         messageStorage = new MessageStorage(this);
         smsApi = new SmsApi(this, appSettings.getServerUrl(), appSettings.getServerKey());
+
+        SmsRequestListener smsRequestListener = new SmsRequestListener(messageStorage);
+        smsApi.addRequestHandledListener(smsRequestListener);
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {

@@ -22,6 +22,9 @@ public class MessageStorage {
 
         @Insert
         long insert(Message message);
+
+        @Query("UPDATE message SET is_sent=1 WHERE id=:insertId")
+        void markSent(long insertId);
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -69,14 +72,8 @@ public class MessageStorage {
         return messageDao.insert(entry);
     }
 
-    public List<Long> addMessages(List<MessageContainer> messages) {
-        ArrayList<Long> insertIds = new ArrayList<>();
-
-        for (MessageContainer message : messages) {
-            insertIds.add(addMessage(message));
-        }
-
-        return insertIds;
+    public void markSent(long insertId) {
+        messageDao.markSent(insertId);
     }
 
     public List<MessageContainer> getMessagesTail() {

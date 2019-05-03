@@ -51,12 +51,14 @@ class SendSmsAction extends AsyncTask<SendSmsParams, Void, Void> {
             SmsApi smsApi, MessageStorage messageStorage,
             String deviceId, List<String> intentData
     ) {
-        for (MessageContainer message : extractMessages(intentData)) {
-            messageStorage.addMessage(message);
+        List<MessageContainer> extractedMessages = extractMessages(intentData);
+
+        for (MessageContainer message : extractedMessages) {
+            long insertId = messageStorage.addMessage(message);
 
             smsApi.addSms(
                     deviceId, message.getDateTime(),
-                    message.getAddressFrom(), message.getBody()
+                    message.getAddressFrom(), message.getBody(), insertId
             );
         }
     }
