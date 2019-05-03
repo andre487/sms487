@@ -3,7 +3,6 @@ package life.andre.sms487.network;
 import java.util.HashMap;
 import java.util.Map;
 
-import android.util.Base64;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -22,15 +21,18 @@ class AddSmsApiRequest extends StringRequest {
     protected static class ApiErrorListener implements Response.ErrorListener {
         @Override
         public void onErrorResponse(VolleyError error) {
-            Logger.w("AddSmsApiRequest", "Response error: " + error.toString());
+            Logger.w(
+                    "AddSmsApiRequest",
+                    "Response error: " + error.toString() + ": " + error.getMessage()
+            );
         }
     }
 
     private Map<String, String> requestParams;
-    private String authHeaderString;
+    private String cookie;
 
     AddSmsApiRequest(
-            String serverUrl, String userName, String serverKey,
+            String serverUrl, String serverKey,
             Map<String, String> requestParams
     ) {
         super(
@@ -41,16 +43,14 @@ class AddSmsApiRequest extends StringRequest {
         );
 
         this.requestParams = requestParams;
-
-        byte[] authData = (userName + ':' + serverKey).getBytes();
-        authHeaderString = "Basic " + Base64.encodeToString(authData, Base64.DEFAULT);
+        this.cookie = "AUTH_TOKEN=" + serverKey;
     }
 
     @Override
     public Map<String, String> getHeaders() {
         Map<String, String> headers = new HashMap<>();
 
-        headers.put("Authorization", authHeaderString);
+        headers.put("Cookie", cookie);
 
         return headers;
     }

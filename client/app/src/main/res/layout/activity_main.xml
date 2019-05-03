@@ -34,14 +34,6 @@
         android:layout_marginTop="12dp">
 
         <android.support.v7.widget.AppCompatEditText
-            android:id="@+id/userNameInput"
-            android:layout_weight="1"
-            android:layout_height="48dp"
-            android:layout_width="wrap_content"
-            android:hint="@string/user_name"
-            android:inputType="textPassword" />
-
-        <android.support.v7.widget.AppCompatEditText
             android:id="@+id/serverKeyInput"
             android:layout_weight="2"
             android:layout_height="48dp"

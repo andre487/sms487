@@ -22,8 +22,6 @@ class SaveSettingsAction extends AsyncTask<SaveSettingsParams, Void, String> {
         switch (mainParams.key) {
             case SettingNames.SERVER_URL:
                 return saveServerUrl(mainParams);
-            case SettingNames.USER_NAME:
-                return saveUserName(mainParams);
             case SettingNames.SERVER_KEY:
                 return saveServerKey(mainParams);
         }
@@ -45,17 +43,6 @@ class SaveSettingsAction extends AsyncTask<SaveSettingsParams, Void, String> {
         params.sharedPreferences.edit().putString(SettingNames.SERVER_URL, params.value).apply();
 
         return "Server URL saved";
-    }
-
-    private String saveUserName(SaveSettingsParams params) {
-        String userName = params.value.trim();
-        if (userName.length() == 0) {
-            return "Error: user name is empty";
-        }
-
-        params.sharedPreferences.edit().putString(SettingNames.USER_NAME, userName).apply();
-
-        return "User name saved";
     }
 
     private String saveServerKey(SaveSettingsParams params) {

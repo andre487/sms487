@@ -24,6 +24,7 @@ public class MessageStorage {
         void insert(Message message);
     }
 
+    @SuppressWarnings("WeakerAccess")
     @Entity
     public static class Message {
         @PrimaryKey(autoGenerate = true)
@@ -39,6 +40,7 @@ public class MessageStorage {
         public String body;
     }
 
+    @SuppressWarnings("WeakerAccess")
     @Database(entities = {Message.class}, version = 1, exportSchema = false)
     public static abstract class AppDatabase extends RoomDatabase {
         public abstract MessageDao messageDao();

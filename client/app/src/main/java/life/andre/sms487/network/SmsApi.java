@@ -12,14 +12,12 @@ import life.andre.sms487.logging.Logger;
 
 public class SmsApi {
     private String serverUrl;
-    private String userName;
     private String serverKey;
 
     private RequestQueue requestQueue;
 
-    public SmsApi(Context ctx, String serverUrl, String userName, String serverKey) {
+    public SmsApi(Context ctx, String serverUrl, String serverKey) {
         this.serverUrl = serverUrl;
-        this.userName = userName;
         this.serverKey = serverKey;
 
         this.requestQueue = Volley.newRequestQueue(ctx);
@@ -31,7 +29,7 @@ public class SmsApi {
                 "Sending SMS: " + deviceId + ", " + dateTime + ", " + tel + ", " + text
         );
 
-        if (serverUrl.length() == 0 || userName.length() == 0 || serverKey.length() == 0) {
+        if (serverUrl.length() == 0 || serverKey.length() == 0) {
             Logger.i("SmsApi", "Server params are empty, skip sending");
             return;
         }
@@ -43,7 +41,7 @@ public class SmsApi {
         requestParams.put("text", text);
 
         AddSmsApiRequest request = new AddSmsApiRequest(
-                serverUrl, userName, serverKey, requestParams
+                serverUrl, serverKey, requestParams
         );
 
         this.requestQueue.add(request);

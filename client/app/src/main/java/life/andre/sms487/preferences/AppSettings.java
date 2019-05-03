@@ -41,25 +41,6 @@ public class AppSettings {
         return sharedPreferences.getString(SettingNames.SERVER_URL, "");
     }
 
-    public void saveUserName(String userName) {
-        SaveSettingsParams params = new SaveSettingsParams(
-                sharedPreferences, SettingNames.USER_NAME, userName
-        );
-
-        SaveSettingsAction action = new SaveSettingsAction();
-        action.execute(params);
-
-        try {
-            showMessage(action.get());
-        } catch (InterruptedException | ExecutionException e) {
-            showMessage(e.toString());
-        }
-    }
-
-    public String getUserName() {
-        return sharedPreferences.getString(SettingNames.USER_NAME, "");
-    }
-
     public void saveServerKey(String serverKey) {
         SaveSettingsParams params = new SaveSettingsParams(
                 sharedPreferences, SettingNames.SERVER_KEY, serverKey

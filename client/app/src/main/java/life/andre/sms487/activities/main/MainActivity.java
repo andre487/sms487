@@ -26,9 +26,6 @@ public class MainActivity extends AppCompatActivity {
     private MessageStorage messageStorage;
     private AppSettings appSettings;
 
-    @Nullable @BindView(R.id.userNameInput)
-    AppCompatEditText userNameInput;
-
     @Nullable @BindView(R.id.serverKeyInput)
     AppCompatEditText serverKeyInput;
 
@@ -87,17 +84,13 @@ public class MainActivity extends AppCompatActivity {
         showLogs(logs);
     }
 
+    @SuppressWarnings("unused")
     @OnClick(R.id.serverKeySave)
     void saveServerKey() {
-        if (userNameInput == null) {
-            return;
-        }
-
         if (serverKeyInput == null) {
             return;
         }
 
-        appSettings.saveUserName(userNameInput.getText().toString());
         appSettings.saveServerKey(serverKeyInput.getText().toString());
     }
 
@@ -109,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
         serverUrlInput.setText(appSettings.getServerUrl());
     }
 
+    @SuppressWarnings("unused")
     @OnClick(R.id.serverUrlSave)
     void saveServerUrl() {
         if (serverUrlInput == null) {
@@ -119,14 +113,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void showServerKey() {
-        if (userNameInput == null) {
-            return;
-        }
         if (serverKeyInput == null) {
             return;
         }
 
-        userNameInput.setText(appSettings.getUserName());
         serverKeyInput.setText(appSettings.getServerKey());
     }
 

@@ -24,7 +24,6 @@ public class SmsApiSender extends Service {
         SmsApi smsApi = new SmsApi(
                 this,
                 appSettings.getServerUrl(),
-                appSettings.getUserName(),
                 appSettings.getServerKey()
         );
 
