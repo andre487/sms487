@@ -22,7 +22,7 @@ public class SmsHandler extends Service {
 
         appSettings = new AppSettings(this);
         messageStorage = new MessageStorage(this);
-        smsApi = new SmsApi(this, appSettings.getServerUrl(), appSettings.getServerKey());
+        smsApi = new SmsApi(this, appSettings);
 
         SmsRequestListener smsRequestListener = new SmsRequestListener(messageStorage);
         smsApi.addRequestHandledListener(smsRequestListener);

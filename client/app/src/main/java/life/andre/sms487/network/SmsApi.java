@@ -11,23 +11,22 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 
 import life.andre.sms487.logging.Logger;
+import life.andre.sms487.preferences.AppSettings;
 
 public class SmsApi {
+    private AppSettings appSettings;
+
     public interface RequestHandledListener {
         void onSuccess(long dbId);
 
         void onError(long errorMessage, String dbId);
     }
 
-    private String serverUrl;
-    private String serverKey;
-
     private RequestQueue requestQueue;
     private List<RequestHandledListener> requestHandledListeners = new ArrayList<>();
 
-    public SmsApi(Context ctx, String serverUrl, String serverKey) {
-        this.serverUrl = serverUrl;
-        this.serverKey = serverKey;
+    public SmsApi(Context ctx, AppSettings appSettings) {
+        this.appSettings = appSettings;
 
         this.requestQueue = Volley.newRequestQueue(ctx);
     }
@@ -41,6 +40,9 @@ public class SmsApi {
                 "SmsApi",
                 "Sending SMS: " + deviceId + ", " + dateTime + ", " + tel + ", " + text
         );
+
+        String serverUrl = appSettings.getServerUrl();
+        String serverKey = appSettings.getServerKey();
 
         if (serverUrl.length() == 0 || serverKey.length() == 0) {
             Logger.i("SmsApi", "Server params are empty, skip sending");
