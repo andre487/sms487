@@ -1,5 +1,6 @@
 package life.andre.sms487.activities.main;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -10,6 +11,7 @@ import life.andre.sms487.R;
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.messages.MessageStorage;
+import life.andre.sms487.network.SmsApi;
 import life.andre.sms487.preferences.AppSettings;
 
 import java.util.List;
@@ -18,12 +20,14 @@ import java.util.concurrent.ExecutionException;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import life.andre.sms487.services.smsHandler.SmsRequestListener;
 import life.andre.sms487.system.PermissionsChecker;
 
 public class MainActivity extends AppCompatActivity {
     private PermissionsChecker permissionsChecker = new PermissionsChecker(this);
 
     private MessageStorage messageStorage;
+    private SmsApi smsApi;
     private AppSettings appSettings;
 
     @Nullable @BindView(R.id.serverKeyInput)
@@ -48,6 +52,10 @@ public class MainActivity extends AppCompatActivity {
 
         messageStorage = new MessageStorage(this);
         appSettings = new AppSettings(this);
+        smsApi = new SmsApi(this, appSettings.getServerUrl(), appSettings.getServerKey());
+
+        SmsRequestListener smsRequestListener = new SmsRequestListener(messageStorage);
+        smsApi.addRequestHandledListener(smsRequestListener);
     }
 
     @Override
@@ -55,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         permissionsChecker.checkPermissions();
 
-        showMessagesFromDb();
+        renewMessagesFromDb();
         showLogsFromLogger();
 
         showServerUrl();
@@ -63,7 +71,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @OnClick(R.id.renewMessages)
-    void showMessagesFromDb() {
+    void renewMessagesFromDb() {
+        resendMessages();
+
         final List<MessageContainer> messages = getMessages();
         if (messages == null) {
             Logger.w("MainActivity", "Messages are null");
@@ -118,6 +128,19 @@ public class MainActivity extends AppCompatActivity {
         }
 
         serverKeyInput.setText(appSettings.getServerKey());
+    }
+
+    private void resendMessages() {
+        ResendMessagesParams params = new ResendMessagesParams(messageStorage, smsApi);
+        ResendMessagesAction action = new ResendMessagesAction();
+        action.execute(params);
+
+        try {
+            action.get();
+        } catch (InterruptedException | ExecutionException e) {
+            Logger.w("MainActivity", "Resent messages error: " + e.toString());
+            e.printStackTrace();
+        }
     }
 
     private List<MessageContainer> getMessages() {

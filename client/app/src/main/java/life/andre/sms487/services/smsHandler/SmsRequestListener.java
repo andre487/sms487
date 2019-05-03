@@ -4,10 +4,10 @@ import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageStorage;
 import life.andre.sms487.network.SmsApi;
 
-class SmsRequestListener implements SmsApi.RequestHandledListener {
+public class SmsRequestListener implements SmsApi.RequestHandledListener {
     private MessageStorage messageStorage;
 
-    SmsRequestListener(MessageStorage messageStorage) {
+    public SmsRequestListener(MessageStorage messageStorage) {
         this.messageStorage = messageStorage;
     }
 

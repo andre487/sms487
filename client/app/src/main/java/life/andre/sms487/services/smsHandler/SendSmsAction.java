@@ -2,6 +2,7 @@ package life.andre.sms487.services.smsHandler;
 
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Build;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -75,12 +76,8 @@ class SendSmsAction extends AsyncTask<SendSmsParams, Void, Void> {
                 String addressFrom = (String) obj.get("address_from");
                 String dateTime = (String) obj.get("date_time");
                 String body = (String) obj.get("body");
-                boolean isSent = (boolean) obj.get("is_sent");
 
-                MessageContainer message = new MessageContainer(
-                        addressFrom, dateTime,
-                        body, isSent
-                );
+                MessageContainer message = new MessageContainer(addressFrom, dateTime, body);
                 data.add(message);
             } catch (JSONException e) {
                 Logger.w("SendSmsAction", e.toString());

@@ -66,9 +66,7 @@ class HandleMessageAction extends AsyncTask<HandleMessageParams, Void, Void> {
         ArrayList<String> intentData = new ArrayList<>();
         for (MessageContainer message : messages) {
             String messageJson = message.toString();
-            if (messageJson != null) {
-                intentData.add(messageJson);
-            }
+            intentData.add(messageJson);
         }
 
         baseIntent.putStringArrayListExtra(AppConstants.EXTRA_GOT_SMS, intentData);

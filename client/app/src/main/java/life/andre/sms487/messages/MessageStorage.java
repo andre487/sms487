@@ -20,6 +20,9 @@ public class MessageStorage {
         @Query("SELECT * FROM message ORDER BY id DESC LIMIT 30")
         List<Message> getTail();
 
+        @Query("SELECT * FROM message WHERE is_sent == 0 ORDER BY id ASC")
+        List<Message> getNotSent();
+
         @Insert
         long insert(Message message);
 
@@ -35,6 +38,9 @@ public class MessageStorage {
 
         @ColumnInfo(name = "address_from")
         public String addressFrom;
+
+        @ColumnInfo(name = "device_id")
+        public String deviceId;
 
         @ColumnInfo(name = "date_time", index = true)
         public String dateTime;
@@ -65,6 +71,7 @@ public class MessageStorage {
     public long addMessage(MessageContainer message) {
         Message entry = new Message();
 
+        entry.deviceId = message.getDeviceId();
         entry.addressFrom = message.getAddressFrom();
         entry.dateTime = message.getDateTime();
         entry.body = message.getBody();
@@ -83,10 +90,32 @@ public class MessageStorage {
         for (Message messageEntry : messageEntries) {
             messages.add(
                     new MessageContainer(
+                            messageEntry.deviceId,
                             messageEntry.addressFrom,
                             messageEntry.dateTime,
                             messageEntry.body,
-                            messageEntry.isSent
+                            messageEntry.isSent,
+                            messageEntry.id
+                    )
+            );
+        }
+
+        return messages;
+    }
+
+    public List<MessageContainer> getNotSentMessages() {
+        List<Message> messageEntries = messageDao.getNotSent();
+        List<MessageContainer> messages = new ArrayList<>();
+
+        for (Message messageEntry : messageEntries) {
+            messages.add(
+                    new MessageContainer(
+                            messageEntry.deviceId,
+                            messageEntry.addressFrom,
+                            messageEntry.dateTime,
+                            messageEntry.body,
+                            messageEntry.isSent,
+                            messageEntry.id
                     )
             );
         }
