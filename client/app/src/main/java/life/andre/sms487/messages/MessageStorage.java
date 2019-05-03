@@ -59,17 +59,21 @@ public class MessageStorage {
         messageDao = db.messageDao();
     }
 
+    public long addMessage(MessageContainer message) {
+        Message entry = new Message();
+
+        entry.addressFrom = message.getAddressFrom();
+        entry.dateTime = message.getDateTime();
+        entry.body = message.getBody();
+
+        return messageDao.insert(entry);
+    }
+
     public List<Long> addMessages(List<MessageContainer> messages) {
         ArrayList<Long> insertIds = new ArrayList<>();
 
         for (MessageContainer message : messages) {
-            Message entry = new Message();
-
-            entry.addressFrom = message.getAddressFrom();
-            entry.dateTime = message.getDateTime();
-            entry.body = message.getBody();
-
-            insertIds.add(messageDao.insert(entry));
+            insertIds.add(addMessage(message));
         }
 
         return insertIds;

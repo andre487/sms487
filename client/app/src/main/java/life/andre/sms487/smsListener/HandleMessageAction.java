@@ -13,8 +13,7 @@ import life.andre.sms487.messages.PduConverter;
 import life.andre.sms487.system.AppConstants;
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
-import life.andre.sms487.services.smsApiSender.SmsApiSender;
-import life.andre.sms487.services.smsDbHandler.SmsDbHandler;
+import life.andre.sms487.services.smsHandler.SmsHandler;
 
 class HandleMessageAction extends AsyncTask<HandleMessageParams, Void, Void> {
     private static PduConverter converter = new PduConverter();
@@ -74,12 +73,8 @@ class HandleMessageAction extends AsyncTask<HandleMessageParams, Void, Void> {
 
         baseIntent.putStringArrayListExtra(AppConstants.EXTRA_GOT_SMS, intentData);
 
-        Intent smsHandlerIntent = new Intent(baseIntent);
-        smsHandlerIntent.setClass(context, SmsDbHandler.class);
-        context.startService(smsHandlerIntent);
-
         Intent smsAdderIntent = new Intent(baseIntent);
-        smsAdderIntent.setClass(context, SmsApiSender.class);
+        smsAdderIntent.setClass(context, SmsHandler.class);
         context.startService(smsAdderIntent);
     }
 }

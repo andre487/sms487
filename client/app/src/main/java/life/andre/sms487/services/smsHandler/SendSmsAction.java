@@ -1,4 +1,4 @@
-package life.andre.sms487.services.smsApiSender;
+package life.andre.sms487.services.smsHandler;
 
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import life.andre.sms487.messages.MessageStorage;
 import life.andre.sms487.system.AppConstants;
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
@@ -38,18 +39,24 @@ class SendSmsAction extends AsyncTask<SendSmsParams, Void, Void> {
             return null;
         }
 
-        handleIntentData(mainParams.smsApi, mainParams.deviceId, intentData);
+        handleIntentData(
+                mainParams.smsApi, mainParams.messageStorage,
+                mainParams.deviceId, intentData
+        );
 
         return null;
     }
 
-    private void handleIntentData(SmsApi smsApi, String deviceId, List<String> intentData) {
+    private void handleIntentData(
+            SmsApi smsApi, MessageStorage messageStorage,
+            String deviceId, List<String> intentData
+    ) {
         for (MessageContainer message : extractMessages(intentData)) {
+            messageStorage.addMessage(message);
+
             smsApi.addSms(
-                    deviceId,
-                    message.getDateTime(),
-                    message.getAddressFrom(),
-                    message.getBody()
+                    deviceId, message.getDateTime(),
+                    message.getAddressFrom(), message.getBody()
             );
         }
     }
@@ -66,8 +73,12 @@ class SendSmsAction extends AsyncTask<SendSmsParams, Void, Void> {
                 String addressFrom = (String) obj.get("address_from");
                 String dateTime = (String) obj.get("date_time");
                 String body = (String) obj.get("body");
+                boolean isSent = (boolean) obj.get("is_sent");
 
-                MessageContainer message = new MessageContainer(addressFrom, dateTime, body);
+                MessageContainer message = new MessageContainer(
+                        addressFrom, dateTime,
+                        body, isSent
+                );
                 data.add(message);
             } catch (JSONException e) {
                 Logger.w("SendSmsAction", e.toString());

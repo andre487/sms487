@@ -1,4 +1,4 @@
-package life.andre.sms487.services.smsApiSender;
+package life.andre.sms487.services.smsHandler;
 
 import android.app.Service;
 import android.content.Intent;
@@ -7,27 +7,26 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 
 import life.andre.sms487.logging.Logger;
+import life.andre.sms487.messages.MessageStorage;
 import life.andre.sms487.network.SmsApi;
 import life.andre.sms487.preferences.AppSettings;
 
-public class SmsApiSender extends Service {
-    private AppSettings appSettings;
+public class SmsHandler extends Service {
+    protected AppSettings appSettings;
+    protected MessageStorage messageStorage;
+    protected SmsApi smsApi;
 
     @Override
     public void onCreate() {
-        Logger.d("SmsApiSender", "Service started");
+        Logger.d("SmsHandler", "Service started");
 
         appSettings = new AppSettings(this);
+        messageStorage = new MessageStorage(this);
+        smsApi = new SmsApi(this, appSettings.getServerUrl(), appSettings.getServerKey());
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
-        SmsApi smsApi = new SmsApi(
-                this,
-                appSettings.getServerUrl(),
-                appSettings.getServerKey()
-        );
-
-        SendSmsParams params = new SendSmsParams(intent, smsApi, Build.MODEL);
+        SendSmsParams params = new SendSmsParams(intent, smsApi, messageStorage, Build.MODEL);
         new SendSmsAction().execute(params);
 
         return Service.START_STICKY;

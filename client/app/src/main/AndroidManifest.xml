@@ -23,8 +23,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".services.smsDbHandler.SmsDbHandler" />
-        <service android:name=".services.smsApiSender.SmsApiSender" />
+        <service android:name=".services.smsHandler.SmsHandler" />
 
         <receiver android:name=".smsListener.SmsListener"
             android:permission="android.permission.BROADCAST_SMS">
