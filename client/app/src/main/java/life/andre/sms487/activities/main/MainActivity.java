@@ -145,6 +145,8 @@ public class MainActivity extends AppCompatActivity {
             messagesString.append(message.getAddressFrom());
             messagesString.append('\t');
             messagesString.append(message.getDateTime());
+            messagesString.append("\nSent: ");
+            messagesString.append(message.isSent() ? "yes" : "no");
             messagesString.append('\n');
 
             messagesString.append(message.getBody());

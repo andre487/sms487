@@ -9,11 +9,18 @@ public class MessageContainer {
     private String addressFrom;
     private String dateTime;
     private String body;
+    private boolean isSent;
 
-    public MessageContainer(String addressFrom, String dateTime, String body) {
+    @SuppressWarnings("WeakerAccess")
+    public MessageContainer(String addressFrom, String dateTime, String body, boolean isSent) {
         this.addressFrom = addressFrom;
         this.dateTime = dateTime;
         this.body = body;
+        this.isSent = isSent;
+    }
+
+    public MessageContainer(String addressFrom, String dateTime, String body) {
+        this(addressFrom, dateTime, body, false);
     }
 
     public String toString() {
@@ -23,6 +30,7 @@ public class MessageContainer {
             obj.put("address_from", addressFrom);
             obj.put("date_time", dateTime);
             obj.put("body", body);
+            obj.put("is_sent", isSent);
 
             return obj.toString();
         } catch (JSONException e) {
@@ -43,5 +51,9 @@ public class MessageContainer {
 
     public String getBody() {
         return body;
+    }
+
+    public boolean isSent() {
+        return isSent;
     }
 }

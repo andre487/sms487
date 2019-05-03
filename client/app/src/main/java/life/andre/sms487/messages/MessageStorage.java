@@ -21,7 +21,7 @@ public class MessageStorage {
         List<Message> getTail();
 
         @Insert
-        void insert(Message message);
+        long insert(Message message);
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -38,6 +38,9 @@ public class MessageStorage {
 
         @ColumnInfo(name = "body")
         public String body;
+
+        @ColumnInfo(name = "is_sent", index = true)
+        public boolean isSent = false;
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -56,7 +59,9 @@ public class MessageStorage {
         messageDao = db.messageDao();
     }
 
-    public void addMessages(List<MessageContainer> messages) {
+    public List<Long> addMessages(List<MessageContainer> messages) {
+        ArrayList<Long> insertIds = new ArrayList<>();
+
         for (MessageContainer message : messages) {
             Message entry = new Message();
 
@@ -64,8 +69,10 @@ public class MessageStorage {
             entry.dateTime = message.getDateTime();
             entry.body = message.getBody();
 
-            messageDao.insert(entry);
+            insertIds.add(messageDao.insert(entry));
         }
+
+        return insertIds;
     }
 
     public List<MessageContainer> getMessagesTail() {
@@ -77,7 +84,8 @@ public class MessageStorage {
                     new MessageContainer(
                             messageEntry.addressFrom,
                             messageEntry.dateTime,
-                            messageEntry.body
+                            messageEntry.body,
+                            messageEntry.isSent
                     )
             );
         }

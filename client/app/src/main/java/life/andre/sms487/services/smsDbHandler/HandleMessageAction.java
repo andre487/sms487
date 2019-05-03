@@ -14,9 +14,9 @@ import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.messages.MessageStorage;
 
-class HandleMessageAction extends AsyncTask<HandleMessageParams, Void, Void> {
+class HandleMessageAction extends AsyncTask<HandleMessageParams, Void, List<Long>> {
     @Override
-    protected Void doInBackground(HandleMessageParams... params) {
+    protected List<Long> doInBackground(HandleMessageParams... params) {
         if (params.length == 0) {
             Logger.w("SmsDbHandler", "Params length is 0");
             return null;
@@ -39,16 +39,14 @@ class HandleMessageAction extends AsyncTask<HandleMessageParams, Void, Void> {
             return null;
         }
 
-        handleIntentData(intentData, mainParams.messageStorage);
-
-        return null;
+        return handleIntentData(intentData, mainParams.messageStorage);
     }
 
 
-    private void handleIntentData(List<String> intentData, MessageStorage messageStorage) {
+    private List<Long> handleIntentData(List<String> intentData, MessageStorage messageStorage) {
         List<MessageContainer> messages = extractMessages(intentData);
 
-        messageStorage.addMessages(messages);
+        return messageStorage.addMessages(messages);
     }
 
     private List<MessageContainer> extractMessages(List<String> intentData) {
