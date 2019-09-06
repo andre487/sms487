@@ -1,17 +1,23 @@
 import logging
 import os
 import re
+import ssl
 from datetime import datetime, timedelta, timezone
 
 import pymongo
 
-CONNECT_TIMEOUT = 2000
+CONNECT_TIMEOUT = 500
 TZ_OFFSET = int(os.environ.get('TZ_OFFSET', 3))
 
 MONGO_HOST = os.environ.get('MONGO_HOST', 'localhost')
 MONGO_PORT = int(os.environ.get('MONGO_PORT', 27017))
-MONGO_LOGIN = os.environ.get('MONGO_LOGIN')
+
+MONGO_REPLICA_SET = os.environ.get('MONGO_REPLICA_SET')
+MONGO_SSL_CERT = os.environ.get('MONGO_SSL_CERT')
+
+MONGO_USER = os.environ.get('MONGO_USER')
 MONGO_PASSWORD = os.environ.get('MONGO_PASSWORD')
+MONGO_AUTH_SOURCE = os.environ.get('MONGO_AUTH_SOURCE')
 MONGO_DB_NAME = os.environ.get('MONGO_DB_NAME', 'sms487')
 
 date_time_pattern = re.compile(r'^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}(?::\d{2})?)(?:\s[+-]\d+)?$')
@@ -98,12 +104,22 @@ def _get_mongo_client():
 
     logging.info('Connecting to MongoDB: %s:%s', MONGO_HOST, MONGO_PORT)
 
+    mongo_options = dict(
+        connectTimeoutMS=CONNECT_TIMEOUT,
+        authSource=MONGO_DB_NAME,
+    )
+
+    if MONGO_REPLICA_SET:
+        mongo_options['replicaSet'] = MONGO_REPLICA_SET
+
     _mongo_client = pymongo.MongoClient(
         MONGO_HOST, MONGO_PORT,
         connect=True,
-        connectTimeoutMS=CONNECT_TIMEOUT,
-        username=MONGO_LOGIN,
+        username=MONGO_USER,
         password=MONGO_PASSWORD,
+        ssl_ca_certs=MONGO_SSL_CERT,
+        ssl_cert_reqs=ssl.CERT_REQUIRED if MONGO_SSL_CERT else ssl.CERT_NONE,
+        **mongo_options
     )
 
     return _mongo_client

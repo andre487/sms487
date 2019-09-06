@@ -6,7 +6,6 @@
   vars:
     container_name: sms487-api
     network_name: sms487_net
-    mongo_name: common-mongo
     service_port: 10500
 
   tasks:
@@ -83,9 +82,6 @@
     - name: Create docker network for all services
       shell: docker network create --driver bridge '{{ network_name }}' || true
 
-    - name: Connect MongoDB to network
-      shell: docker network connect '{{ network_name }}' '{{ mongo_name }}' || true
-
     - name: Update image
       shell: docker pull andre487/{{ container_name }}
 
@@ -102,7 +98,13 @@
           --network {{ network_name }} \
           --name {{ container_name }} \
           -v "/etc/auth487:/etc/auth487" \
-          -e MONGO_HOST={{ mongo_name }} \
+          -v "/usr/local/share/ca-certificates:/usr/local/share/ca-certificates" \
+          -e "MONGO_HOST={{ lookup('file', '~/.private/services/mongo/shared/hosts') }}" \
+          -e "MONGO_PORT={{ lookup('file', '~/.private/services/mongo/shared/port') }}" \
+          -e "MONGO_REPLICA_SET={{ lookup('file', '~/.private/services/mongo/shared/replica_set') }}" \
+          -e "MONGO_SSL_CERT={{ lookup('file', '~/.private/services/mongo/shared/ssl_cert') }}" \
+          -e "MONGO_USER={{ lookup('file', '~/.private/services/mongo/shared/user') }}" \
+          -e "MONGO_PASSWORD={{ lookup('file', '~/.private/services/mongo/shared/password') }}" \
           -e "AUTH_PUBLIC_KEY_FILE=/etc/auth487/public_key.pem" \
           -e "AUTH_DOMAIN=https://auth.andre.life" \
           -p 127.0.0.1:{{ service_port }}:5000 \
