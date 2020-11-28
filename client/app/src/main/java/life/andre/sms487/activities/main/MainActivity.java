@@ -1,5 +1,6 @@
 package life.andre.sms487.activities.main;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -32,18 +33,22 @@ public class MainActivity extends AppCompatActivity {
     private SmsApi smsApi;
     private AppSettings appSettings;
 
+    @SuppressLint("NonConstantResourceId")
     @Nullable
     @BindView(R.id.serverKeyInput)
     AppCompatEditText serverKeyInput;
 
+    @SuppressLint("NonConstantResourceId")
     @Nullable
     @BindView(R.id.serverUrlInput)
     AppCompatEditText serverUrlInput;
 
+    @SuppressLint("NonConstantResourceId")
     @Nullable
     @BindView(R.id.messagesField)
     AppCompatEditText messagesField;
 
+    @SuppressLint("NonConstantResourceId")
     @Nullable
     @BindView(R.id.logsField)
     AppCompatEditText logsField;
@@ -76,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
         showServerKey();
     }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.renewMessages)
     void renewMessagesFromDb() {
         resendMessages();
@@ -89,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
         showMessages(messages);
     }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.renewLogs)
     void showLogsFromLogger() {
         final List<String> logs = getLogs();
@@ -100,6 +107,7 @@ public class MainActivity extends AppCompatActivity {
         showLogs(logs);
     }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.serverKeySave)
     void saveServerKey() {
         if (serverKeyInput == null) {
@@ -118,6 +126,7 @@ public class MainActivity extends AppCompatActivity {
         serverUrlInput.setText(appSettings.getServerUrl());
     }
 
+    @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.serverUrlSave)
     void saveServerUrl() {
         if (serverUrlInput == null) {
