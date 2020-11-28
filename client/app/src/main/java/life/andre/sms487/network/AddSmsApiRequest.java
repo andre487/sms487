@@ -1,6 +1,5 @@
 package life.andre.sms487.network;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,8 +13,8 @@ import life.andre.sms487.logging.Logger;
 
 class AddSmsApiRequest extends StringRequest {
     protected static class ApiResponseListener implements Response.Listener<String> {
-        private List<SmsApi.RequestHandledListener> requestHandledListeners;
-        private long dbId;
+        private final List<SmsApi.RequestHandledListener> requestHandledListeners;
+        private final long dbId;
 
         ApiResponseListener(
                 long dbId,
@@ -36,8 +35,8 @@ class AddSmsApiRequest extends StringRequest {
     }
 
     protected static class ApiErrorListener implements Response.ErrorListener {
-        private List<SmsApi.RequestHandledListener> requestHandledListeners;
-        private long dbId;
+        private final List<SmsApi.RequestHandledListener> requestHandledListeners;
+        private final long dbId;
 
         ApiErrorListener(long dbId, List<SmsApi.RequestHandledListener> requestHandledListeners) {
             this.dbId = dbId;
@@ -58,8 +57,8 @@ class AddSmsApiRequest extends StringRequest {
         }
     }
 
-    private Map<String, String> requestParams;
-    private String cookie;
+    private final Map<String, String> requestParams;
+    private final String cookie;
 
     AddSmsApiRequest(
             String serverUrl, String serverKey,
@@ -75,16 +74,6 @@ class AddSmsApiRequest extends StringRequest {
 
         this.requestParams = requestParams;
         this.cookie = "AUTH_TOKEN=" + serverKey;
-    }
-
-    AddSmsApiRequest(
-            String serverUrl, String serverKey,
-            Map<String, String> requestParams, long dbId
-    ) {
-        this(
-                serverUrl, serverKey, requestParams,
-                dbId, new ArrayList<SmsApi.RequestHandledListener>()
-        );
     }
 
     @Override

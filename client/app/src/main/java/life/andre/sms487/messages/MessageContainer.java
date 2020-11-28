@@ -8,12 +8,12 @@ import org.json.JSONObject;
 import life.andre.sms487.logging.Logger;
 
 public class MessageContainer {
-    private String deviceId;
-    private String addressFrom;
-    private String dateTime;
-    private String body;
-    private boolean isSent;
-    private long dbId;
+    private final String deviceId;
+    private final String addressFrom;
+    private final String dateTime;
+    private final String body;
+    private final boolean isSent;
+    private final long dbId;
 
     public MessageContainer(
             String deviceId, String addressFrom,
@@ -31,7 +31,7 @@ public class MessageContainer {
         this(Build.MODEL, addressFrom, dateTime, body, false, 0);
     }
 
-    public String toString() {
+    public String getAsString() {
         try {
             JSONObject obj = new JSONObject();
 

@@ -2,15 +2,17 @@ package life.andre.sms487.system;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class PermissionsChecker {
-    private Activity activity;
+    private final Activity activity;
 
     public PermissionsChecker(Activity activity) {
         this.activity = activity;
@@ -39,6 +41,15 @@ public class PermissionsChecker {
             String[] permissions = requiredPermissions.toArray(new String[permCount]);
             ActivityCompat.requestPermissions(activity, permissions,
                     AppConstants.PERMISSIONS_REQUEST_ID);
+        }
+
+        boolean hasNotificationPermission = NotificationManagerCompat
+                .getEnabledListenerPackages(activity)
+                .contains(activity.getPackageName());
+
+        if (!hasNotificationPermission) {
+            Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
+            activity.startActivity(intent);
         }
     }
 }

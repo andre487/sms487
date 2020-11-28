@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class Logger {
-    private static ConcurrentLinkedDeque<String> messages = new ConcurrentLinkedDeque<>();
+    private static final ConcurrentLinkedDeque<String> messages = new ConcurrentLinkedDeque<>();
 
     public static void d(String tag, String msg) {
         addMessageToQueue("DEBUG", tag, msg);
@@ -24,6 +24,7 @@ public class Logger {
         Log.w(tag, msg);
     }
 
+    @SuppressWarnings({"unused", "RedundantSuppression"})
     public static void e(String tag, String msg) {
         addMessageToQueue("ERROR", tag, msg);
         Log.e(tag, msg);

@@ -1,10 +1,11 @@
 package life.andre.sms487.activities.main;
 
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatEditText;
+
+import android.text.Editable;
 import android.util.Log;
 
 import life.andre.sms487.R;
@@ -15,6 +16,7 @@ import life.andre.sms487.network.SmsApi;
 import life.andre.sms487.preferences.AppSettings;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 import butterknife.BindView;
@@ -24,22 +26,26 @@ import life.andre.sms487.services.smsHandler.SmsRequestListener;
 import life.andre.sms487.system.PermissionsChecker;
 
 public class MainActivity extends AppCompatActivity {
-    private PermissionsChecker permissionsChecker = new PermissionsChecker(this);
+    private final PermissionsChecker permissionsChecker = new PermissionsChecker(this);
 
     private MessageStorage messageStorage;
     private SmsApi smsApi;
     private AppSettings appSettings;
 
-    @Nullable @BindView(R.id.serverKeyInput)
+    @Nullable
+    @BindView(R.id.serverKeyInput)
     AppCompatEditText serverKeyInput;
 
-    @Nullable @BindView(R.id.serverUrlInput)
+    @Nullable
+    @BindView(R.id.serverUrlInput)
     AppCompatEditText serverUrlInput;
 
-    @Nullable @BindView(R.id.messagesField)
+    @Nullable
+    @BindView(R.id.messagesField)
     AppCompatEditText messagesField;
 
-    @Nullable @BindView(R.id.logsField)
+    @Nullable
+    @BindView(R.id.logsField)
     AppCompatEditText logsField;
 
     @Override
@@ -94,14 +100,14 @@ public class MainActivity extends AppCompatActivity {
         showLogs(logs);
     }
 
-    @SuppressWarnings("unused")
     @OnClick(R.id.serverKeySave)
     void saveServerKey() {
         if (serverKeyInput == null) {
             return;
         }
 
-        appSettings.saveServerKey(serverKeyInput.getText().toString());
+        Editable serverKeyText = Objects.requireNonNull(serverKeyInput.getText());
+        appSettings.saveServerKey(serverKeyText.toString());
     }
 
     public void showServerUrl() {
@@ -112,14 +118,14 @@ public class MainActivity extends AppCompatActivity {
         serverUrlInput.setText(appSettings.getServerUrl());
     }
 
-    @SuppressWarnings("unused")
     @OnClick(R.id.serverUrlSave)
     void saveServerUrl() {
         if (serverUrlInput == null) {
             return;
         }
 
-        appSettings.saveServerUrl(serverUrlInput.getText().toString());
+        Editable serverUrlText = Objects.requireNonNull(serverUrlInput.getText());
+        appSettings.saveServerUrl(serverUrlText.toString());
     }
 
     public void showServerKey() {

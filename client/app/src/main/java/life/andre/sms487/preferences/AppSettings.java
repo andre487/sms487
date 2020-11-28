@@ -10,9 +10,9 @@ import life.andre.sms487.system.AppConstants;
 
 
 public class AppSettings {
-    private SharedPreferences sharedPreferences;
+    private final SharedPreferences sharedPreferences;
 
-    private Context context;
+    private final Context context;
 
     public AppSettings(Context context) {
         this.context = context;

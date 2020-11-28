@@ -16,7 +16,7 @@ import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.services.smsHandler.SmsHandler;
 
 class HandleMessageAction extends AsyncTask<HandleMessageParams, Void, Void> {
-    private static PduConverter converter = new PduConverter();
+    private static final PduConverter converter = new PduConverter();
 
     @Override
     protected Void doInBackground(HandleMessageParams... params) {
@@ -65,7 +65,7 @@ class HandleMessageAction extends AsyncTask<HandleMessageParams, Void, Void> {
 
         ArrayList<String> intentData = new ArrayList<>();
         for (MessageContainer message : messages) {
-            String messageJson = message.toString();
+            String messageJson = message.getAsString();
             intentData.add(messageJson);
         }
 

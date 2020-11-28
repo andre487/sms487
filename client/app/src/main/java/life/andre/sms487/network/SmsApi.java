@@ -14,7 +14,7 @@ import life.andre.sms487.logging.Logger;
 import life.andre.sms487.preferences.AppSettings;
 
 public class SmsApi {
-    private AppSettings appSettings;
+    private final AppSettings appSettings;
 
     public interface RequestHandledListener {
         void onSuccess(long dbId);
@@ -22,8 +22,8 @@ public class SmsApi {
         void onError(long errorMessage, String dbId);
     }
 
-    private RequestQueue requestQueue;
-    private List<RequestHandledListener> requestHandledListeners = new ArrayList<>();
+    private final RequestQueue requestQueue;
+    private final List<RequestHandledListener> requestHandledListeners = new ArrayList<>();
 
     public SmsApi(Context ctx, AppSettings appSettings) {
         this.appSettings = appSettings;
@@ -61,10 +61,5 @@ public class SmsApi {
         );
 
         this.requestQueue.add(request);
-    }
-
-    @SuppressWarnings("unused")
-    public void addSms(String deviceId, String dateTime, String tel, String text) {
-        addSms(deviceId, dateTime, tel, text, 0);
     }
 }
