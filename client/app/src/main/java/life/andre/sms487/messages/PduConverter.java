@@ -1,6 +1,6 @@
 package life.andre.sms487.messages;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.telephony.SmsMessage;
 import android.util.Pair;
 
@@ -16,7 +16,7 @@ import java.util.TimeZone;
 import life.andre.sms487.logging.Logger;
 
 public class PduConverter {
-    private SimpleDateFormat dateFormat = new SimpleDateFormat(
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat(
             "yyyy-MM-dd HH:mm Z",
             new Locale("UTC")
     );

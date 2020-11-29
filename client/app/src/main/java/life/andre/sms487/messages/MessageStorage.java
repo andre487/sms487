@@ -1,14 +1,14 @@
 package life.andre.sms487.messages;
 
-import android.arch.persistence.room.ColumnInfo;
-import android.arch.persistence.room.Dao;
-import android.arch.persistence.room.Database;
-import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.Insert;
-import android.arch.persistence.room.PrimaryKey;
-import android.arch.persistence.room.Query;
-import android.arch.persistence.room.Room;
-import android.arch.persistence.room.RoomDatabase;
+import androidx.room.ColumnInfo;
+import androidx.room.Dao;
+import androidx.room.Database;
+import androidx.room.Entity;
+import androidx.room.Insert;
+import androidx.room.PrimaryKey;
+import androidx.room.Query;
+import androidx.room.Room;
+import androidx.room.RoomDatabase;
 import android.content.Context;
 
 import java.util.ArrayList;
@@ -58,7 +58,7 @@ public class MessageStorage {
         public abstract MessageDao messageDao();
     }
 
-    private MessageDao messageDao;
+    private final MessageDao messageDao;
 
     public MessageStorage(Context context) {
         AppDatabase db = Room.databaseBuilder(
@@ -75,6 +75,17 @@ public class MessageStorage {
         entry.addressFrom = message.getAddressFrom();
         entry.dateTime = message.getDateTime();
         entry.body = message.getBody();
+
+        return messageDao.insert(entry);
+    }
+
+    public long addMessage(String deviceId, String addressFrom, String dateTime, String body) {
+        Message entry = new Message();
+
+        entry.deviceId = deviceId;
+        entry.addressFrom = addressFrom;
+        entry.dateTime = dateTime;
+        entry.body = body;
 
         return messageDao.insert(entry);
     }
