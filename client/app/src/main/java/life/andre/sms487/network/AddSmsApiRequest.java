@@ -1,5 +1,6 @@
 package life.andre.sms487.network;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,8 +46,11 @@ class AddSmsApiRequest extends StringRequest {
 
         @Override
         public void onErrorResponse(VolleyError error) {
-            String errorMessage = error.toString() + ": " + error.getMessage();
-            Logger.w(
+            String errorMessage = error.toString() + ": " +
+                    error.networkResponse.statusCode + ": " +
+                    new String(error.networkResponse.data, StandardCharsets.UTF_8);
+
+            Logger.e(
                     "AddSmsApiRequest",
                     "Response error: " + errorMessage
             );

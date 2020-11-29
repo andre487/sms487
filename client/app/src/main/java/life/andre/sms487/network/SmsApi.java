@@ -35,6 +35,10 @@ public class SmsApi {
         requestHandledListeners.add(listener);
     }
 
+    public void removeRequestHandledListener(RequestHandledListener listener) {
+        requestHandledListeners.remove(listener);
+    }
+
     public void addSms(String deviceId, String dateTime, String tel, String text, long dbId) {
         Logger.i(
                 "SmsApi",

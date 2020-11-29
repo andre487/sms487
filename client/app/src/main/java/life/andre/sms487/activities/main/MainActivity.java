@@ -65,7 +65,10 @@ public class MainActivity extends AppCompatActivity {
         appSettings = new AppSettings(this);
         smsApi = new SmsApi(this, appSettings);
 
-        SmsRequestListener smsRequestListener = new SmsRequestListener(messageStorage);
+        SmsRequestListener smsRequestListener = new SmsRequestListener(
+                messageStorage,
+                "MainActivity"
+        );
         smsApi.addRequestHandledListener(smsRequestListener);
     }
 

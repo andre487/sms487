@@ -15,6 +15,7 @@ public class SmsHandler extends Service {
     protected AppSettings appSettings;
     protected MessageStorage messageStorage;
     protected SmsApi smsApi;
+    protected SmsRequestListener smsRequestListener;
 
     @Override
     public void onCreate() {
@@ -24,8 +25,13 @@ public class SmsHandler extends Service {
         messageStorage = new MessageStorage(this);
         smsApi = new SmsApi(this, appSettings);
 
-        SmsRequestListener smsRequestListener = new SmsRequestListener(messageStorage);
+        smsRequestListener = new SmsRequestListener(messageStorage, "SmsHandler");
         smsApi.addRequestHandledListener(smsRequestListener);
+    }
+
+    @Override
+    public void onDestroy() {
+        smsApi.removeRequestHandledListener(smsRequestListener);
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {

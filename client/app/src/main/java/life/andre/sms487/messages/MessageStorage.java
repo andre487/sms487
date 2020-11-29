@@ -58,7 +58,7 @@ public class MessageStorage {
         public abstract MessageDao messageDao();
     }
 
-    private MessageDao messageDao;
+    private final MessageDao messageDao;
 
     public MessageStorage(Context context) {
         AppDatabase db = Room.databaseBuilder(
@@ -75,6 +75,17 @@ public class MessageStorage {
         entry.addressFrom = message.getAddressFrom();
         entry.dateTime = message.getDateTime();
         entry.body = message.getBody();
+
+        return messageDao.insert(entry);
+    }
+
+    public long addMessage(String deviceId, String addressFrom, String dateTime, String body) {
+        Message entry = new Message();
+
+        entry.deviceId = deviceId;
+        entry.addressFrom = addressFrom;
+        entry.dateTime = dateTime;
+        entry.body = body;
 
         return messageDao.insert(entry);
     }
