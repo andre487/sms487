@@ -50,6 +50,10 @@ public class NotificationListener extends NotificationListenerService {
     public void onNotificationPosted(StatusBarNotification sbn) {
         super.onNotificationPosted(sbn);
 
+        if (!isNotificationSuitable(sbn)) {
+            return;
+        }
+
         CharSequence tickerText = sbn.getNotification().tickerText;
         if (tickerText == null) {
             Logger.e("NotificationListener", "tickerText is null");
@@ -67,6 +71,13 @@ public class NotificationListener extends NotificationListenerService {
         new SendNotificationAction().execute(params);
 
         Logger.d("NotificationListener", "Notification: " + text);
+    }
+
+    boolean isNotificationSuitable(StatusBarNotification sbn) {
+        if (!sbn.isClearable()) {
+            return false;
+        }
+        return !sbn.getTag().contains(":sms:");
     }
 
     public String getAppLabel(String packageName) {
@@ -94,6 +105,10 @@ public class NotificationListener extends NotificationListenerService {
         );
 
         NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        if (nManager == null) {
+            Logger.e("NotificationListener", "NotificationManager is null");
+            return;
+        }
         nManager.createNotificationChannel(channel);
 
         Notification notification = new NotificationCompat.Builder(this, channelId)
