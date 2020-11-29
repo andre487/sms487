@@ -77,7 +77,9 @@ public class NotificationListener extends NotificationListenerService {
         if (!sbn.isClearable()) {
             return false;
         }
-        return !sbn.getTag().contains(":sms:");
+
+        String tag = sbn.getTag();
+        return tag == null || !tag.contains(":sms:");
     }
 
     public String getAppLabel(String packageName) {
