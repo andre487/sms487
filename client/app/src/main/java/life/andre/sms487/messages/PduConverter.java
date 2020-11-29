@@ -1,6 +1,6 @@
 package life.andre.sms487.messages;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.telephony.SmsMessage;
 import android.util.Pair;
 

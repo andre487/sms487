@@ -1,7 +1,7 @@
 package life.andre.sms487.services.smsHandler;
 
 import android.os.AsyncTask;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import life.andre.sms487.logging.Logger;
 
