@@ -36,6 +36,16 @@ public class PermissionsChecker {
             requiredPermissions.add(Manifest.permission.ACCESS_NETWORK_STATE);
         }
 
+        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.RECEIVE_BOOT_COMPLETED)
+                != PackageManager.PERMISSION_GRANTED) {
+            requiredPermissions.add(Manifest.permission.RECEIVE_BOOT_COMPLETED);
+        }
+
+        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.FOREGROUND_SERVICE)
+                != PackageManager.PERMISSION_GRANTED) {
+            requiredPermissions.add(Manifest.permission.FOREGROUND_SERVICE);
+        }
+
         int permCount = requiredPermissions.size();
         if (permCount > 0) {
             String[] permissions = requiredPermissions.toArray(new String[permCount]);
