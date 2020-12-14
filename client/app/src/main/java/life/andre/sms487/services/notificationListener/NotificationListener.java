@@ -66,6 +66,11 @@ public class NotificationListener extends NotificationListenerService {
         }
 
         String fullText = (title.toString() + "\n" + text.toString()).trim();
+        if (fullText.isEmpty()) {
+            Logger.e("NotificationListener", "No text in message");
+            return;
+        }
+
         String appLabel = getAppLabel(sbn.getPackageName());
         long postTime = sbn.getPostTime();
         String deviceId = Build.MODEL;
