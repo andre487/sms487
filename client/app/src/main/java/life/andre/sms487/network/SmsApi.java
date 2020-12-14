@@ -14,8 +14,8 @@ import life.andre.sms487.logging.Logger;
 import life.andre.sms487.preferences.AppSettings;
 
 public class SmsApi {
-    public final String MESSAGE_TYPE_SMS = "SMS";
-    public final String MESSAGE_TYPE_NOTIFICATION = "Notification";
+    public final String MESSAGE_TYPE_SMS = "sms";
+    public final String MESSAGE_TYPE_NOTIFICATION = "notification";
 
     private final AppSettings appSettings;
 
