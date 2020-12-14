@@ -65,7 +65,10 @@ public class NotificationListener extends NotificationListenerService {
             return;
         }
 
-        String fullText = (title.toString() + "\n" + text.toString()).trim();
+        String titleText = title == null ? "" : title.toString();
+        String textText = text == null ? "" : text.toString();
+
+        String fullText = (titleText + "\n" + textText).trim();
         if (fullText.isEmpty()) {
             Logger.e("NotificationListener", "No text in message");
             return;
