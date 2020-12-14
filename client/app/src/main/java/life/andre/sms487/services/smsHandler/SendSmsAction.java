@@ -57,7 +57,7 @@ class SendSmsAction extends AsyncTask<SendSmsParams, Void, Void> {
             long insertId = messageStorage.addMessage(message);
 
             smsApi.addSms(
-                    deviceId, message.getDateTime(),
+                    deviceId, message.getDateTime(), message.getSmsCenterDateTime(),
                     message.getAddressFrom(), message.getBody(), insertId
             );
         }
@@ -74,9 +74,10 @@ class SendSmsAction extends AsyncTask<SendSmsParams, Void, Void> {
 
                 String addressFrom = (String) obj.get("address_from");
                 String dateTime = (String) obj.get("date_time");
+                String smsCenterDateTime = (String) obj.get("sms_date_time");
                 String body = (String) obj.get("body");
 
-                MessageContainer message = new MessageContainer(addressFrom, dateTime, body);
+                MessageContainer message = new MessageContainer(addressFrom, dateTime, smsCenterDateTime, body);
                 data.add(message);
             } catch (JSONException e) {
                 Logger.w("SendSmsAction", e.toString());

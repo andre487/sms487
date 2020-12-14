@@ -9,19 +9,16 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
 
 import life.andre.sms487.logging.Logger;
 
 public class PduConverter {
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat(
-            "yyyy-MM-dd HH:mm Z",
-            new Locale("UTC")
-    );
+    private final SimpleDateFormat dateFormat;
 
     public PduConverter() {
+        dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm Z");
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
     }
 
@@ -42,9 +39,11 @@ public class PduConverter {
 
             SmsMessage message = SmsMessage.createFromPdu(pduBytes, format);
 
+            Date smsCenterDt = new Date(message.getTimestampMillis());
+            String smsCenterDateTime = dateFormat.format(smsCenterDt);
+
             String tel = message.getOriginatingAddress();
-            String dateTime = dateFormat.format(new Date(message.getTimestampMillis()));
-            Pair<String, String> key = new Pair<>(tel, dateTime);
+            Pair<String, String> key = new Pair<>(tel, smsCenterDateTime);
 
             List<SmsMessage> telMessages = messageTable.get(key);
             if (telMessages == null) {
@@ -69,8 +68,10 @@ public class PduConverter {
             List<SmsMessage> messages = entry.getValue();
 
             String tel = key.first;
-            String dateTime = key.second;
+            String smsCenterDateTime = key.second;
             StringBuilder fullTextBuilder = new StringBuilder();
+
+            String dateTime = dateFormat.format(new Date());
 
             Logger.d(
                     "PduConverter",
@@ -85,7 +86,7 @@ public class PduConverter {
             }
 
             MessageContainer container = new MessageContainer(
-                    tel, dateTime, fullTextBuilder.toString()
+                    tel, dateTime, smsCenterDateTime, fullTextBuilder.toString()
             );
             messageContainers.add(container);
         }
