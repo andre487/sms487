@@ -48,10 +48,10 @@
             <li class="message-list__item message-view">
                 <div class="message-view__header">
                     <div class="message-view__device-id">{{ message.device_id }}</div>
-                    <div class="message-view__tel">{{ message.tel }}</div>
+                    <div class="message-view__tel">{{ message.printable_message_type }}: {{ message.tel }}</div>
                 </div>
                 <div class="message-view__content">
-                    <div class="message-view__date-time">{{ message.date_time }}</div>
+                    <div class="message-view__date-time">{{ message.printable_date_time }}</div>
                     <div class="message-view__text">{{ message.text }}</div>
                 </div>
             </li>
