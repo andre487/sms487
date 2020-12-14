@@ -6,7 +6,7 @@ project_dir="$cur_dir/.."
 cd "$project_dir"
 
 "$cur_dir/docker-build"
-"$cur_dir/docker-test"
+# "$cur_dir/docker-test" TODO: Fix pyresttest
 "$cur_dir/docker-push"
 
 ansible-playbook -i ~/work/ansible-inventory/ansible-inventory.yml "$cur_dir/setup.yml"
