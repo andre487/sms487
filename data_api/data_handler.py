@@ -21,6 +21,7 @@ MONGO_AUTH_SOURCE = os.environ.get('MONGO_AUTH_SOURCE')
 MONGO_DB_NAME = os.environ.get('MONGO_DB_NAME', 'sms487')
 
 date_time_pattern = re.compile(r'^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}(?::\d{2})?)(?:\s[+-]\d+)?$')
+short_date_time_pattern = re.compile(r'^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}).*')
 message_type_pattern = re.compile(r'^\w{3,32}$')
 time_zone = timezone(offset=timedelta(hours=TZ_OFFSET))
 
@@ -103,10 +104,10 @@ def dress_sms_doc(doc):
         result['printable_message_type'] = 'Notification'
 
     if 'date_time' in result:
-        result['date_time'] = format_date_time(result)
+        result['date_time'] = format_date_time(result['date_time'])
 
     if 'sms_date_time' in result:
-        result['sms_date_time'] = format_date_time(result)
+        result['sms_date_time'] = format_date_time(result['sms_date_time'])
 
     if 'date_time' in result or 'sms_date_time' in result:
         date_time = str(result.get('date_time', ''))
@@ -122,12 +123,12 @@ def dress_sms_doc(doc):
     return result
 
 
-def format_date_time(result):
-    try:
-        date_time = datetime.strptime(result['date_time'], '%Y-%m-%d %H:%M:%S %z')
-    except ValueError:
-        date_time = datetime.strptime(result['date_time'], '%Y-%m-%d %H:%M %z')
+def format_date_time(dt):
+    match = short_date_time_pattern.match(dt)
+    if not match:
+        return dt
 
+    date_time = datetime.strptime(match.group(1), '%Y-%m-%d %H:%M')
     return date_time.astimezone(time_zone).strftime('%d %b %Y %H:%M')
 
 
