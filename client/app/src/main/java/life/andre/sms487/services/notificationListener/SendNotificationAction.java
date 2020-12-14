@@ -11,10 +11,7 @@ import java.util.TimeZone;
 import life.andre.sms487.logging.Logger;
 
 public class SendNotificationAction extends AsyncTask<SendNotificationParams, Void, Void> {
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat(
-            "yyyy-MM-dd HH:mm Z",
-            new Locale("UTC")
-    );
+    private SimpleDateFormat dateFormat;
 
     @Override
     protected Void doInBackground(SendNotificationParams... params) {
@@ -23,6 +20,7 @@ public class SendNotificationAction extends AsyncTask<SendNotificationParams, Vo
             return null;
         }
 
+        dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm Z");
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 
         handleNotification(params[0]);
@@ -31,14 +29,15 @@ public class SendNotificationAction extends AsyncTask<SendNotificationParams, Vo
     }
 
     void handleNotification(SendNotificationParams mainParams) {
-        String dtFormatted = dateFormat.format(new Date(mainParams.postTime));
+        String curTime = dateFormat.format(new Date());
+        String postTime = dateFormat.format(new Date(mainParams.postTime));
 
         long insertId = mainParams.messageStorage.addMessage(
-                mainParams.deviceId, mainParams.appLabel, dtFormatted, dtFormatted, mainParams.text
+                mainParams.deviceId, mainParams.appLabel, curTime, postTime, mainParams.text
         );
 
-        mainParams.smsApi.addSms(
-                mainParams.deviceId, dtFormatted, dtFormatted,
+        mainParams.smsApi.addNotification(
+                mainParams.deviceId, curTime, postTime,
                 mainParams.appLabel, mainParams.text, insertId
         );
     }

@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Bundle;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import androidx.core.app.NotificationCompat;
@@ -54,19 +55,23 @@ public class NotificationListener extends NotificationListenerService {
             return;
         }
 
-        CharSequence tickerText = sbn.getNotification().tickerText;
-        if (tickerText == null) {
-            Logger.e("NotificationListener", "tickerText is null");
+        Notification notification = sbn.getNotification();
+        Bundle extras = notification.extras;
+        CharSequence title = extras.getCharSequence(Notification.EXTRA_TITLE);
+        CharSequence text = extras.getCharSequence(Notification.EXTRA_TEXT);
+
+        if (title == null && text == null) {
+            Logger.e("NotificationListener", "No text in message");
             return;
         }
 
-        String text = tickerText.toString();
+        String fullText = (title.toString() + "\n" + text.toString()).trim();
         String appLabel = getAppLabel(sbn.getPackageName());
         long postTime = sbn.getPostTime();
         String deviceId = Build.MODEL;
 
         SendNotificationParams params = new SendNotificationParams(
-                smsApi, messageStorage, appLabel, postTime, text, deviceId
+                smsApi, messageStorage, appLabel, postTime, fullText, deviceId
         );
         new SendNotificationAction().execute(params);
 

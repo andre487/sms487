@@ -14,6 +14,9 @@ import life.andre.sms487.logging.Logger;
 import life.andre.sms487.preferences.AppSettings;
 
 public class SmsApi {
+    public final String MESSAGE_TYPE_SMS = "SMS";
+    public final String MESSAGE_TYPE_NOTIFICATION = "Notification";
+
     private final AppSettings appSettings;
 
     public interface RequestHandledListener {
@@ -42,9 +45,23 @@ public class SmsApi {
     public void addSms(String deviceId, String dateTime, String smsCenterDateTime, String tel, String text, long dbId) {
         Logger.i(
                 "SmsApi",
-                "Sending SMS: " + deviceId + ", " + dateTime + ", " + tel + ", " + text
+                "Sending SMS: " + deviceId + ", " + dateTime + ", " + smsCenterDateTime + ", " + tel + ", " + text
         );
+        addRequest(MESSAGE_TYPE_SMS, deviceId, dateTime, smsCenterDateTime, tel, text, dbId);
+    }
 
+    public void addNotification(String deviceId, String dateTime, String postDateTime, String tel, String text, long dbId) {
+        Logger.i(
+                "SmsApi",
+                "Sending Notification: " + deviceId + ", " + dateTime + ", " + ", " + postDateTime + ", " + tel + ", " + text
+        );
+        addRequest(MESSAGE_TYPE_NOTIFICATION, deviceId, dateTime, postDateTime, tel, text, dbId);
+    }
+
+    private void addRequest(
+            String messageType, String deviceId, String dateTime, String smsCenterDateTime,
+            String tel, String text, long dbId
+    ) {
         String serverUrl = appSettings.getServerUrl();
         String serverKey = appSettings.getServerKey();
 
@@ -54,6 +71,7 @@ public class SmsApi {
         }
 
         Map<String, String> requestParams = new HashMap<>();
+        requestParams.put("message_type", messageType);
         requestParams.put("device_id", deviceId);
         requestParams.put("date_time", dateTime);
         requestParams.put("sms_date_time", smsCenterDateTime);
