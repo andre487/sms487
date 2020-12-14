@@ -24,6 +24,7 @@ public class ResendMessagesAction extends AsyncTask<ResendMessagesParams, Void, 
             mainParams.smsApi.addSms(
                     message.getDeviceId(),
                     message.getDateTime(),
+                    message.getSmsCenterDateTime(),
                     message.getAddressFrom(),
                     message.getBody(),
                     message.getDbId()

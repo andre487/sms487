@@ -39,7 +39,7 @@ public class SmsApi {
         requestHandledListeners.remove(listener);
     }
 
-    public void addSms(String deviceId, String dateTime, String tel, String text, long dbId) {
+    public void addSms(String deviceId, String dateTime, String smsCenterDateTime, String tel, String text, long dbId) {
         Logger.i(
                 "SmsApi",
                 "Sending SMS: " + deviceId + ", " + dateTime + ", " + tel + ", " + text
@@ -56,6 +56,7 @@ public class SmsApi {
         Map<String, String> requestParams = new HashMap<>();
         requestParams.put("device_id", deviceId);
         requestParams.put("date_time", dateTime);
+        requestParams.put("sms_date_time", smsCenterDateTime);
         requestParams.put("tel", tel);
         requestParams.put("text", text);
 

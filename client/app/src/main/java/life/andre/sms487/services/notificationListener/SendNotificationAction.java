@@ -34,11 +34,11 @@ public class SendNotificationAction extends AsyncTask<SendNotificationParams, Vo
         String dtFormatted = dateFormat.format(new Date(mainParams.postTime));
 
         long insertId = mainParams.messageStorage.addMessage(
-                mainParams.deviceId, mainParams.appLabel, dtFormatted, mainParams.text
+                mainParams.deviceId, mainParams.appLabel, dtFormatted, dtFormatted, mainParams.text
         );
 
         mainParams.smsApi.addSms(
-                mainParams.deviceId, dtFormatted,
+                mainParams.deviceId, dtFormatted, dtFormatted,
                 mainParams.appLabel, mainParams.text, insertId
         );
     }

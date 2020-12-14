@@ -1,5 +1,6 @@
 package life.andre.sms487.messages;
 
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Dao;
 import androidx.room.Database;
@@ -9,6 +10,9 @@ import androidx.room.PrimaryKey;
 import androidx.room.Query;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
+import androidx.room.migration.Migration;
+import androidx.sqlite.db.SupportSQLiteDatabase;
+
 import android.content.Context;
 
 import java.util.ArrayList;
@@ -45,6 +49,9 @@ public class MessageStorage {
         @ColumnInfo(name = "date_time", index = true)
         public String dateTime;
 
+        @ColumnInfo(name = "sms_date_time")
+        public String smsCenterDateTime;
+
         @ColumnInfo(name = "body")
         public String body;
 
@@ -53,7 +60,7 @@ public class MessageStorage {
     }
 
     @SuppressWarnings("WeakerAccess")
-    @Database(entities = {Message.class}, version = 1, exportSchema = false)
+    @Database(entities = {Message.class}, version = 2, exportSchema = false)
     public static abstract class AppDatabase extends RoomDatabase {
         public abstract MessageDao messageDao();
     }
@@ -61,10 +68,19 @@ public class MessageStorage {
     private final MessageDao messageDao;
 
     public MessageStorage(Context context) {
-        AppDatabase db = Room.databaseBuilder(
+        RoomDatabase.Builder<AppDatabase> appDatabaseBuilder = Room.databaseBuilder(
                 context, AppDatabase.class,
                 "messages-db"
-        ).build();
+        );
+        appDatabaseBuilder.addMigrations(
+                new Migration(1, 2) {
+                    @Override
+                    public void migrate(@NonNull SupportSQLiteDatabase database) {
+                        database.execSQL("ALTER TABLE message ADD COLUMN sms_date_time TEXT DEFAULT \"\"");
+                    }
+                }
+        );
+        AppDatabase db = appDatabaseBuilder.build();
         messageDao = db.messageDao();
     }
 
@@ -79,12 +95,13 @@ public class MessageStorage {
         return messageDao.insert(entry);
     }
 
-    public long addMessage(String deviceId, String addressFrom, String dateTime, String body) {
+    public long addMessage(String deviceId, String addressFrom, String dateTime, String smsCenterDateTime, String body) {
         Message entry = new Message();
 
         entry.deviceId = deviceId;
         entry.addressFrom = addressFrom;
         entry.dateTime = dateTime;
+        entry.smsCenterDateTime = smsCenterDateTime;
         entry.body = body;
 
         return messageDao.insert(entry);
@@ -104,6 +121,7 @@ public class MessageStorage {
                             messageEntry.deviceId,
                             messageEntry.addressFrom,
                             messageEntry.dateTime,
+                            messageEntry.smsCenterDateTime,
                             messageEntry.body,
                             messageEntry.isSent,
                             messageEntry.id
@@ -124,6 +142,7 @@ public class MessageStorage {
                             messageEntry.deviceId,
                             messageEntry.addressFrom,
                             messageEntry.dateTime,
+                            messageEntry.smsCenterDateTime,
                             messageEntry.body,
                             messageEntry.isSent,
                             messageEntry.id

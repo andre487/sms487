@@ -11,24 +11,27 @@ public class MessageContainer {
     private final String deviceId;
     private final String addressFrom;
     private final String dateTime;
+    private final String smsCenterDateTime;
     private final String body;
     private final boolean isSent;
     private final long dbId;
 
     public MessageContainer(
             String deviceId, String addressFrom,
-            String dateTime, String body, boolean isSent, long dbId
+            String dateTime, String smsCenterDateTime,
+            String body, boolean isSent, long dbId
     ) {
         this.deviceId = deviceId;
         this.addressFrom = addressFrom;
         this.dateTime = dateTime;
+        this.smsCenterDateTime = smsCenterDateTime;
         this.body = body;
         this.isSent = isSent;
         this.dbId = dbId;
     }
 
-    public MessageContainer(String addressFrom, String dateTime, String body) {
-        this(Build.MODEL, addressFrom, dateTime, body, false, 0);
+    public MessageContainer(String addressFrom, String dateTime, String smsCenterDateTime, String body) {
+        this(Build.MODEL, addressFrom, dateTime, smsCenterDateTime, body, false, 0);
     }
 
     public String getAsString() {
@@ -38,6 +41,7 @@ public class MessageContainer {
             obj.put("device_id", deviceId);
             obj.put("address_from", addressFrom);
             obj.put("date_time", dateTime);
+            obj.put("sms_date_time", smsCenterDateTime);
             obj.put("body", body);
             obj.put("is_sent", isSent);
 
@@ -56,6 +60,10 @@ public class MessageContainer {
 
     public String getDateTime() {
         return dateTime;
+    }
+
+    public String getSmsCenterDateTime() {
+        return smsCenterDateTime;
     }
 
     public String getBody() {
