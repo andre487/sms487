@@ -21,6 +21,7 @@ MONGO_AUTH_SOURCE = os.environ.get('MONGO_AUTH_SOURCE')
 MONGO_DB_NAME = os.environ.get('MONGO_DB_NAME', 'sms487')
 
 date_time_pattern = re.compile(r'^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}(?::\d{2})?)(?:\s[+-]\d+)?$')
+message_type_pattern = re.compile(r'^\w{3,32}$')
 time_zone = timezone(offset=timedelta(hours=TZ_OFFSET))
 
 _mongo_client = None
@@ -46,10 +47,18 @@ def get_sms(device_id, limit=None):
 
 
 def add_sms(data):
+    message_type = data.get('message_type', '').strip()
     device_id = data.get('device_id', '').strip()
     tel = data.get('tel', '').strip()
     date_time = data.get('date_time', '').strip()
+    sms_date_time = data.get('sms_date_time', date_time).strip()
     text = data.get('text', '').strip()
+
+    if not message_type:
+        raise FormDataError('There is no message type')
+
+    if not message_type_pattern.match(message_type):
+        raise FormDataError('Wrong message type format')
 
     if not device_id:
         raise FormDataError('There is no device ID')
@@ -60,16 +69,24 @@ def add_sms(data):
     if not date_time:
         raise FormDataError('There is no date_time')
 
+    if not sms_date_time:
+        raise FormDataError('There is no sms_date_time')
+
     if not date_time_pattern.match(date_time):
         raise FormDataError('date_time is incorrect')
 
     if not text:
         raise FormDataError('There is no text')
 
+    if len(text) > 1024:
+        raise FormDataError('Text is too long')
+
     _get_sms_collection().insert({
+        'message_type': message_type,
         'device_id': device_id,
         'tel': tel,
         'date_time': date_time,
+        'sms_date_time': sms_date_time,
         'text': text,
     })
 
@@ -81,14 +98,37 @@ def dress_sms_doc(doc):
         if not n.startswith('_'):
             result[n] = v
 
+    result['printable_message_type'] = 'SMS'
+    if result.get('message_type') == 'notification':
+        result['printable_message_type'] = 'Notification'
+
     if 'date_time' in result:
-        try:
-            date_time = datetime.strptime(result['date_time'], '%Y-%m-%d %H:%M:%S %z')
-        except ValueError:
-            date_time = datetime.strptime(result['date_time'], '%Y-%m-%d %H:%M %z')
-        result['date_time'] = date_time.astimezone(time_zone).strftime('%d %b %Y %H:%M')
+        result['date_time'] = format_date_time(result)
+
+    if 'sms_date_time' in result:
+        result['sms_date_time'] = format_date_time(result)
+
+    if 'date_time' in result or 'sms_date_time' in result:
+        date_time = str(result.get('date_time', ''))
+        sms_date_time = str(result.get('sms_date_time', ''))
+
+        result['printable_date_time'] = 'Undefined'
+        if date_time:
+            result['printable_date_time'] = date_time
+
+        if sms_date_time and date_time != sms_date_time:
+            result['printable_date_time'] += ' (%s)' % sms_date_time
 
     return result
+
+
+def format_date_time(result):
+    try:
+        date_time = datetime.strptime(result['date_time'], '%Y-%m-%d %H:%M:%S %z')
+    except ValueError:
+        date_time = datetime.strptime(result['date_time'], '%Y-%m-%d %H:%M %z')
+
+    return date_time.astimezone(time_zone).strftime('%d %b %Y %H:%M')
 
 
 def get_device_ids():
