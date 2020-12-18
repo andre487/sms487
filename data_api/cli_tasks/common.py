@@ -88,12 +88,18 @@ def start_docker_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
     )).strip()
 
     atexit.register(partial(remove_docker_container, cont_id))
+    atexit.register(partial(get_docker_instance_logs, cont_id))
 
 
 def remove_docker_container(cont_id):
     logging.info('Removing Docker container %s', cont_id)
     docker = get_docker()
     subprocess.check_call((docker, 'rm', '-f', cont_id))
+
+
+def get_docker_instance_logs(cont_id):
+    docker = get_docker()
+    subprocess.check_call((docker, 'logs', cont_id))
 
 
 def run_mongo(force_db_cleaning=False, db_name=DEV_DB_NAME):
