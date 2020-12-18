@@ -1,4 +1,3 @@
-.deploy
 .venv
 __pycache__
 .pytest_cache
@@ -6,6 +5,7 @@ __pycache__
 .dockerignore
 .gitignore
 cli_tasks
+deploy
 tasks.py
 test_data
 Dockerfile
