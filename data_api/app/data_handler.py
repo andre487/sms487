@@ -2,7 +2,7 @@ import logging
 import os
 import re
 import ssl
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 import pymongo
 

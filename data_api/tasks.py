@@ -11,6 +11,12 @@ def run_dev(c, port=8080, recreate_venv=False):
 
 
 @task
+def lint(c, recreate_venv=False):
+    """Run flake8"""
+    cli_tasks.run_linters.run(c, recreate_venv)
+
+
+@task
 def install(c, recreate_venv=False, packages=''):
     """Install packages: invoke install --packages='flask pytest'"""
     cli_tasks.install.run(c, recreate_venv, packages)
@@ -55,6 +61,8 @@ def docker_test(c, recreate_venv=False):
 @task
 def make_deploy(c, recreate_venv=False):
     """Deploy current work dir to production"""
+    cli_tasks.run_linters.run(c, recreate_venv)
+
     cli_tasks.docker_build.run(c)
     cli_tasks.docker_test.run(c, recreate_venv)
     cli_tasks.docker_push.run(c)
