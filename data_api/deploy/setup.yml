@@ -69,16 +69,6 @@
         state: reloaded
       when: config_res.changed or certificate_res.changed
 
-    - name: Create auth data dir
-      file:
-        state: directory
-        dest: /etc/auth487
-
-    - name: Setup public key
-      copy:
-        src: ~/.private/auth487/public_key.pem
-        dest: /etc/auth487/public_key.pem
-
     - name: Create docker network for all services
       shell: docker network create --driver bridge '{{ network_name }}' || true
 
@@ -105,7 +95,6 @@
           -e "MONGO_SSL_CERT={{ lookup('file', '~/.private/services/mongo/shared/ssl_cert') }}" \
           -e "MONGO_USER={{ lookup('file', '~/.private/services/mongo/shared/user') }}" \
           -e "MONGO_PASSWORD={{ lookup('file', '~/.private/services/mongo/shared/password') }}" \
-          -e "AUTH_PUBLIC_KEY_FILE=/etc/auth487/public_key.pem" \
           -e "AUTH_DOMAIN=https://auth.andre.life" \
           -p 127.0.0.1:{{ service_port }}:5000 \
           andre487/{{ container_name }}
