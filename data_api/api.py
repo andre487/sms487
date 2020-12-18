@@ -4,8 +4,7 @@ import logging
 import os
 import sys
 
-import data_handler
-import templating
+from app import data_handler, templating
 from auth487 import flask as ath, common as acm
 from flask import request
 
