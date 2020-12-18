@@ -1,4 +1,6 @@
+import os
 import cli_tasks
+from cli_tasks import common
 from invoke import task
 
 
@@ -48,3 +50,17 @@ def docker_run(c, port=8181):
 def docker_test(c, recreate_venv=False):
     """Run HTTP handlers test on Docker instance"""
     cli_tasks.docker_test.run(c, recreate_venv)
+
+
+@task
+def make_deploy(c, recreate_venv=False):
+    """Deploy current work dir to production"""
+    cli_tasks.docker_build.run(c)
+    cli_tasks.docker_test.run(c, recreate_venv)
+    cli_tasks.docker_push.run(c)
+
+    c.run(
+        f'ansible-playbook '
+        f'--inventory {os.getenv("HOME")}/work/ansible-inventory/ansible-inventory.yml '
+        f'{common.PROJECT_DIR}/deploy/setup.yml'
+    )
