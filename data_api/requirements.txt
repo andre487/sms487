@@ -1,5 +1,5 @@
 attrs==20.3.0
-auth487 @ git+https://github.com/andre487/auth487.git@30cc8e2cff8878a2735f98b5507f4f0c3b75de4a#subdirectory=lib
+auth487 @ git+https://github.com/andre487/auth487.git@46f5b1e006cd0ec520e0bee608b675822e18a2a0#subdirectory=lib
 Authlib==0.11
 certifi==2020.12.5
 cffi==1.14.4

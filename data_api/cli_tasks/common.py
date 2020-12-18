@@ -22,8 +22,10 @@ DEFAULT_APP_ENV = {
     'FLASK_APP': 'api.py',
     'FLASK_ENV': 'dev',
     'FLASK_DEBUG': '1',
-    'AUTH_PUBLIC_KEY_FILE': f'{os.getenv("HOME")}/.private/auth487/public_key.pem',
     'AUTH_DOMAIN': 'https://auth.andre.life',
+    'AUTH_PRIVATE_KEY_FILE': os.path.join(TEST_DATA_DIR, 'auth_keys', 'key'),
+    'AUTH_PUBLIC_KEY_FILE': os.path.join(TEST_DATA_DIR, 'auth_keys', 'key.pub.pem'),
+    'ENABLE_TEST_TOKEN_SET': '1',
 }
 
 
