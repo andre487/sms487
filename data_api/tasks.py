@@ -18,3 +18,9 @@ def install(c, recreate_venv=False, packages=''):
 def freeze(c, recreate_venv=False):
     """Freeze requirements.txt"""
     cli_tasks.freeze_requirements.run(c, recreate_venv)
+
+
+@task
+def http_test(c, recreate_venv=False):
+    """Run HTTP handlers test"""
+    cli_tasks.http_test.run(c, recreate_venv)

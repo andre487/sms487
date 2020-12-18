@@ -76,6 +76,9 @@ def add_sms(data):
     if not date_time_pattern.match(date_time):
         raise FormDataError('date_time is incorrect')
 
+    if not date_time_pattern.match(sms_date_time):
+        raise FormDataError('sms_date_time is incorrect')
+
     if not text:
         raise FormDataError('There is no text')
 
@@ -99,26 +102,23 @@ def dress_sms_doc(doc):
         if not n.startswith('_'):
             result[n] = v
 
+    if 'message_type' not in result:
+        result['message_type'] = 'sms'
+
     result['printable_message_type'] = 'SMS'
-    if result.get('message_type') == 'notification':
+    if result['message_type'] == 'notification':
         result['printable_message_type'] = 'Notification'
 
-    if 'date_time' in result:
-        result['date_time'] = format_date_time(result['date_time'])
+    result['date_time'] = format_date_time(result['date_time'])
 
     if 'sms_date_time' in result:
         result['sms_date_time'] = format_date_time(result['sms_date_time'])
+    else:
+        result['sms_date_time'] = result['date_time']
 
-    if 'date_time' in result or 'sms_date_time' in result:
-        date_time = str(result.get('date_time', ''))
-        sms_date_time = str(result.get('sms_date_time', ''))
-
-        result['printable_date_time'] = 'Undefined'
-        if date_time:
-            result['printable_date_time'] = date_time
-
-        if sms_date_time and date_time != sms_date_time:
-            result['printable_date_time'] += ' (%s)' % sms_date_time
+    result['printable_date_time'] = result['date_time']
+    if result['date_time'] != result['sms_date_time']:
+        result['printable_date_time'] += ' (%s)' % result['sms_date_time']
 
     return result
 

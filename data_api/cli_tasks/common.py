@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import shutil
+import socket
 import subprocess
 
 logging.basicConfig(level=logging.INFO)
@@ -43,7 +44,22 @@ def prepare_virtual_env(c, recreate_venv):
     c.run(f'{PYTHON} -m pip install -r {PROJECT_DIR}/requirements.txt')
 
 
-def run_mongo():
+def start_dev_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
+    mongo_port = run_mongo(force_db_cleaning=force_db_cleaning, db_name=db_name)
+
+    env = DEFAULT_APP_ENV.copy()
+    env['AUTH_MONGO_DB_NAME'] = env['MONGO_DB_NAME'] = db_name
+    env.update(os.environ)
+    env['MONGO_PORT'] = mongo_port
+
+    return subprocess.Popen(
+        (PYTHON, '-m', 'flask', 'run', '-p', str(port)),
+        cwd=PROJECT_DIR,
+        env=env,
+    )
+
+
+def run_mongo(force_db_cleaning=False, db_name=DEV_DB_NAME):
     logging.info('Start MongoDB using Docker')
 
     docker = get_docker()
@@ -56,7 +72,7 @@ def run_mongo():
         subprocess.check_output((docker, 'start', cont_id))
 
     mongo_port = get_mongo_port(docker, cont_id)
-    fill_db_with_fixture(mongo_port, DEV_DB_NAME)
+    fill_db_with_fixture(mongo_port, db_name, force=force_db_cleaning)
 
     atexit.register(stop_mongo)
 
@@ -132,7 +148,31 @@ def fill_db_with_fixture(mongo_port, db_name, force=False):
     })
 
 
+def drop_db(db_name):
+    logging.info('Drop DB %s', db_name)
+
+    docker = get_docker()
+    cont_id, is_running = get_mongo_container_data(docker)
+    if not is_running:
+        raise RuntimeError('Mongo container is not running')
+
+    mongo_port = get_mongo_port(docker, cont_id)
+    script_path = os.path.join(TEST_DATA_DIR, 'manage-db.py')
+
+    subprocess.check_call((PYTHON, script_path, 'tear-down'), env={
+        'MONGO_PORT': mongo_port,
+        'MONGO_DB_NAME': db_name,
+        'AUTH_MONGO_DB_NAME': db_name,
+    })
+
+
 def get_auth_token():
     token_file = os.path.join(TEST_DATA_DIR, 'test-auth-token.txt')
     with open(token_file) as fp:
         return fp.read().strip()
+
+
+def get_free_port():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.bind(('0.0.0.0', 0))
+    return sock.getsockname()[1]
