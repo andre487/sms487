@@ -4,9 +4,8 @@ import logging
 import os
 import sys
 
-import data_handler
-import templating
-from auth487 import flask as ath
+from app import data_handler, templating
+from auth487 import flask as ath, common as acm
 from flask import request
 
 if sys.version_info[0] != 3:
@@ -86,6 +85,27 @@ def add_sms():
     except data_handler.FormDataError as e:
         logging.info('Client error: %s', e)
         return create_json_response([{'error': str(e)}], status=400)
+
+
+if os.getenv('ENABLE_TEST_TOKEN_SET') == '1':
+    @app.route('/set-token')
+    def set_token():
+        is_dev_env = os.getenv('FLASK_ENV') == 'dev' and app.debug
+        if not is_dev_env:
+            return create_json_response([{'error': 'Not in dev env'}], status=403)
+
+        private_key_file = os.getenv('AUTH_PRIVATE_KEY_FILE')
+        if not private_key_file or not os.path.exists(private_key_file):
+            return create_json_response([{'error': 'No private key'}], status=500)
+
+        with open(private_key_file) as fp:
+            private_key = fp.read().strip()
+
+        auth_token = acm.create_auth_token('test-user', private_key)
+
+        resp = flask.make_response('OK')
+        resp.set_cookie(ath.AUTH_COOKIE_NAME, auth_token, httponly=True, secure=False)
+        return resp
 
 
 # noinspection PyUnusedLocal

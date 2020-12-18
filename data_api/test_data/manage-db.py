@@ -18,17 +18,19 @@ logging.basicConfig(level=logging.INFO)
 def main():
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument('action', choices=('setup', 'tear-down'))
+    arg_parser.add_argument('--force', action='store_true')
 
     args = arg_parser.parse_args()
 
     if args.action == 'setup':
-        setup()
+        setup(args.force)
     elif args.action == 'tear-down':
         tear_down()
 
 
-def setup():
-    tear_down()
+def setup(force):
+    if force:
+        tear_down()
 
     logging.info('Setting up DB %s', MONGO_DB_NAME)
 
@@ -39,9 +41,11 @@ def setup():
     db = get_mongo_db()
 
     for collection_name, data in fixture_data.items():
-        logging.info('Setting up collection %s', collection_name)
-
         collection = db[collection_name]
+        if collection.estimated_document_count():
+            continue
+
+        logging.info('Setting up collection %s', collection_name)
         collection.insert_many(data)
 
 
