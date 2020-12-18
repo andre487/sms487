@@ -24,3 +24,21 @@ def freeze(c, recreate_venv=False):
 def http_test(c, recreate_venv=False):
     """Run HTTP handlers test"""
     cli_tasks.http_test.run(c, recreate_venv)
+
+
+@task
+def docker_build(c):
+    """Build app Docker image"""
+    cli_tasks.docker_build.run(c)
+
+
+@task
+def docker_push(c):
+    """Push app Docker image to registry"""
+    cli_tasks.docker_push.run(c)
+
+
+@task
+def docker_run(c):
+    """Run app in Docker container"""
+    cli_tasks.docker_run.run(c)

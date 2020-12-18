@@ -5,7 +5,8 @@ ADD ./requirements.txt /usr/local/bin/app/requirements.txt
 RUN set -x && \
     apt-get update && \
     apt-get install -y python3 python3-pip build-essential libssl-dev libffi-dev python3-dev git && \
-    pip3 install --no-binary --no-cache-dir -r /usr/local/bin/app/requirements.txt && \
+    python3 -m pip install --upgrade --no-cache-dir pip && \
+    python3 -m pip install --no-cache-dir -r /usr/local/bin/app/requirements.txt && \
     apt-get purge -y python3-pip build-essential git && \
     apt-get clean -y && \
     apt-get autoclean -y && \
