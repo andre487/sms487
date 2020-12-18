@@ -23,7 +23,6 @@ MONGO_DB_NAME = os.environ.get('MONGO_DB_NAME', 'sms487')
 date_time_pattern = re.compile(r'^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}(?::\d{2})?)(?:\s[+-]\d+)?$')
 short_date_time_pattern = re.compile(r'^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}).*')
 message_type_pattern = re.compile(r'^\w{3,32}$')
-time_zone = timezone(offset=timedelta(hours=TZ_OFFSET))
 
 _mongo_client = None
 
@@ -128,8 +127,10 @@ def format_date_time(dt):
     if not match:
         return dt
 
-    date_time = datetime.strptime(match.group(1), '%Y-%m-%d %H:%M')
-    return date_time.astimezone(time_zone).strftime('%d %b %Y %H:%M')
+    raw_date = match.group(1) + ' UTC'
+    date_time = datetime.strptime(raw_date, '%Y-%m-%d %H:%M %Z') + timedelta(hours=TZ_OFFSET)
+
+    return date_time.strftime('%d %b %Y %H:%M')
 
 
 def get_device_ids():

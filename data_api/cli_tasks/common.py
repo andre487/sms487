@@ -5,6 +5,7 @@ import os
 import shutil
 import socket
 import subprocess
+from functools import partial
 
 logging.basicConfig(level=logging.INFO)
 
@@ -62,11 +63,16 @@ def start_dev_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
 
 
 def start_docker_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
+    logging.info('Starting Docker app instance')
     run_mongo(force_db_cleaning=force_db_cleaning, db_name=db_name)
 
     docker = get_docker()
-    return subprocess.Popen((
-        docker, 'run', '--rm', '-ti', '--name', DOCKER_APP_NAME,
+    cont_id, _ = get_container_data(docker, DOCKER_APP_NAME)
+    if cont_id:
+        subprocess.check_call((docker, 'rm', '-f', cont_id))
+
+    cont_id = subprocess.check_output((
+        docker, 'run', '--rm', '-d', '--name', DOCKER_APP_NAME,
         '--link', DOCKER_MONGO_NAME,
         '-p', f'127.0.0.1:{port}:5000',
         '-v', f'{os.path.join(TEST_DATA_DIR, "auth_keys")}:/opt/auth_keys',
@@ -79,7 +85,15 @@ def start_docker_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
         '-e', f'MONGO_DB_NAME={db_name}',
         '-e', f'AUTH_MONGO_DB_NAME={db_name}',
         DOCKER_IMAGE_NAME,
-    ))
+    )).strip()
+
+    atexit.register(partial(remove_docker_container, cont_id))
+
+
+def remove_docker_container(cont_id):
+    logging.info('Removing Docker container %s', cont_id)
+    docker = get_docker()
+    subprocess.check_call((docker, 'rm', '-f', cont_id))
 
 
 def run_mongo(force_db_cleaning=False, db_name=DEV_DB_NAME):

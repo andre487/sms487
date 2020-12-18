@@ -22,7 +22,7 @@ def freeze(c, recreate_venv=False):
 
 @task
 def http_test(c, recreate_venv=False):
-    """Run HTTP handlers test"""
+    """Run HTTP handlers test on dev instance"""
     cli_tasks.http_test.run(c, recreate_venv)
 
 
@@ -42,3 +42,9 @@ def docker_push(c):
 def docker_run(c, port=8181):
     """Run app in Docker container"""
     cli_tasks.docker_run.run(c, port)
+
+
+@task
+def docker_test(c, recreate_venv=False):
+    """Run HTTP handlers test on Docker instance"""
+    cli_tasks.docker_test.run(c, recreate_venv)
