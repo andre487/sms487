@@ -6,7 +6,7 @@ from cli_tasks import common
 APP_PORT = int(os.getenv('APP_PORT', 8080))
 
 
-def get_result(handler, method='GET', data=None, headers=None, cookies=None, set_token=True):
+def make_request(handler, method='GET', data=None, headers=None, cookies=None, set_token=True):
     if cookies is None:
         cookies = {}
 
@@ -21,13 +21,13 @@ def get_result(handler, method='GET', data=None, headers=None, cookies=None, set
 
 class TestHomePage:
     def test_no_auth(self):
-        res = get_result('/', set_token=False)
+        res = make_request('/', set_token=False)
         assert '<title>SMS487</title>' not in res.text
         assert 'Redirecting...' in res.text
         assert res.status_code == 302
 
     def test_main(self):
-        res = get_result('/')
+        res = make_request('/')
         assert '<title>SMS487</title>' in res.text
         assert res.headers['content-type'] == 'text/html; charset=utf-8'
         assert res.status_code == 200
@@ -35,11 +35,11 @@ class TestHomePage:
 
 class TestError404:
     def test_no_auth(self):
-        res = get_result('/404', set_token=False)
+        res = make_request('/404', set_token=False)
         assert res.status_code == 404
 
     def test_main(self):
-        res = get_result('/404')
+        res = make_request('/404')
         assert res.headers['content-type'] == 'application/json; charset=utf-8'
         assert res.status_code == 404
 
@@ -50,13 +50,13 @@ class TestError404:
 
 class TestGetSms:
     def test_no_auth(self):
-        res = get_result('/get-sms', set_token=False)
+        res = make_request('/get-sms', set_token=False)
         assert '<title>SMS487</title>' not in res.text
         assert 'Redirecting...' in res.text
         assert res.status_code == 302
 
     def test_main(self):
-        res = get_result('/get-sms')
+        res = make_request('/get-sms')
         assert res.headers['content-type'] == 'application/json; charset=utf-8'
         assert res.status_code == 200
 
@@ -82,7 +82,7 @@ class TestGetSms:
         assert ans[1].get('printable_message_type') == 'Notification'
 
     def test_incorrect_limit(self):
-        res = get_result('/get-sms?limit=foo')
+        res = make_request('/get-sms?limit=foo')
         assert res.headers['content-type'] == 'application/json; charset=utf-8'
         assert res.status_code == 400
 
@@ -93,7 +93,7 @@ class TestGetSms:
 
 class TestAddSms:
     def test_no_auth(self):
-        res = get_result('/add-sms', method='POST', data={
+        res = make_request('/add-sms', method='POST', data={
             'message_type': 'sms',
             'date_time': '2018-01-01 00:04:00 +0000',
             'sms_date_time': '2017-12-31 23:04:00 +0000',
@@ -108,7 +108,7 @@ class TestAddSms:
         assert ans.get('error') == 'Auth error'
 
     def test_main(self):
-        res = get_result('/add-sms', method='POST', data={
+        res = make_request('/add-sms', method='POST', data={
             'message_type': 'sms',
             'date_time': '2018-01-01 00:04:00 +0000',
             'sms_date_time': '2017-12-31 23:04:00 +0000',
@@ -124,7 +124,7 @@ class TestAddSms:
         assert len(ans) == 1
         assert ans[0].get('status') == 'OK'
 
-        res = get_result('/get-sms?limit=1')
+        res = make_request('/get-sms?limit=1')
         ans = res.json()
         assert len(ans) == 1
 
@@ -138,7 +138,7 @@ class TestAddSms:
         assert ans[0].get('printable_message_type') == 'SMS'
 
     def test_wrong_method(self):
-        res = get_result('/add-sms', method='GET', data={
+        res = make_request('/add-sms', method='GET', data={
             'message_type': 'sms',
             'date_time': '2018-01-01 00:04:00 +0000',
             'sms_date_time': '2017-12-31 23:04:00 +0000',
@@ -155,7 +155,7 @@ class TestAddSms:
         assert ans[0].get('error') == 'Method is not allowed'
 
     def test_no_device_id(self):
-        res = get_result('/add-sms', method='POST', data={
+        res = make_request('/add-sms', method='POST', data={
             'message_type': 'sms',
             'date_time': '2018-01-01 00:04:00 +0000',
             'sms_date_time': '2017-12-31 23:04:00 +0000',
@@ -171,7 +171,7 @@ class TestAddSms:
         assert ans[0].get('error') == 'There is no device ID'
 
     def test_no_tel(self):
-        res = get_result('/add-sms', method='POST', data={
+        res = make_request('/add-sms', method='POST', data={
             'message_type': 'sms',
             'date_time': '2018-01-01 00:04:00 +0000',
             'sms_date_time': '2017-12-31 23:04:00 +0000',
@@ -187,7 +187,7 @@ class TestAddSms:
         assert ans[0].get('error') == 'There is no tel'
 
     def test_no_date_time(self):
-        res = get_result('/add-sms', method='POST', data={
+        res = make_request('/add-sms', method='POST', data={
             'message_type': 'sms',
             'sms_date_time': '2017-12-31 23:04:00 +0000',
             'device_id': 'TestTest',
@@ -203,7 +203,7 @@ class TestAddSms:
         assert ans[0].get('error') == 'There is no date_time'
 
     def test_no_text(self):
-        res = get_result('/add-sms', method='POST', data={
+        res = make_request('/add-sms', method='POST', data={
             'message_type': 'sms',
             'date_time': '2017-12-31 23:04:00 +0000',
             'sms_date_time': '2017-12-31 23:04:00 +0000',
@@ -219,7 +219,7 @@ class TestAddSms:
         assert ans[0].get('error') == 'There is no text'
 
     def test_no_message_type(self):
-        res = get_result('/add-sms', method='POST', data={
+        res = make_request('/add-sms', method='POST', data={
             'date_time': '2017-12-31 23:04:00 +0000',
             'sms_date_time': '2017-12-31 23:04:00 +0000',
             'device_id': 'TestTest',
@@ -235,7 +235,7 @@ class TestAddSms:
         assert ans[0].get('error') == 'There is no message type'
 
     def test_wrong_message_type(self):
-        res = get_result('/add-sms', method='POST', data={
+        res = make_request('/add-sms', method='POST', data={
             'message_type': '!',
             'date_time': '2017-12-31 23:04:00 +0000',
             'sms_date_time': '2017-12-31 23:04:00 +0000',
@@ -252,7 +252,7 @@ class TestAddSms:
         assert ans[0].get('error') == 'Wrong message type format'
 
     def test_wrong_date_time(self):
-        res = get_result('/add-sms', method='POST', data={
+        res = make_request('/add-sms', method='POST', data={
             'message_type': 'sms',
             'date_time': '2017-12-31',
             'sms_date_time': '2017-12-31 23:04:00 +0000',
@@ -269,7 +269,7 @@ class TestAddSms:
         assert ans[0].get('error') == 'date_time is incorrect'
 
     def test_wrong_sms_date_time(self):
-        res = get_result('/add-sms', method='POST', data={
+        res = make_request('/add-sms', method='POST', data={
             'message_type': 'sms',
             'date_time': '2017-12-31 23:04:00 +0000',
             'sms_date_time': '2017-12-31',
@@ -286,7 +286,7 @@ class TestAddSms:
         assert ans[0].get('error') == 'sms_date_time is incorrect'
 
     def test_too_long_text(self):
-        res = get_result('/add-sms', method='POST', data={
+        res = make_request('/add-sms', method='POST', data={
             'message_type': 'sms',
             'date_time': '2017-12-31 23:04:00 +0000',
             'sms_date_time': '2017-12-31 23:04:00 +0000',
