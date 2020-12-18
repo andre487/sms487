@@ -7,4 +7,4 @@ def run(_):
     os.chdir(common.PROJECT_DIR)
 
     docker = common.get_docker()
-    subprocess.check_call((docker, 'push', 'andre487/sms487-api:latest'))
+    subprocess.check_call((docker, 'push', common.DOCKER_IMAGE_NAME))

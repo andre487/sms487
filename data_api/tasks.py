@@ -39,6 +39,6 @@ def docker_push(c):
 
 
 @task
-def docker_run(c):
+def docker_run(c, port=8181):
     """Run app in Docker container"""
-    cli_tasks.docker_run.run(c)
+    cli_tasks.docker_run.run(c, port)

@@ -9,6 +9,6 @@ def run(_):
     docker = common.get_docker()
     subprocess.check_call((
         docker, 'build',
-        '-t', 'andre487/sms487-api:latest',
+        '-t', common.DOCKER_IMAGE_NAME,
         '--force-rm', '.',
     ))

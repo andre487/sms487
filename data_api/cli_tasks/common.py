@@ -13,7 +13,9 @@ VENV_DIR = os.path.join(PROJECT_DIR, '.venv')
 PYTHON = os.path.join(VENV_DIR, 'bin', 'python')
 TEST_DATA_DIR = os.path.join(PROJECT_DIR, 'test_data')
 
+DOCKER_IMAGE_NAME = 'andre487/sms487-api:latest'
 DOCKER_MONGO_NAME = 'sms487-mongo'
+DOCKER_APP_NAME = 'sms487-server-test'
 DEV_DB_NAME = 'sms487'
 TEST_DB_NAME = 'sms487_test'
 
@@ -59,19 +61,40 @@ def start_dev_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
     )
 
 
+def start_docker_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
+    run_mongo(force_db_cleaning=force_db_cleaning, db_name=db_name)
+
+    docker = get_docker()
+    return subprocess.Popen((
+        docker, 'run', '--rm', '-ti', '--name', DOCKER_APP_NAME,
+        '--link', DOCKER_MONGO_NAME,
+        '-p', f'127.0.0.1:{port}:5000',
+        '-v', f'{os.path.join(TEST_DATA_DIR, "auth_keys")}:/opt/auth_keys',
+        '-e', 'AUTH_PRIVATE_KEY_FILE=/opt/auth_keys/key',
+        '-e', 'AUTH_PUBLIC_KEY_FILE=/opt/auth_keys/key.pub.pem',
+        '-e', 'FLASK_APP=app.py',
+        '-e', 'FLASK_ENV=dev',
+        '-e', 'FLASK_DEBUG=1',
+        '-e', f'MONGO_HOST={DOCKER_MONGO_NAME}',
+        '-e', f'MONGO_DB_NAME={db_name}',
+        '-e', f'AUTH_MONGO_DB_NAME={db_name}',
+        DOCKER_IMAGE_NAME,
+    ))
+
+
 def run_mongo(force_db_cleaning=False, db_name=DEV_DB_NAME):
     logging.info('Start MongoDB using Docker')
 
     docker = get_docker()
-    cont_id, is_running = get_mongo_container_data(docker)
+    cont_id, is_running = get_container_data(docker, DOCKER_MONGO_NAME)
     if not cont_id:
         subprocess.check_output((docker, 'run', '-d', '-P', '--name', DOCKER_MONGO_NAME, 'mongo'))
-        cont_id, is_running = get_mongo_container_data(docker)
+        cont_id, is_running = get_container_data(docker, DOCKER_MONGO_NAME)
 
     if not is_running:
         subprocess.check_output((docker, 'start', cont_id))
 
-    mongo_port = get_mongo_port(docker, cont_id)
+    mongo_port = get_container_service_port(docker, cont_id, '27017/tcp')
     fill_db_with_fixture(mongo_port, db_name, force=force_db_cleaning)
 
     atexit.register(stop_mongo)
@@ -81,7 +104,7 @@ def run_mongo(force_db_cleaning=False, db_name=DEV_DB_NAME):
 
 def stop_mongo():
     docker = get_docker()
-    cont_id, is_running = get_mongo_container_data(docker)
+    cont_id, is_running = get_container_data(docker, DOCKER_MONGO_NAME)
 
     if is_running:
         logging.info('Stopping MongoDB')
@@ -92,23 +115,23 @@ def get_docker():
     return subprocess.check_output(('which', 'docker')).strip()
 
 
-def get_mongo_container_data(docker):
+def get_container_data(docker, container_name):
     out = str(subprocess.check_output((docker, 'ps', '-a')).strip())
     lines = out.split(r'\n')
 
     cont_id = None
     is_running = None
 
-    mongo_line = None
+    info_line = None
     for line in lines:
-        if DOCKER_MONGO_NAME in line:
-            mongo_line = line
+        if container_name in line:
+            info_line = line
             break
 
-    if not mongo_line:
+    if not info_line:
         return cont_id, is_running
 
-    cont_id, _ = mongo_line.strip().split(' ', 1)
+    cont_id, _ = info_line.strip().split(' ', 1)
     info = subprocess.check_output((docker, 'inspect', cont_id))
 
     info_data = json.loads(info)
@@ -120,16 +143,16 @@ def get_mongo_container_data(docker):
     return cont_id, is_running
 
 
-def get_mongo_port(docker, cont_id):
+def get_container_service_port(docker, cont_id, internal_port):
     info = subprocess.check_output((docker, 'inspect', cont_id))
 
     info_data = json.loads(info)
     if not info_data:
         raise RuntimeError('Empty docker inspect info')
 
-    port_data = info_data[0]['NetworkSettings']['Ports'].get('27017/tcp')
+    port_data = info_data[0]['NetworkSettings']['Ports'].get(internal_port)
     if not port_data:
-        raise RuntimeError('No Mongo port 27017 exposed')
+        raise RuntimeError(f'No port {internal_port} exposed')
 
     return port_data[0]['HostPort']
 
@@ -152,11 +175,11 @@ def drop_db(db_name):
     logging.info('Drop DB %s', db_name)
 
     docker = get_docker()
-    cont_id, is_running = get_mongo_container_data(docker)
+    cont_id, is_running = get_container_data(docker, DOCKER_MONGO_NAME)
     if not is_running:
         raise RuntimeError('Mongo container is not running')
 
-    mongo_port = get_mongo_port(docker, cont_id)
+    mongo_port = get_container_service_port(docker, cont_id, '27017/tcp')
     script_path = os.path.join(TEST_DATA_DIR, 'manage-db.py')
 
     subprocess.check_call((PYTHON, script_path, 'tear-down'), env={
