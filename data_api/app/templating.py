@@ -7,7 +7,7 @@ cur_dir = os.path.dirname(__file__)
 def setup_filters(app):
     @app.template_filter('static_version')
     def static_version_filter(file_name):
-        full_path = os.path.join(cur_dir, file_name[1:])
+        full_path = os.path.join(cur_dir, '..', file_name[1:])
 
         version = 0
         try:
