@@ -48,7 +48,7 @@ def get_sms(device_id, limit=None):
 
     cursor = _get_sms_collection().find(params).sort(
         [('date_time', pymongo.DESCENDING), ('device_id', pymongo.ASCENDING)]
-    ).limit(limit * 3)
+    ).limit(limit * 5)
 
     result = []
     for idx, doc in enumerate(deduplicate_messages(cursor)):
