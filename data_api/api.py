@@ -23,7 +23,7 @@ templating.setup_filters(app)
 
 @app.route('/')
 @ath.protected_from_brute_force
-@ath.require_auth()
+@ath.require_auth(access=['sms'])
 def index():
     device_id = request.args.get('device_id', '').strip()
     limit = request.args.get('limit', '30')
@@ -55,7 +55,7 @@ def index():
 
 @app.route('/get-sms')
 @ath.protected_from_brute_force
-@ath.require_auth()
+@ath.require_auth(access=['sms'])
 def get_sms():
     device_id = request.args.get('device_id', '').strip()
     limit = request.args.get('limit', '30')
@@ -77,7 +77,7 @@ def get_sms():
 
 @app.route('/add-sms', methods=['POST'])
 @ath.protected_from_brute_force
-@ath.require_auth(no_redirect=True)
+@ath.require_auth(no_redirect=True, access=['sms'])
 def add_sms():
     try:
         data_handler.add_sms(request.form)
@@ -94,17 +94,12 @@ if os.getenv('ENABLE_TEST_TOKEN_SET') == '1':
         if not is_dev_env:
             return create_json_response([{'error': 'Not in dev env'}], status=403)
 
-        private_key_file = os.getenv('AUTH_PRIVATE_KEY_FILE')
-        if not private_key_file or not os.path.exists(private_key_file):
-            return create_json_response([{'error': 'No private key'}], status=500)
-
-        with open(private_key_file) as fp:
-            private_key = fp.read().strip()
-
-        auth_token = acm.create_auth_token('test-user', private_key)
+        token_file = os.path.join(os.path.dirname(__file__), 'test_data', 'test-auth-token.txt')
+        with open(token_file) as fp:
+            auth_token = fp.read().strip()
 
         resp = flask.make_response('OK')
-        resp.set_cookie(ath.AUTH_COOKIE_NAME, auth_token, httponly=True, secure=False)
+        resp.set_cookie(acm.AUTH_COOKIE_NAME, auth_token, httponly=True, secure=False)
         return resp
 
 
