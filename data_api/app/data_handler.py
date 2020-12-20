@@ -48,9 +48,16 @@ def get_sms(device_id, limit=None):
 
     cursor = _get_sms_collection().find(params).sort(
         [('date_time', pymongo.DESCENDING), ('device_id', pymongo.ASCENDING)]
-    ).limit(limit)
+    ).limit(limit * 3)
 
-    return [dress_sms_doc(doc) for doc in cursor]
+    result = []
+    for idx, doc in enumerate(deduplicate_messages(cursor)):
+        if idx == limit:
+            break
+
+        result.append(dress_sms_doc(doc))
+
+    return result
 
 
 def add_sms(data):
@@ -102,6 +109,18 @@ def add_sms(data):
         'sms_date_time': sms_date_time,
         'text': text,
     })
+
+
+def deduplicate_messages(cursor):
+    param_set = set()
+
+    for message in cursor:
+        params_key = tuple((k, v) for k, v in message.items() if k != '_id')
+        if params_key in param_set:
+            continue
+
+        param_set.add(params_key)
+        yield message
 
 
 def dress_sms_doc(doc):
