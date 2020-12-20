@@ -126,8 +126,10 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        Editable serverKeyText = Objects.requireNonNull(serverKeyInput.getText());
-        appSettings.saveServerKey(serverKeyText.toString());
+        Editable serverKeyText = serverKeyInput.getText();
+        if (serverKeyText != null) {
+            appSettings.saveServerKey(serverKeyText.toString());
+        }
     }
 
     public void showServerUrl() {
@@ -145,8 +147,10 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        Editable serverUrlText = Objects.requireNonNull(serverUrlInput.getText());
-        appSettings.saveServerUrl(serverUrlText.toString());
+        Editable serverUrlText = serverUrlInput.getText();
+        if (serverUrlText != null) {
+            appSettings.saveServerUrl(serverUrlText.toString());
+        }
     }
 
     public void showServerKey() {

@@ -27,6 +27,9 @@ class AddSmsApiRequest extends StringRequest {
 
         @Override
         public void onResponse(String response) {
+            if (response == null) {
+                response = "Unknown response";
+            }
             Logger.i("AddSmsApiRequest", "Response: " + response);
 
             for (SmsApi.RequestHandledListener listener : requestHandledListeners) {
@@ -46,9 +49,12 @@ class AddSmsApiRequest extends StringRequest {
 
         @Override
         public void onErrorResponse(VolleyError error) {
-            String errorMessage = error.toString() + ": " +
-                    error.networkResponse.statusCode + ": " +
-                    new String(error.networkResponse.data, StandardCharsets.UTF_8);
+            String errorMessage = "Unknown network error";
+            if (error.networkResponse != null) {
+                errorMessage = error.toString() + ": " +
+                        error.networkResponse.statusCode + ": " +
+                        new String(error.networkResponse.data, StandardCharsets.UTF_8);
+            }
 
             Logger.e(
                     "AddSmsApiRequest",

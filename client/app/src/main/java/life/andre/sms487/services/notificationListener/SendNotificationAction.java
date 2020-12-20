@@ -1,11 +1,10 @@
 package life.andre.sms487.services.notificationListener;
 
+import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
 import java.util.TimeZone;
 
 import life.andre.sms487.logging.Logger;
@@ -13,6 +12,7 @@ import life.andre.sms487.logging.Logger;
 public class SendNotificationAction extends AsyncTask<SendNotificationParams, Void, Void> {
     private SimpleDateFormat dateFormat;
 
+    @SuppressLint("SimpleDateFormat")
     @Override
     protected Void doInBackground(SendNotificationParams... params) {
         if (params.length == 0) {
