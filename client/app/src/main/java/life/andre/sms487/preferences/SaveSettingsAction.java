@@ -24,6 +24,8 @@ class SaveSettingsAction extends AsyncTask<SaveSettingsParams, Void, String> {
                 return saveServerUrl(mainParams);
             case SettingNames.SERVER_KEY:
                 return saveServerKey(mainParams);
+            case SettingNames.NEED_SEND_SMS:
+                return saveNeedSendSms(mainParams);
         }
 
         return null;
@@ -54,5 +56,18 @@ class SaveSettingsAction extends AsyncTask<SaveSettingsParams, Void, String> {
         params.sharedPreferences.edit().putString(SettingNames.SERVER_KEY, serverKey).apply();
 
         return "Server key saved";
+    }
+
+    private String saveNeedSendSms(SaveSettingsParams params) {
+        String val = params.value.trim();
+        if (!val.equals("1") && !val.equals("0")) {
+            return "Error: invalid send SMS param";
+        }
+
+        params.sharedPreferences.edit().putString(SettingNames.NEED_SEND_SMS, val).apply();
+
+        return val.equals("1") ?
+                "SMS will be sent to the server now" :
+                "SMS will not be sent to the server now";
     }
 }

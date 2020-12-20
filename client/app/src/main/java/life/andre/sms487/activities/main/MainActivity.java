@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatCheckBox;
 import androidx.appcompat.widget.AppCompatEditText;
 
 import android.text.Editable;
@@ -23,6 +24,7 @@ import java.util.concurrent.ExecutionException;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.OnCheckedChanged;
 import life.andre.sms487.services.smsHandler.SmsRequestListener;
 import life.andre.sms487.system.PermissionsChecker;
 
@@ -53,6 +55,11 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.logsField)
     AppCompatEditText logsField;
 
+    @SuppressLint("NonConstantResourceId")
+    @Nullable
+    @BindView(R.id.sendSmsCheckBox)
+    AppCompatCheckBox sendSmsCheckBox;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,6 +89,8 @@ public class MainActivity extends AppCompatActivity {
 
         showServerUrl();
         showServerKey();
+
+        showNeedSendSms();
     }
 
     @SuppressLint("NonConstantResourceId")
@@ -223,5 +232,22 @@ public class MainActivity extends AppCompatActivity {
         }
 
         logsField.setText(logsString.toString());
+    }
+
+    private void showNeedSendSms() {
+        if (sendSmsCheckBox != null) {
+            sendSmsCheckBox.setChecked(appSettings.getNeedSendSms());
+        }
+    }
+
+    @SuppressLint("NonConstantResourceId")
+    @OnCheckedChanged(R.id.sendSmsCheckBox)
+    void saveNeedSendSms() {
+        if (sendSmsCheckBox == null) {
+            return;
+        }
+
+        boolean checked = sendSmsCheckBox.isChecked();
+        appSettings.saveNeedSendSms(checked);
     }
 }

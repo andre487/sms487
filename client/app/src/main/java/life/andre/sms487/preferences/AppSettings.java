@@ -60,6 +60,26 @@ public class AppSettings {
         return sharedPreferences.getString(SettingNames.SERVER_KEY, "");
     }
 
+    public boolean getNeedSendSms() {
+        String val = sharedPreferences.getString(SettingNames.NEED_SEND_SMS, "");
+        return val.equals("1");
+    }
+
+    public void saveNeedSendSms(boolean needSendSms) {
+        SaveSettingsParams params = new SaveSettingsParams(
+                sharedPreferences, SettingNames.NEED_SEND_SMS, needSendSms ? "1" : "0"
+        );
+
+        SaveSettingsAction action = new SaveSettingsAction();
+        action.execute(params);
+
+        try {
+            showMessage(action.get());
+        } catch (InterruptedException | ExecutionException e) {
+            showMessage(e.toString());
+        }
+    }
+
     private void showMessage(String message) {
         Toast.makeText(context, message, Toast.LENGTH_LONG).show();
     }

@@ -35,6 +35,10 @@ public class SmsHandler extends Service {
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (!appSettings.getNeedSendSms()) {
+            return Service.START_STICKY;
+        }
+
         SendSmsParams params = new SendSmsParams(intent, smsApi, messageStorage, Build.MODEL);
         new SendSmsAction().execute(params);
 

@@ -87,12 +87,7 @@ public class NotificationListener extends NotificationListenerService {
     }
 
     boolean isNotificationSuitable(StatusBarNotification sbn) {
-        if (!sbn.isClearable()) {
-            return false;
-        }
-
-        String tag = sbn.getTag();
-        return tag == null || !tag.contains(":sms:");
+        return sbn.isClearable();
     }
 
     public String getAppLabel(String packageName) {
