@@ -115,7 +115,7 @@ def deduplicate_messages(cursor):
     param_set = set()
 
     for message in cursor:
-        params_key = tuple((k, v) for k, v in message.items() if k != '_id')
+        params_key = tuple((k, message[k]) for k in ('device_id', 'tel', 'text'))
         if params_key in param_set:
             continue
 
