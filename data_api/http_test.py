@@ -22,13 +22,13 @@ def make_app_request(handler, method='GET', data=None, headers=None, cookies=Non
 class TestHomePage:
     def test_no_auth(self):
         res = make_app_request('/', set_token=False)
-        assert '<title>SMS487</title>' not in res.text
+        assert '<title>SMS 487</title>' not in res.text
         assert 'Redirecting...' in res.text
         assert res.status_code == 302
 
     def test_main(self):
         res = make_app_request('/')
-        assert '<title>SMS487</title>' in res.text
+        assert '<title>SMS 487</title>' in res.text
         assert res.headers['content-type'] == 'text/html; charset=utf-8'
         assert res.status_code == 200
 
@@ -51,7 +51,7 @@ class TestError404:
 class TestGetSms:
     def test_no_auth(self):
         res = make_app_request('/get-sms', set_token=False)
-        assert '<title>SMS487</title>' not in res.text
+        assert '<title>SMS 487</title>' not in res.text
         assert 'Redirecting...' in res.text
         assert res.status_code == 302
 
