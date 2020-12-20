@@ -7,15 +7,7 @@
 
     font-family: sans-serif;
     font-size: 16px;
-    background: #a0a0a0;
-    color: rgba(255, 255, 255, 0.7);
-}
-
-.page__header
-{
-    margin: 0 10px 15px 10px;
-
-    font-size: 22px;
+    color: #333;
 }
 
 .header
@@ -23,175 +15,106 @@
     display: flex;
     align-items: center;
 
-    height: 30px;
-    margin: 0 0 15px 0;
-    padding: 12px 10px;
+    box-sizing: border-box;
+    height: 60px;
+    line-height: 60px;
+    padding: 0 20px;
+    margin-bottom: 20px;
 
-    background: rgb(144, 164, 174);
-    color: #f1f1f1;
-
-    font-size: 15px;
-    box-shadow: rgba(0, 0, 0, 0.12) 0 1px 4px;
-}
-
-.header__params-checkbox
-{
-    display: none;
-}
-
-.header__params-label
-{
-    position: relative;
-    height: 24px;
-    width: 24px;
-    margin-right: 10px;
-}
-
-.header__params-icon
-{
-    height: 24px;
-    width: 24px;
-    user-select: none;
-    transition: all 450ms cubic-bezier(.23, 1, .32, 1) 0ms;
-    cursor: pointer;
-}
-
-.header__params-label-area
-{
-    position: absolute;
-
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    margin: auto;
-
-    width: 0;
-    height: 0;
-
-    background: rgba(0, 0, 0, 0.07);
-    border-radius: 2px;
-}
-
-.header__params-checkbox:active ~ .header__params-label .header__params-label-area
-{
-    animation: header__params-label-area-active  250ms ease;
-}
-
-@keyframes header__params-label-area-active {
-    from {
-        width: 10px;
-        height: 10px;
-    }
-    90% {
-        width: 24px;
-        height: 24px;
-    }
-    to {
-        width: 0;
-        height: 0;
-    }
+    font-size: 20px;
+    color: white;
+    background: #9c1a1c;
+    white-space: nowrap;
 }
 
 .header__app-name
 {
-    margin: 0 20px 0 0;
+    font-size: inherit;
     font-weight: normal;
-    user-select: none;
+    margin: 0 30px 0 0;
+    padding: 0;
+}
+
+.header__login
+{
+    margin: 0 0 0 auto;
+}
+
+.header__login:link, .header__login:visited
+{
+    color: white;
+}
+
+.header__login:hover, .header__login:active
+{
+    color: #f1f1f1;
+}
+
+.button
+{
+    box-sizing: border-box;
+
+    background: #333;
+    color: white;
+    border: none;
+
+    font-size: 16px;
+
+    padding: 10px 15px;
+    border-radius: 4px;
 }
 
 .message-params
 {
     display: flex;
     align-items: center;
-    white-space: nowrap;
-
-    width: 0;
-    overflow: hidden;
-
-    transition: width 250ms ease-in-out;
-}
-
-.header__params-checkbox:checked ~ .message-params
-{
-    width: 365px;
+    font-size: 14px;
+    line-height: normal;
 }
 
 .message-params__item_label
 {
 
-    margin-right: 5px;
+    margin-right: 10px;
 }
 
 .message-params__item + .message-params__item_label
 {
-    margin-left: 15px;
+    margin-left: 25px;
 }
 
-.message-params__device-id
+.message-params__item_device-id
 {
     box-sizing: border-box;
-    width: 50px;
+    min-width: 110px;
+    padding: 2px 0;
+
     font-size: 14px;
-    padding: 3px;
-
-    background: rgba(255, 255, 255, 0.7);
     border: 1px solid #666;
-    color: #757575;
-    border-radius: 2px;
-
-    outline: 0;
+    color: #333;
+    border-radius: 4px;
 }
 
 .message-params__item_limit
 {
     box-sizing: border-box;
-    width: 50px;
+    width: 55px;
     font-size: 14px;
     padding: 3px;
 
-    background: rgba(255, 255, 255, 0.7);
     border: 1px solid #666;
-    color: #757575;
-    border-radius: 2px;
+    color: #333;
+    border-radius: 4px;
 }
 
 .message-params__item_submit
 {
-    box-sizing: border-box;
-    margin-left: 15px;
-    padding: 0 10px;
-    font-size: 14px;
-
-    background: #666;
-    border: 1px solid #333;
-    color: rgb(224, 224, 224);
-    border-radius: 2px;
-
-    outline: 0;
-}
-
-.message-params__item_submit:active
-{
-    background: #757575;
-    color: white;
-}
-
-.message-params__control
-{
-    box-sizing: border-box;
-    height: 30px;
-}
-
-.message-params__device-id
-{
-    min-width: 100px;
-    font-size: 14px;
+    margin-left: 25px;
 }
 
 .message-list
 {
-    margin: 0 10px;
+    margin: 0 20px;
     padding: 0;
     list-style: none;
 }
@@ -203,19 +126,17 @@
 
 .message-list__item + .message-list__item
 {
-    margin-top: 10px;
+    margin-top: 20px;
 }
 
 .message-view
 {
-    max-width: 900px;
-    background: #f1f1f1;
-    padding: 5px;
+    max-width: 1024px;
+    padding: 10px;
     border-radius: 2px;
 
-    color: #666;
-    box-shadow: rgba(0, 0, 0, 0.12) 0 1px 6px, rgba(0, 0, 0, 0.12) 0 1px 4px;
-    font-size: 14px;
+    box-shadow: black 1px 1px 4px;
+    font-size: 16px;
 }
 
 .message-view__header
@@ -224,25 +145,20 @@
     align-items: center;
 }
 
-.message-view__device-id
-{
-    color: #444;
-}
-
 .message-view__tel
 {
-    color: rgb(144, 164, 174);
+    color: #666;
     margin-left: 10px;
-}
-
-.message-view__content
-{
-    margin-top: 5px;
 }
 
 .message-view__date-time
 {
     margin: 5px 0;
-    font-size: 10px;
+    font-size: 14px;
     color: #666;
+}
+
+.message-view__text
+{
+    margin-top: 10px;
 }

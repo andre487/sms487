@@ -131,6 +131,11 @@ def create_html_response(template_name, data, status=200, headers=None):
     if headers is None:
         headers = {}
 
+    app.jinja_env.globals.update(
+        auth_link=acm.AUTH_DOMAIN,
+        login=data_handler.get_login(),
+    )
+
     html = flask.render_template(template_name, **data)
 
     resp = flask.make_response(html, status)

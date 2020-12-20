@@ -1,29 +1,21 @@
 <!DOCTYPE html>
 <html lang="ru">
     <head>
-        <title>SMS487</title>
+        <title>SMS 487</title>
         <link rel="stylesheet" href="{{ url_for('static', filename='style.css') | static_version }}">
         <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') | static_version }}" />
         <meta name="viewport" content="width=device-width,initial-scale=1">
     </head>
     <body class="page">
         <div class="header">
-            <input type="checkbox" title="Params" class="header__params-checkbox" id="header__params-checkbox">
-            <label for="header__params-checkbox" class="header__params-label">
-                <svg fill="#f1f1f1" color="#f1f1f1" viewBox="0 0 24 24">
-                    <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"></path>
-                </svg>
-                <span class="header__params-label-area"></span>
-            </label>
-
-            <h1 class="page__header header__app-name">Messages</h1>
+            <h1 class="header__app-name">SMS 487</h1>
 
             <form class="message-params">
                 <label for="message-params__device-id"
                        class="message-params__item message-params__item_label">Device ID:</label>
                 <select name="device_id"
                         id="message-params__device-id"
-                        class="message-params__item message-params__control message-params__device-id">
+                        class="message-params__item message-params__item_device-id">
                     {% for device_id_data in device_ids %}
                     <option value="{{ device_id_data[0] }}" {% if device_id_data[1] %}selected{%endif%}>
                         {{ device_id_data[0] }}
@@ -35,25 +27,25 @@
                        class="message-params__item message-params__item_label">Limit:</label>
                 <input name="limit" type="number" placeholder="Limit"
                        id="message-params__limit"
-                       class="message-params__item message-params__item_limit message-params__control message-params__limit"
+                       class="message-params__item message-params__item_limit"
                        value="{{ limit }}">
 
                 <button type="submit"
-                        class="message-params__item message-params__item_submit message-params__control message-params__setup">Setup</button>
+                        class="button message-params__item message-params__item_submit">Setup</button>
             </form>
+
+            <a target="_blank" rel="noopener" href="{{ auth_link }}" class="header__login">{{ login }}</a>
         </div>
 
-        <ul class="page__content message-list">
+        <ul class="message-list">
             {% for message in messages %}
             <li class="message-list__item message-view">
                 <div class="message-view__header">
                     <div class="message-view__device-id">{{ message.device_id }}</div>
                     <div class="message-view__tel">{{ message.printable_message_type }}: {{ message.tel }}</div>
                 </div>
-                <div class="message-view__content">
-                    <div class="message-view__date-time">{{ message.printable_date_time }}</div>
-                    <div class="message-view__text">{{ message.text }}</div>
-                </div>
+                <div class="message-view__date-time">{{ message.printable_date_time }}</div>
+                <div class="message-view__text">{{ message.text }}</div>
             </li>
             {% endfor %}
         </ul>
