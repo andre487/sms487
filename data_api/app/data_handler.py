@@ -2,9 +2,9 @@ import logging
 import os
 import re
 import ssl
-from datetime import datetime, timedelta
-
 import pymongo
+from datetime import datetime, timedelta
+from auth487 import flask as ath, common as acm
 
 CONNECT_TIMEOUT = 500
 TZ_OFFSET = int(os.environ.get('TZ_OFFSET', 3))
@@ -31,8 +31,15 @@ class FormDataError(Exception):
     pass
 
 
+def get_login():
+    login = acm.extract_auth_info(ath.get_auth_token()).get('login')
+    if not login:
+        raise FormDataError('Token has no login')
+    return login
+
+
 def get_sms(device_id, limit=None):
-    params = {}
+    params = {'login': get_login()}
     if device_id:
         params['device_id'] = device_id
 
@@ -47,6 +54,8 @@ def get_sms(device_id, limit=None):
 
 
 def add_sms(data):
+    login = get_login()
+
     message_type = data.get('message_type', '').strip()
     device_id = data.get('device_id', '').strip()
     tel = data.get('tel', '').strip()
@@ -85,6 +94,7 @@ def add_sms(data):
         raise FormDataError('Text is too long')
 
     _get_sms_collection().insert({
+        'login': login,
         'message_type': message_type,
         'device_id': device_id,
         'tel': tel,
@@ -134,7 +144,8 @@ def format_date_time(dt):
 
 
 def get_device_ids():
-    device_ids = _get_sms_collection().distinct('device_id')
+    login = get_login()
+    device_ids = _get_sms_collection().distinct('device_id', filter={'login': login})
     device_ids.sort()
     return device_ids
 
@@ -172,18 +183,22 @@ def _get_sms_collection():
     collection = client[MONGO_DB_NAME]['sms_items']
 
     collection.create_index([
+        ('login', pymongo.ASCENDING),
         ('device_id', pymongo.ASCENDING),
     ], background=True)
 
     collection.create_index([
+        ('login', pymongo.ASCENDING),
         ('tel', pymongo.ASCENDING),
     ], background=True)
 
     collection.create_index([
+        ('login', pymongo.ASCENDING),
         ('date_time', pymongo.DESCENDING),
     ], background=True)
 
     collection.create_index([
+        ('login', pymongo.ASCENDING),
         ('date_time', pymongo.DESCENDING),
         ('device_id', pymongo.ASCENDING),
     ], background=True)
