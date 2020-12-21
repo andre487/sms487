@@ -202,6 +202,10 @@ def _get_sms_collection():
     collection = client[MONGO_DB_NAME]['sms_items']
 
     collection.create_index([
+        ('lastModifiedDate', pymongo.ASCENDING),
+    ], background=True, expireAfterSeconds=172800)
+
+    collection.create_index([
         ('login', pymongo.ASCENDING),
         ('device_id', pymongo.ASCENDING),
     ], background=True)
