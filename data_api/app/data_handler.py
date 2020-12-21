@@ -97,7 +97,7 @@ def add_sms(data):
     if not text:
         raise FormDataError('There is no text')
 
-    if len(text) > 1024:
+    if len(text) > 2048:
         raise FormDataError('Text is too long')
 
     _get_sms_collection().insert({
