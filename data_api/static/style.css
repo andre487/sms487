@@ -8,6 +8,7 @@
     font-family: sans-serif;
     font-size: 16px;
     color: #333;
+    background: #fafafa;
 }
 
 .header
@@ -135,8 +136,10 @@
     padding: 10px;
     border-radius: 2px;
 
-    box-shadow: black 1px 1px 4px;
-    font-size: 16px;
+    box-shadow: black 0 0 1px;
+    font-size: 14px;
+    line-height: 1.5;
+    background: white;
 }
 
 .message-view__header
@@ -154,7 +157,7 @@
 .message-view__date-time
 {
     margin: 5px 0;
-    font-size: 14px;
+    font-size: 12px;
     color: #666;
 }
 
