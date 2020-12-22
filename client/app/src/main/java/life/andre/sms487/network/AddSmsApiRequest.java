@@ -83,7 +83,7 @@ class AddSmsApiRequest extends StringRequest {
         );
 
         this.requestParams = requestParams;
-        this.cookie = "AUTH_TOKEN=" + serverKey;
+        this.cookie = "__Secure-Auth-Token=" + serverKey;
     }
 
     @Override
