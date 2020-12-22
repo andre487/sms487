@@ -95,6 +95,7 @@
           -e "MONGO_SSL_CERT={{ lookup('file', '~/.private/services/mongo/shared/ssl_cert') }}" \
           -e "MONGO_USER={{ lookup('file', '~/.private/services/mongo/shared/user') }}" \
           -e "MONGO_PASSWORD={{ lookup('file', '~/.private/services/mongo/shared/password') }}" \
+          -e "MONGO_DB_NAME=sms487" \
           -e "AUTH_DOMAIN=https://auth.andre.life" \
           -p 127.0.0.1:{{ service_port }}:5000 \
           andre487/{{ container_name }}
