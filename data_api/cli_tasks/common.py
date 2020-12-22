@@ -54,6 +54,7 @@ def start_dev_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
     env['AUTH_MONGO_DB_NAME'] = env['MONGO_DB_NAME'] = db_name
     env.update(os.environ)
     env['MONGO_PORT'] = mongo_port
+    env['AUTH_DEV_MODE'] = '1'
 
     return subprocess.Popen(
         (PYTHON, '-m', 'flask', 'run', '-p', str(port)),
@@ -81,6 +82,7 @@ def start_docker_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
         '-e', 'FLASK_APP=app.py',
         '-e', 'FLASK_ENV=dev',
         '-e', 'FLASK_DEBUG=1',
+        '-e', 'AUTH_DEV_MODE=1',
         '-e', f'MONGO_HOST={DOCKER_MONGO_NAME}',
         '-e', f'MONGO_DB_NAME={db_name}',
         '-e', f'AUTH_MONGO_DB_NAME={db_name}',

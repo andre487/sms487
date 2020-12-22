@@ -14,7 +14,8 @@ def run(c, recreate_venv):
     time.sleep(2)
 
     test_proc = subprocess.Popen((common.PYTHON, '-m', 'pytest', '-s', 'http_test.py'), env={
-        'APP_PORT': str(port)
+        'APP_PORT': str(port),
+        'AUTH_DEV_MODE': '1',
     }, cwd=common.PROJECT_DIR)
     test_proc.wait()
 
