@@ -13,6 +13,7 @@ PROJECT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 VENV_DIR = os.path.join(PROJECT_DIR, '.venv')
 PYTHON = os.path.join(VENV_DIR, 'bin', 'python')
 TEST_DATA_DIR = os.path.join(PROJECT_DIR, 'test_data')
+SECRET_DIR = os.path.join(PROJECT_DIR, '.secret')
 
 DOCKER_IMAGE_NAME = 'andre487/sms487-api:latest'
 DOCKER_MONGO_NAME = 'sms487-mongo'

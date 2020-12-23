@@ -6,19 +6,31 @@ import pymongo
 from datetime import datetime, timedelta
 from auth487 import flask as ath, common as acm
 
+
+def get_env_param(name, def_val=None, try_file=False):
+    val = os.getenv(name, def_val)
+
+    if try_file and val and os.path.isfile(val):
+        with open(val) as fp:
+            return fp.read().strip()
+
+    return val
+
+
 CONNECT_TIMEOUT = 500
-TZ_OFFSET = int(os.environ.get('TZ_OFFSET', 3))
+TZ_OFFSET = int(os.getenv('TZ_OFFSET', 3))
 
-MONGO_HOST = os.environ.get('MONGO_HOST', 'localhost')
-MONGO_PORT = int(os.environ.get('MONGO_PORT', 27017))
+MONGO_HOST = get_env_param('MONGO_HOST', 'localhost', try_file=True)
+MONGO_PORT = int(get_env_param('MONGO_PORT', '27017', try_file=True))
 
-MONGO_REPLICA_SET = os.environ.get('MONGO_REPLICA_SET')
-MONGO_SSL_CERT = os.environ.get('MONGO_SSL_CERT')
+MONGO_REPLICA_SET = get_env_param('MONGO_REPLICA_SET', try_file=True)
+MONGO_SSL_CERT = get_env_param('MONGO_SSL_CERT', try_file=True)
 
-MONGO_USER = os.environ.get('MONGO_USER')
-MONGO_PASSWORD = os.environ.get('MONGO_PASSWORD')
-MONGO_AUTH_SOURCE = os.environ.get('MONGO_AUTH_SOURCE')
-MONGO_DB_NAME = os.environ.get('MONGO_DB_NAME', 'sms487')
+MONGO_USER = get_env_param('MONGO_USER', try_file=True)
+MONGO_PASSWORD = get_env_param('MONGO_PASSWORD', try_file=True)
+MONGO_AUTH_SOURCE = get_env_param('MONGO_AUTH_SOURCE', try_file=True)
+
+MONGO_DB_NAME = get_env_param('MONGO_DB_NAME', 'sms487')
 
 date_time_pattern = re.compile(r'^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}(?::\d{2})?)(?:\s[+-]\d+)?$')
 short_date_time_pattern = re.compile(r'^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}).*')

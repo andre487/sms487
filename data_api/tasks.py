@@ -59,9 +59,17 @@ def docker_test(c, recreate_venv=False):
 
 
 @task
-def make_deploy(c, recreate_venv=False):
+def prepare_secrets(c, recreate_venv=False, no_secret_cache=False):
+    """Prepare secrets for production"""
+    cli_tasks.prepare_secrets.run(c, recreate_venv, no_secret_cache)
+
+
+@task
+def make_deploy(c, recreate_venv=False, no_secret_cache=False):
     """Deploy current work dir to production"""
     cli_tasks.run_linters.run(c, recreate_venv)
+
+    cli_tasks.prepare_secrets.run(c, recreate_venv, no_secret_cache)
 
     cli_tasks.docker_build.run(c)
     cli_tasks.docker_test.run(c, recreate_venv)
