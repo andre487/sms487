@@ -109,10 +109,12 @@ def run_mongo(force_db_cleaning=False, db_name=DEV_DB_NAME):
     logging.info('Start MongoDB using Docker')
 
     docker = get_docker()
-    cont_id, is_running = get_container_data(docker, DOCKER_MONGO_NAME)
+    container_name = DOCKER_MONGO_NAME + '-' + db_name
+
+    cont_id, is_running = get_container_data(docker, container_name)
     if not cont_id:
-        subprocess.check_output((docker, 'run', '-d', '-P', '--name', DOCKER_MONGO_NAME, 'mongo'))
-        cont_id, is_running = get_container_data(docker, DOCKER_MONGO_NAME)
+        subprocess.check_output((docker, 'run', '-d', '-P', '--name', container_name, 'mongo'))
+        cont_id, is_running = get_container_data(docker, container_name)
 
     if not is_running:
         subprocess.check_output((docker, 'start', cont_id))

@@ -170,3 +170,15 @@
 {
     margin-top: 10px;
 }
+
+.link:link, .link:visited
+{
+    color: #9c1a1c;
+    text-decoration: none;
+}
+
+.link:hover, .link:active
+{
+    color: #9c1a1c;
+    text-decoration: underline;
+}

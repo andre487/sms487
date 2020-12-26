@@ -45,7 +45,7 @@
                     <div class="message-view__tel">{{ message.printable_message_type }}: {{ message.tel }}</div>
                 </div>
                 <div class="message-view__date-time">{{ message.printable_date_time }}</div>
-                <div class="message-view__text">{{ message.text }}</div>
+                <div class="message-view__text">{{ message.text | handle_tags | safe }}</div>
             </li>
             {% endfor %}
         </ul>

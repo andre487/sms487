@@ -68,7 +68,7 @@ class TestGetSms:
         assert ans[0].get('printable_date_time') == '01 Jan 2018 03:03'
         assert ans[0].get('tel') == '000'
         assert ans[0].get('device_id') == 'Test_3'
-        assert ans[0].get('text') == 'Baz'
+        assert ans[0].get('text') == 'Baz https://yandex.ru Quux'
         assert ans[0].get('message_type') == 'sms'
         assert ans[0].get('printable_message_type') == 'SMS'
 
@@ -77,7 +77,7 @@ class TestGetSms:
         assert ans[1].get('printable_date_time') == '01 Jan 2018 03:01 (01 Jan 2018 02:59)'
         assert ans[1].get('tel') == '000'
         assert ans[1].get('device_id') == 'Test_2'
-        assert ans[1].get('text') == 'Bar'
+        assert ans[1].get('text') == 'https://yandex.ru Bar https://google.ru <script>alert(1)</script>'
         assert ans[1].get('message_type') == 'notification'
         assert ans[1].get('printable_message_type') == 'Notification'
 

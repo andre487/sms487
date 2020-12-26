@@ -1,11 +1,11 @@
 {
   "sms_items": [
-    {"date_time": "2018-01-01 00:00:00 +0000", "tel": "000", "device_id": "Test_1", "text": "Foo", "login": "test"},
-    {"date_time": "2018-01-01 00:00:00 +0000", "tel": "000", "device_id": "Test_1", "text": "Foo", "login": "test"},
-    {"date_time": "2018-01-01 00:01:00 +0000", "tel": "000", "device_id": "Test_2", "text": "Bar", "message_type":  "notification", "sms_date_time":  "2017-12-31 23:59:59 +0000", "login": "test"},
-    {"date_time": "2018-01-01 00:01:00 +0000", "tel": "000", "device_id": "Test_2", "text": "Bar", "message_type":  "notification", "sms_date_time":  "2017-12-31 23:59:59 +0000", "login": "test"},
-    {"date_time": "2018-01-01 00:03:00 +0000", "tel": "000", "device_id": "Test_3", "text": "Baz", "login": "test"},
-    {"date_time": "2018-01-01 00:03:00 +0000", "tel": "000", "device_id": "Test_3", "text": "Baz", "login": "test"}
+    {"date_time": "2018-01-01 00:00:00 +0000", "tel": "000", "device_id": "Test_1", "text": "Foo https://yandex.ru", "login": "test"},
+    {"date_time": "2018-01-01 00:00:00 +0000", "tel": "000", "device_id": "Test_1", "text": "Foo https://yandex.ru", "login": "test"},
+    {"date_time": "2018-01-01 00:01:00 +0000", "tel": "000", "device_id": "Test_2", "text": "https://yandex.ru Bar https://google.ru <script>alert(1)</script>", "message_type":  "notification", "sms_date_time":  "2017-12-31 23:59:59 +0000", "login": "test"},
+    {"date_time": "2018-01-01 00:01:00 +0000", "tel": "000", "device_id": "Test_2", "text": "https://yandex.ru Bar https://google.ru <script>alert(1)</script>", "message_type":  "notification", "sms_date_time":  "2017-12-31 23:59:59 +0000", "login": "test"},
+    {"date_time": "2018-01-01 00:03:00 +0000", "tel": "000", "device_id": "Test_3", "text": "Baz https://yandex.ru Quux", "login": "test"},
+    {"date_time": "2018-01-01 00:03:00 +0000", "tel": "000", "device_id": "Test_3", "text": "Baz https://yandex.ru Quux", "login": "test"}
   ],
   "remote_addresses": [
     {"remote_addr": "8.8.8.8", "mistakes": 1}
