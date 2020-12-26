@@ -67,6 +67,7 @@ def start_dev_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
 def start_docker_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
     logging.info('Starting Docker app instance')
     run_mongo(force_db_cleaning=force_db_cleaning, db_name=db_name)
+    mongo_cont_name = DOCKER_MONGO_NAME + '-' + db_name
 
     docker = get_docker()
     cont_id, _ = get_container_data(docker, DOCKER_APP_NAME)
@@ -75,7 +76,7 @@ def start_docker_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
 
     cont_id = subprocess.check_output((
         docker, 'run', '--rm', '-d', '--name', DOCKER_APP_NAME,
-        '--link', DOCKER_MONGO_NAME,
+        '--link', mongo_cont_name,
         '-p', f'127.0.0.1:{port}:5000',
         '-v', f'{os.path.join(TEST_DATA_DIR, "auth_keys")}:/opt/auth_keys',
         '-e', 'AUTH_PRIVATE_KEY_FILE=/opt/auth_keys/key',
@@ -84,7 +85,7 @@ def start_docker_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
         '-e', 'FLASK_ENV=dev',
         '-e', 'FLASK_DEBUG=1',
         '-e', 'AUTH_DEV_MODE=1',
-        '-e', f'MONGO_HOST={DOCKER_MONGO_NAME}',
+        '-e', f'MONGO_HOST={mongo_cont_name}',
         '-e', f'MONGO_DB_NAME={db_name}',
         '-e', f'AUTH_MONGO_DB_NAME={db_name}',
         DOCKER_IMAGE_NAME,
