@@ -20,6 +20,16 @@ LOG_LEVEL = os.environ.get('LOG_LEVEL', logging.INFO)
 logging.basicConfig(format=LOG_FORMAT, level=LOG_LEVEL)
 templating.setup_filters(app)
 
+ADDITIONAL_HEADERS = {
+    'Content-Security-Policy': (
+        "default-src 'none'; "
+        "style-src 'self'; "
+        "script-src 'self'; "
+        "img-src 'self';"
+    ),
+    'X-Frame-Options': 'deny'
+}
+
 
 @app.route('/')
 @ath.protected_from_brute_force
@@ -153,6 +163,9 @@ def create_html_response(template_name, data, status=200, headers=None):
     resp.headers['content-type'] = 'text/html; charset=utf-8'
 
     for name, val in headers.items():
+        resp.headers[name] = val
+
+    for name, val in ADDITIONAL_HEADERS.items():
         resp.headers[name] = val
 
     return resp
