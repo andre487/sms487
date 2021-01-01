@@ -1,4 +1,3 @@
-import os
 import cli_tasks
 from cli_tasks import common
 from invoke import task
@@ -77,6 +76,5 @@ def make_deploy(c, recreate_venv=False, no_secret_cache=False):
 
     c.run(
         f'ansible-playbook '
-        f'--inventory {os.getenv("HOME")}/work/ansible-inventory/ansible-inventory.yml '
         f'{common.PROJECT_DIR}/deploy/setup.yml'
     )
