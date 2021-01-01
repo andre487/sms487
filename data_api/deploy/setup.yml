@@ -12,7 +12,7 @@
   tasks:
     - name: Check SSL certificates
       stat:
-        path: /etc/letsencrypt/live/{{ http_domain }}
+        path: '/etc/letsencrypt/live/{{ http_domain }}'
       register: nginx_ssl_result
 
     - name: Setup NGINX no SSL host config
@@ -41,7 +41,7 @@
           -d {{ http_domain }} \
           -n \
           --agree-tos \
-          -m '{{ admin_email }}'
+          -m '{{ cert_email }}'
       when: nginx_ssl_result.stat.exists == False
       register: certificate_res
 
