@@ -6,7 +6,6 @@
   vars:
     container_name: sms487-api
     network_name: sms487_net
-    service_port: 10500
     secret_dir: '{{ playbook_dir }}/../.secret'
 
   tasks:
