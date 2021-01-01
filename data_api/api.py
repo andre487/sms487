@@ -8,8 +8,8 @@ from app import data_handler, templating
 from auth487 import flask as ath, common as acm
 from flask import request
 
-if sys.version_info[0] != 3:
-    raise EnvironmentError('Use Python 3')
+if sys.version_info[0] < 3 or sys.version_info[1] < 6:
+    raise EnvironmentError('Use Python >= 3.6')
 
 app = flask.Flask(__name__)
 

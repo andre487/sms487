@@ -93,34 +93,52 @@
         - user
         - password
 
-    - name: Create docker network for all services
-      shell: docker network create --driver bridge '{{ network_name }}' || true
+    - name: Create docker network for service
+      community.general.docker_network:
+        name: '{{ network_name }}'
+        state: present
+        internal: yes
+        driver: bridge
+      register: docker_network
 
     - name: Update image
-      shell: docker pull andre487/{{ container_name }}
+      community.general.docker_image:
+        name: 'andre487/{{ container_name }}'
+        source: pull
+        force_source: yes
+      register: docker_image
 
-    - name: Stop container
-      shell: |
-        docker stop {{ container_name }} || true
-        docker rm {{ container_name }} || true
+    - name: Stop and remove container
+      community.general.docker_container:
+        name: '{{ container_name }}'
+        state: absent
+        container_default_behavior: no_defaults
+      when: docker_network.changed or docker_image.changed
 
     - name: Start container
-      shell: |
-        docker run \
-          -d \
-          --restart always \
-          --network {{ network_name }} \
-          --name {{ container_name }} \
-          -v "/etc/sms487:/etc/sms487" \
-          -v "/usr/local/share/ca-certificates:/usr/local/share/ca-certificates" \
-          -e "MONGO_HOST=/etc/sms487/mongo/hosts" \
-          -e "MONGO_PORT=/etc/sms487/mongo/port" \
-          -e "MONGO_REPLICA_SET=/etc/sms487/mongo/replica_set" \
-          -e "MONGO_SSL_CERT=/etc/sms487/mongo/ssl_cert" \
-          -e "MONGO_USER=/etc/sms487/mongo/user" \
-          -e "MONGO_PASSWORD=/etc/sms487/mongo/password" \
-          -e "MONGO_AUTH_SOURCE=/etc/sms487/mongo/auth_src" \
-          -e "MONGO_DB_NAME=sms487" \
-          -e "AUTH_DOMAIN={{ auth_domain }}" \
-          -p 127.0.0.1:{{ service_port }}:5000 \
-          andre487/{{ container_name }}
+      community.general.docker_container:
+        name: '{{ container_name }}'
+        image: 'andre487/{{ container_name }}'
+        state: started
+        container_default_behavior: no_defaults
+        detach: yes
+        restart_policy: always
+        networks_cli_compatible: no
+        networks:
+          - name: '{{ network_name }}'
+        volumes:
+          - /etc/sms487:/etc/sms487:ro
+          - /usr/local/share/ca-certificates:/usr/local/share/ca-certificates:ro
+        ports:
+          - '127.0.0.1:{{ service_port }}:5000'
+        env:
+          MONGO_HOST: /etc/sms487/mongo/hosts
+          MONGO_PORT: /etc/sms487/mongo/port
+          MONGO_REPLICA_SET: /etc/sms487/mongo/replica_set
+          MONGO_SSL_CERT: /etc/sms487/mongo/ssl_cert
+          MONGO_USER: /etc/sms487/mongo/user
+          MONGO_PASSWORD: /etc/sms487/mongo/password
+          MONGO_AUTH_SOURCE: /etc/sms487/mongo/auth_src
+          MONGO_DB_NAME: sms487
+          AUTH_DOMAIN: '{{ auth_domain }}'
+      when: docker_network.changed or docker_image.changed
