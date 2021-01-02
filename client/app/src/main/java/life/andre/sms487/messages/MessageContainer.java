@@ -2,6 +2,7 @@ package life.andre.sms487.messages;
 
 import android.os.Build;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.json.JSONException;
@@ -10,6 +11,8 @@ import org.json.JSONObject;
 import life.andre.sms487.logging.Logger;
 
 public class MessageContainer {
+    private static final String logTag = "MessageContainer";
+
     private final String deviceId;
     private final String addressFrom;
     private final String dateTime;
@@ -19,22 +22,35 @@ public class MessageContainer {
     private final long dbId;
 
     @Nullable
-    public static MessageContainer createFromJson(String messageJson) {
+    public static MessageContainer createFromJson(@NonNull String messageJson) {
         try {
             JSONObject obj = new JSONObject(messageJson);
 
-            String addressFrom = (String) obj.get("address_from");
-            String dateTime = (String) obj.get("date_time");
-            String smsCenterDateTime = (String) obj.get("sms_date_time");
-            String body = (String) obj.get("body");
+            String addressFrom = obj.getString("address_from");
+            String dateTime = obj.getString("date_time");
+            String smsCenterDateTime = obj.getString("sms_date_time");
+            String body = obj.getString("body");
 
             return new MessageContainer(addressFrom, dateTime, smsCenterDateTime, body);
         } catch (JSONException e) {
-            Logger.w("SendSmsAction", e.toString());
+            Logger.w(logTag, e.toString());
             e.printStackTrace();
         }
 
         return null;
+    }
+
+    @NonNull
+    public static MessageContainer createFromMessageEntry(@NonNull MessageStorage.Message messageEntry) {
+        return new MessageContainer(
+                messageEntry.deviceId,
+                messageEntry.addressFrom,
+                messageEntry.dateTime,
+                messageEntry.smsCenterDateTime,
+                messageEntry.body,
+                messageEntry.isSent,
+                messageEntry.id
+        );
     }
 
     public MessageContainer(
