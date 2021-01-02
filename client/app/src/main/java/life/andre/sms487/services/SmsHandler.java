@@ -14,7 +14,7 @@ import java.util.List;
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.network.SmsApi;
-import life.andre.sms487.preferences.AppSettings;
+import life.andre.sms487.system.AppSettings;
 import life.andre.sms487.system.AppConstants;
 import life.andre.sms487.utils.AsyncTaskUtil;
 
