@@ -1,9 +1,12 @@
 package life.andre.sms487.activities.main;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,10 +30,12 @@ import life.andre.sms487.system.PermissionsChecker;
 
 public class MainActivity extends AppCompatActivity {
     private final PermissionsChecker permissionsChecker = new PermissionsChecker(this);
+    private final static String logTag = "MainActivity";
 
     private MessageStorage messageStorage;
     private SmsApi smsApi;
     private AppSettings appSettings;
+    private SmsApi.RequestHandledListener smsRequestListener;
 
     @SuppressLint("NonConstantResourceId")
     @Nullable
@@ -63,11 +68,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        Logger.d("MainActivity", "Activity is started");
-
         messageStorage = new MessageStorage(this);
         appSettings = new AppSettings(this);
         smsApi = new SmsApi(this, appSettings);
+
+        smsRequestListener = new SmsRequestListener(this);
     }
 
     @Override
@@ -82,19 +87,44 @@ public class MainActivity extends AppCompatActivity {
         showServerKey();
 
         showNeedSendSms();
+        smsApi.addRequestHandledListener(smsRequestListener);
+
+        // TODO: move to service
+        smsApi.resendMessages();
+    }
+
+    @Override
+    protected void onStop() {
+        smsApi.removeRequestHandledListener(smsRequestListener);
+        super.onStop();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        String action = intent.getStringExtra("action");
+        switch (action) {
+            case "renewMessages":
+                renewMessagesFromDb();
+                break;
+            case "toastMessage":
+                String message = intent.getStringExtra("message");
+                if (message != null) {
+                    Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+                }
+                break;
+        }
     }
 
     @SuppressLint("NonConstantResourceId")
     @OnClick(R.id.renewMessages)
     void renewMessagesFromDb() {
-        resendMessages();
-
         final List<MessageContainer> messages = getMessages();
         if (messages == null) {
-            Logger.w("MainActivity", "Messages are null");
+            Logger.w(logTag, "Messages are null");
             return;
         }
-        Logger.w("MainActivity", "show messages");
         showMessages(messages);
     }
 
@@ -103,10 +133,9 @@ public class MainActivity extends AppCompatActivity {
     void showLogsFromLogger() {
         final List<String> logs = getLogs();
         if (logs == null) {
-            Log.w("MainActivity", "Messages are null");
+            Log.w(logTag, "Messages are null");
             return;
         }
-        Log.i("MainActivity", "Show logs");
         showLogs(logs);
     }
 
@@ -152,19 +181,6 @@ public class MainActivity extends AppCompatActivity {
         serverKeyInput.setText(appSettings.getServerKey());
     }
 
-    private void resendMessages() {
-        ResendMessagesParams params = new ResendMessagesParams(messageStorage, smsApi);
-        ResendMessagesAction action = new ResendMessagesAction();
-        action.execute(params);
-
-        try {
-            action.get();
-        } catch (InterruptedException | ExecutionException e) {
-            Logger.w("MainActivity", "Resent messages error: " + e.toString());
-            e.printStackTrace();
-        }
-    }
-
     private List<MessageContainer> getMessages() {
         GetMessagesParams params = new GetMessagesParams(messageStorage);
         GetMessagesAction action = new GetMessagesAction();
@@ -173,7 +189,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             return action.get();
         } catch (InterruptedException | ExecutionException e) {
-            Logger.w("MainActivity", "Get messages error: " + e.toString());
+            Logger.w(logTag, "Get messages error: " + e.toString());
             e.printStackTrace();
             return null;
         }
@@ -208,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             return action.get();
         } catch (InterruptedException | ExecutionException e) {
-            Log.w("MainActivity", "Get logs error: " + e.toString());
+            Log.w(logTag, "Get logs error: " + e.toString());
             e.printStackTrace();
             return null;
         }
@@ -244,5 +260,63 @@ public class MainActivity extends AppCompatActivity {
 
         boolean checked = sendSmsCheckBox.isChecked();
         appSettings.saveNeedSendSms(checked);
+    }
+
+    static class SmsRequestListener implements SmsApi.RequestHandledListener {
+        private final MainActivity activity;
+
+        public SmsRequestListener(MainActivity activity) {
+            this.activity = activity;
+        }
+
+        @Override
+        public void onSuccess(long dbId) {
+            Intent intent = new Intent(activity, MainActivity.class);
+
+            intent.putExtra("action", "renewMessages");
+            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+            activity.startActivity(intent);
+        }
+
+        @Override
+        public void onError(long dbId, String errorMessage) {
+            Intent intent = new Intent(activity, MainActivity.class);
+
+            intent.putExtra("action", "toastMessage");
+            intent.putExtra("message", errorMessage);
+            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+            activity.startActivity(intent);
+        }
+    }
+
+    static class GetLogsAction extends AsyncTask<Void, Void, List<String>> {
+        @Override
+        protected List<String> doInBackground(Void... params) {
+            return Logger.getMessages();
+        }
+    }
+
+    static class GetMessagesParams {
+        MessageStorage messageStorage;
+
+        GetMessagesParams(MessageStorage messageStorage) {
+            this.messageStorage = messageStorage;
+        }
+    }
+
+    static class GetMessagesAction extends AsyncTask<GetMessagesParams, Void, List<MessageContainer>> {
+        @Override
+        protected List<MessageContainer> doInBackground(GetMessagesParams... params) {
+            if (params.length == 0) {
+                Logger.w("GetMessagesAction", "Params length is 0");
+                return null;
+            }
+
+            GetMessagesParams mainParams = params[0];
+
+            return mainParams.messageStorage.getMessagesTail();
+        }
     }
 }

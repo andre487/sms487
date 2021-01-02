@@ -23,13 +23,15 @@ import life.andre.sms487.preferences.AppSettings;
 import utils.AsyncTaskUtil;
 
 public class SmsApi {
-    public final String MESSAGE_TYPE_SMS = "sms";
-    public final String MESSAGE_TYPE_NOTIFICATION = "notification";
-
-    private final AppSettings appSettings;
+    public static final String MESSAGE_TYPE_SMS = "sms";
+    public static final String MESSAGE_TYPE_NOTIFICATION = "notification";
 
     private static final String logTag = "SmsApi";
+    private static final List<RequestHandledListener> requestHandledListeners = new ArrayList<>();
+
+    private final AppSettings appSettings;
     private final MessageStorage messageStorage;
+    private final RequestQueue requestQueue;
 
     public interface RequestHandledListener {
         void onSuccess(long dbId);
@@ -37,23 +39,16 @@ public class SmsApi {
         void onError(long dbId, String errorMessage);
     }
 
-    private final RequestQueue requestQueue;
-    private final List<RequestHandledListener> requestHandledListeners = new ArrayList<>();
-
     public SmsApi(Context ctx, AppSettings appSettings) {
         this.appSettings = appSettings;
-
         this.requestQueue = Volley.newRequestQueue(ctx);
-
         messageStorage = new MessageStorage(ctx);
     }
 
-    @SuppressWarnings({"unused", "RedundantSuppression"})
     public void addRequestHandledListener(RequestHandledListener listener) {
         requestHandledListeners.add(listener);
     }
 
-    @SuppressWarnings({"unused", "RedundantSuppression"})
     public void removeRequestHandledListener(RequestHandledListener listener) {
         requestHandledListeners.remove(listener);
     }
@@ -96,6 +91,11 @@ public class SmsApi {
                 msg.getDeviceId(), msg.getDateTime(), msg.getSmsCenterDateTime(),
                 msg.getAddressFrom(), msg.getBody(), dbId
         );
+    }
+
+    public void resendMessages() {
+        ResendMessagesParams params = new ResendMessagesParams(messageStorage, this);
+        new ResendMessagesAction().execute(params);
     }
 
     private void addRequest(
@@ -268,6 +268,35 @@ public class SmsApi {
 
             for (SmsApi.RequestHandledListener listener : mainParams.requestHandledListeners) {
                 listener.onError(mainParams.dbId, mainParams.errorMessage);
+            }
+
+            return null;
+        }
+    }
+
+    static class ResendMessagesParams {
+        MessageStorage messageStorage;
+        SmsApi smsApi;
+
+        ResendMessagesParams(MessageStorage messageStorage, SmsApi smsApi) {
+            this.messageStorage = messageStorage;
+            this.smsApi = smsApi;
+        }
+    }
+
+    static class ResendMessagesAction extends AsyncTask<ResendMessagesParams, Void, Void> {
+        @Override
+        protected Void doInBackground(ResendMessagesParams... params) {
+            ResendMessagesParams mainParams = AsyncTaskUtil.getParams(params, logTag);
+            if (mainParams == null) {
+                return null;
+            }
+
+            List<MessageContainer> messages = mainParams.messageStorage.getNotSentMessages();
+
+            // TODO: notifications?
+            for (MessageContainer message : messages) {
+                mainParams.smsApi.addSms(message);
             }
 
             return null;
