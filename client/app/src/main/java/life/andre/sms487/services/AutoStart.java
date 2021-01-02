@@ -1,11 +1,10 @@
-package life.andre.sms487.services.autoStart;
+package life.andre.sms487.services;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
 import life.andre.sms487.logging.Logger;
-import life.andre.sms487.services.NotificationListener;
 
 public class AutoStart extends BroadcastReceiver {
     public void onReceive(Context context, Intent parentIntent) {
@@ -17,6 +16,6 @@ public class AutoStart extends BroadcastReceiver {
         Intent intent = new Intent(context, NotificationListener.class);
         context.startService(intent);
 
-        Logger.d("AutoStart", "Started");
+        Logger.i("AutoStart", "Started");
     }
 }
