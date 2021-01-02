@@ -23,7 +23,7 @@ import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.network.SmsApi;
 import life.andre.sms487.preferences.AppSettings;
-import utils.AsyncTaskUtil;
+import life.andre.sms487.utils.AsyncTaskUtil;
 
 public class NotificationListener extends NotificationListenerService {
     protected AppSettings appSettings;
@@ -154,7 +154,7 @@ public class NotificationListener extends NotificationListenerService {
         @SuppressLint("SimpleDateFormat")
         @Override
         protected Void doInBackground(SendNotificationParams... params) {
-            dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm Z");  // TODO: extract to utils
+            dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm Z");  // TODO: extract to life.andre.sms487.utils
             dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 
             SendNotificationParams mainParams = AsyncTaskUtil.getParams(params, logTag);

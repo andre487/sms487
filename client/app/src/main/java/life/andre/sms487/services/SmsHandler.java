@@ -16,7 +16,7 @@ import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.network.SmsApi;
 import life.andre.sms487.preferences.AppSettings;
 import life.andre.sms487.system.AppConstants;
-import utils.AsyncTaskUtil;
+import life.andre.sms487.utils.AsyncTaskUtil;
 
 public class SmsHandler extends Service {
     protected AppSettings appSettings;

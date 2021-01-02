@@ -1,4 +1,4 @@
-package utils;
+package life.andre.sms487.utils;
 
 import androidx.annotation.Nullable;
 

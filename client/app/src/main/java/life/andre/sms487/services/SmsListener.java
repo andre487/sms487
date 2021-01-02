@@ -14,7 +14,7 @@ import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.messages.PduConverter;
 import life.andre.sms487.system.AppConstants;
-import utils.AsyncTaskUtil;
+import life.andre.sms487.utils.AsyncTaskUtil;
 
 public class SmsListener extends BroadcastReceiver {
     @Override

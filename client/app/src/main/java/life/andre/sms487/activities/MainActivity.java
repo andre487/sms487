@@ -1,6 +1,5 @@
-package life.andre.sms487.activities.main;
+package life.andre.sms487.activities;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -8,18 +7,14 @@ import android.text.Editable;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.AppCompatCheckBox;
 import androidx.appcompat.widget.AppCompatEditText;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnCheckedChanged;
-import butterknife.OnClick;
 import life.andre.sms487.R;
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
@@ -27,6 +22,7 @@ import life.andre.sms487.messages.MessageStorage;
 import life.andre.sms487.network.SmsApi;
 import life.andre.sms487.preferences.AppSettings;
 import life.andre.sms487.system.PermissionsChecker;
+import life.andre.sms487.utils.AsyncTaskUtil;
 
 public class MainActivity extends AppCompatActivity {
     private final PermissionsChecker permissionsChecker = new PermissionsChecker(this);
@@ -37,42 +33,31 @@ public class MainActivity extends AppCompatActivity {
     private AppSettings appSettings;
     private SmsApi.RequestHandledListener smsRequestListener;
 
-    @SuppressLint("NonConstantResourceId")
-    @Nullable
-    @BindView(R.id.serverKeyInput)
-    AppCompatEditText serverKeyInput;
+    private AppCompatEditText serverKeyInput;
+    private AppCompatEditText serverUrlInput;
+    private AppCompatEditText messagesField;
+    private AppCompatEditText logsField;
 
-    @SuppressLint("NonConstantResourceId")
-    @Nullable
-    @BindView(R.id.serverUrlInput)
-    AppCompatEditText serverUrlInput;
+    private AppCompatButton renewMessagesButton;
+    private AppCompatButton renewLogsButton;
+    private AppCompatButton saveServerKeyButton;
+    private AppCompatButton saveServerUrlButton;
 
-    @SuppressLint("NonConstantResourceId")
-    @Nullable
-    @BindView(R.id.messagesField)
-    AppCompatEditText messagesField;
-
-    @SuppressLint("NonConstantResourceId")
-    @Nullable
-    @BindView(R.id.logsField)
-    AppCompatEditText logsField;
-
-    @SuppressLint("NonConstantResourceId")
-    @Nullable
-    @BindView(R.id.sendSmsCheckBox)
-    AppCompatCheckBox sendSmsCheckBox;
+    private AppCompatCheckBox sendSmsCheckBox;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
 
         messageStorage = new MessageStorage(this);
         appSettings = new AppSettings(this);
         smsApi = new SmsApi(this, appSettings);
 
         smsRequestListener = new SmsRequestListener(this);
+
+        findViewComponents();
+        bindEvents();
     }
 
     @Override
@@ -117,8 +102,32 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @SuppressLint("NonConstantResourceId")
-    @OnClick(R.id.renewMessages)
+    private void findViewComponents() {
+        serverKeyInput = findViewById(R.id.serverKeyInput);
+        serverUrlInput = findViewById(R.id.serverUrlInput);
+        messagesField = findViewById(R.id.messagesField);
+        logsField = findViewById(R.id.logsField);
+
+        renewMessagesButton = findViewById(R.id.renewMessages);
+        renewLogsButton = findViewById(R.id.renewLogs);
+        saveServerUrlButton = findViewById(R.id.serverUrlSave);
+        saveServerKeyButton = findViewById(R.id.serverKeySave);
+
+        sendSmsCheckBox = findViewById(R.id.sendSmsCheckBox);
+    }
+
+    private void bindEvents() {
+        MainActivity mainActivity = this;
+
+        renewMessagesButton.setOnClickListener(v -> mainActivity.renewMessagesFromDb());
+        renewLogsButton.setOnClickListener(v -> mainActivity.showLogsFromLogger());
+
+        saveServerUrlButton.setOnClickListener(v -> mainActivity.saveServerUrl());
+        saveServerKeyButton.setOnClickListener(v -> mainActivity.saveServerKey());
+
+        sendSmsCheckBox.setOnCheckedChangeListener((v, c) -> mainActivity.saveNeedSendSms());
+    }
+
     void renewMessagesFromDb() {
         final List<MessageContainer> messages = getMessages();
         if (messages == null) {
@@ -128,8 +137,6 @@ public class MainActivity extends AppCompatActivity {
         showMessages(messages);
     }
 
-    @SuppressLint("NonConstantResourceId")
-    @OnClick(R.id.renewLogs)
     void showLogsFromLogger() {
         final List<String> logs = getLogs();
         if (logs == null) {
@@ -139,8 +146,6 @@ public class MainActivity extends AppCompatActivity {
         showLogs(logs);
     }
 
-    @SuppressLint("NonConstantResourceId")
-    @OnClick(R.id.serverKeySave)
     void saveServerKey() {
         if (serverKeyInput == null) {
             return;
@@ -160,8 +165,6 @@ public class MainActivity extends AppCompatActivity {
         serverUrlInput.setText(appSettings.getServerUrl());
     }
 
-    @SuppressLint("NonConstantResourceId")
-    @OnClick(R.id.serverUrlSave)
     void saveServerUrl() {
         if (serverUrlInput == null) {
             return;
@@ -251,8 +254,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @SuppressLint("NonConstantResourceId")
-    @OnCheckedChanged(R.id.sendSmsCheckBox)
     void saveNeedSendSms() {
         if (sendSmsCheckBox == null) {
             return;
@@ -309,12 +310,10 @@ public class MainActivity extends AppCompatActivity {
     static class GetMessagesAction extends AsyncTask<GetMessagesParams, Void, List<MessageContainer>> {
         @Override
         protected List<MessageContainer> doInBackground(GetMessagesParams... params) {
-            if (params.length == 0) {
-                Logger.w("GetMessagesAction", "Params length is 0");
+            GetMessagesParams mainParams = AsyncTaskUtil.getParams(params);
+            if (mainParams == null) {
                 return null;
             }
-
-            GetMessagesParams mainParams = params[0];
 
             return mainParams.messageStorage.getMessagesTail();
         }
