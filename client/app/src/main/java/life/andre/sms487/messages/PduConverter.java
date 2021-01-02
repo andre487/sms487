@@ -1,10 +1,10 @@
 package life.andre.sms487.messages;
 
-import androidx.annotation.NonNull;
-
 import android.annotation.SuppressLint;
 import android.telephony.SmsMessage;
 import android.util.Pair;
+
+import androidx.annotation.NonNull;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -25,6 +25,7 @@ public class PduConverter {
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
     }
 
+    @NonNull
     public List<MessageContainer> convert(Object[] pdus, String format) {
         Map<Pair<String, String>, List<SmsMessage>> messageTable = getMessageTable(pdus, format);
 
