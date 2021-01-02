@@ -2,6 +2,8 @@ package life.andre.sms487.messages;
 
 import android.os.Build;
 
+import androidx.annotation.Nullable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -30,11 +32,31 @@ public class MessageContainer {
         this.dbId = dbId;
     }
 
+    @Nullable
+    public static MessageContainer createFromJson(String messageJson) {
+        try {
+            JSONObject obj = new JSONObject(messageJson);
+
+            String addressFrom = (String) obj.get("address_from");
+            String dateTime = (String) obj.get("date_time");
+            String smsCenterDateTime = (String) obj.get("sms_date_time");
+            String body = (String) obj.get("body");
+
+            return new MessageContainer(addressFrom, dateTime, smsCenterDateTime, body);
+        } catch (JSONException e) {
+            Logger.w("SendSmsAction", e.toString());
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
     public MessageContainer(String addressFrom, String dateTime, String smsCenterDateTime, String body) {
         this(Build.MODEL, addressFrom, dateTime, smsCenterDateTime, body, false, 0);
     }
 
-    public String getAsString() {
+    @Nullable
+    public String getAsJson() {
         try {
             JSONObject obj = new JSONObject();
 
@@ -54,31 +76,36 @@ public class MessageContainer {
         return null;
     }
 
+    @Nullable
     public String getAddressFrom() {
         return addressFrom;
     }
 
+    @Nullable
     public String getDateTime() {
         return dateTime;
     }
 
+    @Nullable
     public String getSmsCenterDateTime() {
         return smsCenterDateTime;
     }
 
+    @Nullable
     public String getBody() {
         return body;
     }
 
-    public boolean isSent() {
-        return isSent;
-    }
-
+    @Nullable
     public String getDeviceId() {
         return deviceId;
     }
 
     public long getDbId() {
         return dbId;
+    }
+
+    public boolean isSent() {
+        return isSent;
     }
 }

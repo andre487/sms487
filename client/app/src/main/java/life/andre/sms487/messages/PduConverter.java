@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-import life.andre.sms487.logging.Logger;
-
 public class PduConverter {
     private final SimpleDateFormat dateFormat;
 
@@ -77,16 +75,9 @@ public class PduConverter {
 
             String dateTime = dateFormat.format(new Date());
 
-            Logger.d(
-                    "PduConverter",
-                    "Handle message from: " + tel + ", dateTime: " + dateTime
-            );
-
             for (SmsMessage message : messages) {
                 String messageBody = message.getMessageBody();
                 fullTextBuilder.append(messageBody);
-
-                Logger.d("PduConverter", "Handle message body: " + messageBody);
             }
 
             MessageContainer container = new MessageContainer(

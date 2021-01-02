@@ -13,7 +13,6 @@ import java.util.List;
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.messages.PduConverter;
-import life.andre.sms487.services.smsHandler.SmsHandler;
 import life.andre.sms487.system.AppConstants;
 import utils.AsyncTaskUtil;
 
@@ -71,10 +70,7 @@ public class SmsListener extends BroadcastReceiver {
                 return null;
             }
 
-            List<MessageContainer> messages = converter.convert(pdus, format);
-            Logger.i(logTag, "Receive messages");
-
-            return messages;
+            return converter.convert(pdus, format);
         }
 
         private void sendMessagesToHandler(Context context, List<MessageContainer> messages) {
@@ -82,8 +78,10 @@ public class SmsListener extends BroadcastReceiver {
 
             ArrayList<String> intentData = new ArrayList<>();
             for (MessageContainer message : messages) {
-                String messageJson = message.getAsString();
-                intentData.add(messageJson);
+                String messageJson = message.getAsJson();
+                if (messageJson != null) {
+                    intentData.add(messageJson);
+                }
             }
 
             baseIntent.putStringArrayListExtra(AppConstants.EXTRA_GOT_SMS, intentData);

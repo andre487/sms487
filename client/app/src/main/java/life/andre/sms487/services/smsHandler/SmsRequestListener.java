@@ -4,6 +4,7 @@ import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageStorage;
 import life.andre.sms487.network.SmsApi;
 
+@Deprecated
 public class SmsRequestListener implements SmsApi.RequestHandledListener {
     private final MessageStorage messageStorage;
     private String logTag = "SmsRequestListener";

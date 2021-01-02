@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 
 import life.andre.sms487.logging.Logger;
 
+@Deprecated
 public class MarkSmsSentAction extends AsyncTask<MarkSmsSentParams, Void, Void> {
     @Override
     @Nullable
