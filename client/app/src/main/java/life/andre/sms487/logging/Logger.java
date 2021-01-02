@@ -24,7 +24,6 @@ public class Logger {
         Log.w(tag, msg);
     }
 
-    @SuppressWarnings({"unused", "RedundantSuppression"})
     public static void e(String tag, String msg) {
         addMessageToQueue("ERROR", tag, msg);
         Log.e(tag, msg);
