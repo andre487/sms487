@@ -20,15 +20,9 @@ public class ResendMessagesAction extends AsyncTask<ResendMessagesParams, Void, 
 
         List<MessageContainer> messages = mainParams.messageStorage.getNotSentMessages();
 
+        // TODO: notifications?
         for (MessageContainer message : messages) {
-            mainParams.smsApi.addSms(
-                    message.getDeviceId(),
-                    message.getDateTime(),
-                    message.getSmsCenterDateTime(),
-                    message.getAddressFrom(),
-                    message.getBody(),
-                    message.getDbId()
-            );
+            mainParams.smsApi.addSms(message);
         }
 
         return null;

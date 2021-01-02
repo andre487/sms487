@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
+
 import androidx.core.app.NotificationCompat;
 
 import java.text.SimpleDateFormat;
@@ -19,17 +20,14 @@ import java.util.Date;
 import java.util.TimeZone;
 
 import life.andre.sms487.logging.Logger;
-import life.andre.sms487.messages.MessageStorage;
+import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.network.SmsApi;
 import life.andre.sms487.preferences.AppSettings;
-import life.andre.sms487.services.smsHandler.SmsRequestListener;
 import utils.AsyncTaskUtil;
 
 public class NotificationListener extends NotificationListenerService {
     protected AppSettings appSettings;
-    protected MessageStorage messageStorage;
     protected SmsApi smsApi;
-    protected SmsRequestListener smsRequestListener;
 
     private static final String logTag = "NotificationListener";
 
@@ -37,11 +35,7 @@ public class NotificationListener extends NotificationListenerService {
     public void onCreate() {
         super.onCreate();
         appSettings = new AppSettings(this);
-        messageStorage = new MessageStorage(this);
         smsApi = new SmsApi(this, appSettings);
-
-        smsRequestListener = new SmsRequestListener(messageStorage, "NotificationListener");
-        smsApi.addRequestHandledListener(smsRequestListener);
 
         createServiceMessage();
     }
@@ -49,8 +43,6 @@ public class NotificationListener extends NotificationListenerService {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        smsApi.removeRequestHandledListener(smsRequestListener);
-
         stopForeground(true);
     }
 
@@ -91,7 +83,7 @@ public class NotificationListener extends NotificationListenerService {
         String deviceId = Build.MODEL;
 
         SendNotificationParams params = new SendNotificationParams(
-                smsApi, messageStorage, appLabel, postTime, fullText, deviceId
+                smsApi, appLabel, postTime, fullText, deviceId
         );
         new SendNotificationAction().execute(params);
     }
@@ -141,19 +133,14 @@ public class NotificationListener extends NotificationListenerService {
 
     static class SendNotificationParams {
         SmsApi smsApi;
-        MessageStorage messageStorage;
 
         String appLabel;
         long postTime;
         String text;
         String deviceId;
 
-        SendNotificationParams(
-                SmsApi smsApi, MessageStorage messageStorage, String appLabel, long postTime,
-                String text, String deviceId
-        ) {
+        SendNotificationParams(SmsApi smsApi, String appLabel, long postTime, String text, String deviceId) {
             this.smsApi = smsApi;
-            this.messageStorage = messageStorage;
             this.appLabel = appLabel;
             this.postTime = postTime;
             this.text = text;
@@ -184,14 +171,11 @@ public class NotificationListener extends NotificationListenerService {
             String curTime = dateFormat.format(new Date());
             String postTime = dateFormat.format(new Date(params.postTime));
 
-            long insertId = params.messageStorage.addMessage(
-                    params.deviceId, params.appLabel, curTime, postTime, params.text
+            MessageContainer message = new MessageContainer(
+                    params.deviceId, params.appLabel, curTime, postTime,
+                    params.text, false, 0
             );
-
-            params.smsApi.addNotification(
-                    params.deviceId, curTime, postTime,
-                    params.appLabel, params.text, insertId
-            );
+            params.smsApi.addNotification(message);
         }
     }
 }

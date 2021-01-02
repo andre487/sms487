@@ -2,30 +2,27 @@ package life.andre.sms487.activities.main;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.text.Editable;
+import android.util.Log;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatCheckBox;
 import androidx.appcompat.widget.AppCompatEditText;
 
-import android.text.Editable;
-import android.util.Log;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnCheckedChanged;
+import butterknife.OnClick;
 import life.andre.sms487.R;
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.messages.MessageStorage;
 import life.andre.sms487.network.SmsApi;
 import life.andre.sms487.preferences.AppSettings;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.ExecutionException;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
-import butterknife.OnCheckedChanged;
-import life.andre.sms487.services.smsHandler.SmsRequestListener;
 import life.andre.sms487.system.PermissionsChecker;
 
 public class MainActivity extends AppCompatActivity {
@@ -71,12 +68,6 @@ public class MainActivity extends AppCompatActivity {
         messageStorage = new MessageStorage(this);
         appSettings = new AppSettings(this);
         smsApi = new SmsApi(this, appSettings);
-
-        SmsRequestListener smsRequestListener = new SmsRequestListener(
-                messageStorage,
-                "MainActivity"
-        );
-        smsApi.addRequestHandledListener(smsRequestListener);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package life.andre.sms487.network;
 
 import android.content.Context;
+import android.os.AsyncTask;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -16,7 +17,10 @@ import java.util.List;
 import java.util.Map;
 
 import life.andre.sms487.logging.Logger;
+import life.andre.sms487.messages.MessageContainer;
+import life.andre.sms487.messages.MessageStorage;
 import life.andre.sms487.preferences.AppSettings;
+import utils.AsyncTaskUtil;
 
 public class SmsApi {
     public final String MESSAGE_TYPE_SMS = "sms";
@@ -25,11 +29,12 @@ public class SmsApi {
     private final AppSettings appSettings;
 
     private static final String logTag = "SmsApi";
+    private final MessageStorage messageStorage;
 
     public interface RequestHandledListener {
         void onSuccess(long dbId);
 
-        void onError(long errorMessage, String dbId);
+        void onError(long dbId, String errorMessage);
     }
 
     private final RequestQueue requestQueue;
@@ -39,12 +44,16 @@ public class SmsApi {
         this.appSettings = appSettings;
 
         this.requestQueue = Volley.newRequestQueue(ctx);
+
+        messageStorage = new MessageStorage(ctx);
     }
 
+    @SuppressWarnings({"unused", "RedundantSuppression"})
     public void addRequestHandledListener(RequestHandledListener listener) {
         requestHandledListeners.add(listener);
     }
 
+    @SuppressWarnings({"unused", "RedundantSuppression"})
     public void removeRequestHandledListener(RequestHandledListener listener) {
         requestHandledListeners.remove(listener);
     }
@@ -57,12 +66,36 @@ public class SmsApi {
         addRequest(MESSAGE_TYPE_SMS, deviceId, dateTime, smsCenterDateTime, tel, text, dbId);
     }
 
+    public void addSms(MessageContainer msg) {
+        long dbId = msg.getDbId();
+        if (dbId == 0) {
+            dbId = messageStorage.addMessage(msg);
+        }
+
+        addSms(
+                msg.getDeviceId(), msg.getDateTime(), msg.getSmsCenterDateTime(),
+                msg.getAddressFrom(), msg.getBody(), dbId
+        );
+    }
+
     public void addNotification(String deviceId, String dateTime, String postDateTime, String tel, String text, long dbId) {
         Logger.i(
                 logTag,
                 "Sending Notification: " + deviceId + ", " + dateTime + ", " + ", " + postDateTime + ", " + tel + ", " + text
         );
         addRequest(MESSAGE_TYPE_NOTIFICATION, deviceId, dateTime, postDateTime, tel, text, dbId);
+    }
+
+    public void addNotification(MessageContainer msg) {
+        long dbId = msg.getDbId();
+        if (dbId == 0) {
+            dbId = messageStorage.addMessage(msg);
+        }
+
+        addNotification(
+                msg.getDeviceId(), msg.getDateTime(), msg.getSmsCenterDateTime(),
+                msg.getAddressFrom(), msg.getBody(), dbId
+        );
     }
 
     private void addRequest(
@@ -77,6 +110,10 @@ public class SmsApi {
             return;
         }
 
+        if (smsCenterDateTime == null) {
+            smsCenterDateTime = dateTime;
+        }
+
         Map<String, String> requestParams = new HashMap<>();
         requestParams.put("message_type", messageType);
         requestParams.put("device_id", deviceId);
@@ -86,7 +123,7 @@ public class SmsApi {
         requestParams.put("text", text);
 
         AddSmsApiRequest request = new AddSmsApiRequest(
-                serverUrl, serverKey, requestParams, dbId,
+                serverUrl, serverKey, requestParams, dbId, messageStorage,
                 requestHandledListeners
         );
 
@@ -99,13 +136,13 @@ public class SmsApi {
 
         AddSmsApiRequest(
                 String serverUrl, String serverKey,
-                Map<String, String> requestParams, long dbId,
+                Map<String, String> requestParams, long dbId, MessageStorage messageStorage,
                 List<SmsApi.RequestHandledListener> requestHandledListeners
         ) {
             super(
                     Request.Method.POST,
                     serverUrl + "/add-sms",
-                    new ApiResponseListener(dbId, requestHandledListeners),
+                    new ApiResponseListener(dbId, messageStorage, requestHandledListeners),
                     new ApiErrorListener(dbId, requestHandledListeners)
             );
 
@@ -131,13 +168,15 @@ public class SmsApi {
     static class ApiResponseListener implements Response.Listener<String> {
         private final List<SmsApi.RequestHandledListener> requestHandledListeners;
         private final long dbId;
+        private final MessageStorage messageStorage;
 
         ApiResponseListener(
-                long dbId,
+                long dbId, MessageStorage messageStorage,
                 List<SmsApi.RequestHandledListener> requestHandledListeners
         ) {
             this.requestHandledListeners = requestHandledListeners;
             this.dbId = dbId;
+            this.messageStorage = messageStorage;
         }
 
         @Override
@@ -147,9 +186,8 @@ public class SmsApi {
             }
             Logger.i("AddSmsApiRequest", "Response: " + response);
 
-            for (SmsApi.RequestHandledListener listener : requestHandledListeners) {
-                listener.onSuccess(dbId);
-            }
+            RequestSuccessParams params = new RequestSuccessParams(dbId, messageStorage, requestHandledListeners);
+            new RunRequestSuccessHandlers().execute(params);
         }
     }
 
@@ -173,9 +211,66 @@ public class SmsApi {
 
             Logger.e(logTag, "Response error: " + errorMessage);
 
-            for (SmsApi.RequestHandledListener listener : requestHandledListeners) {
-                listener.onError(dbId, errorMessage);
+            RequestErrorParams params = new RequestErrorParams(dbId, errorMessage, requestHandledListeners);
+            new RunRequestErrorHandlers().execute(params);
+        }
+    }
+
+    static class RequestSuccessParams {
+        long dbId;
+        MessageStorage messageStorage;
+        List<RequestHandledListener> requestHandledListeners;
+
+        RequestSuccessParams(long dbId, MessageStorage messageStorage, List<SmsApi.RequestHandledListener> requestHandledListeners) {
+            this.dbId = dbId;
+            this.messageStorage = messageStorage;
+            this.requestHandledListeners = requestHandledListeners;
+        }
+    }
+
+    static class RunRequestSuccessHandlers extends AsyncTask<RequestSuccessParams, Void, Void> {
+        @Override
+        protected Void doInBackground(RequestSuccessParams... params) {
+            RequestSuccessParams mainParams = AsyncTaskUtil.getParams(params, logTag);
+            if (mainParams == null) {
+                return null;
             }
+
+            mainParams.messageStorage.markSent(mainParams.dbId);
+
+            for (SmsApi.RequestHandledListener listener : mainParams.requestHandledListeners) {
+                listener.onSuccess(mainParams.dbId);
+            }
+
+            return null;
+        }
+    }
+
+    static class RequestErrorParams {
+        long dbId;
+        String errorMessage;
+        List<SmsApi.RequestHandledListener> requestHandledListeners;
+
+        RequestErrorParams(long dbId, String errorMessage, List<SmsApi.RequestHandledListener> requestHandledListeners) {
+            this.dbId = dbId;
+            this.errorMessage = errorMessage;
+            this.requestHandledListeners = requestHandledListeners;
+        }
+    }
+
+    static class RunRequestErrorHandlers extends AsyncTask<RequestErrorParams, Void, Void> {
+        @Override
+        protected Void doInBackground(RequestErrorParams... params) {
+            RequestErrorParams mainParams = AsyncTaskUtil.getParams(params, logTag);
+            if (mainParams == null) {
+                return null;
+            }
+
+            for (SmsApi.RequestHandledListener listener : mainParams.requestHandledListeners) {
+                listener.onError(mainParams.dbId, mainParams.errorMessage);
+            }
+
+            return null;
         }
     }
 }

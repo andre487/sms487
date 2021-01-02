@@ -13,7 +13,6 @@ import java.util.List;
 
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
-import life.andre.sms487.messages.MessageStorage;
 import life.andre.sms487.network.SmsApi;
 import life.andre.sms487.preferences.AppSettings;
 import life.andre.sms487.system.AppConstants;
@@ -21,25 +20,13 @@ import utils.AsyncTaskUtil;
 
 public class SmsHandler extends Service {
     protected AppSettings appSettings;
-    protected MessageStorage messageStorage;
     protected SmsApi smsApi;
-    protected SmsRequestListener smsRequestListener;
-
     private static final String logTag = "SmsHandler";
 
     @Override
     public void onCreate() {
         appSettings = new AppSettings(this);
-        messageStorage = new MessageStorage(this);
         smsApi = new SmsApi(this, appSettings);
-
-        smsRequestListener = new SmsRequestListener(messageStorage);
-        smsApi.addRequestHandledListener(smsRequestListener);
-    }
-
-    @Override
-    public void onDestroy() {
-        smsApi.removeRequestHandledListener(smsRequestListener);
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -47,7 +34,7 @@ public class SmsHandler extends Service {
             return Service.START_STICKY;
         }
 
-        SendSmsParams params = new SendSmsParams(intent, smsApi, messageStorage, Build.MODEL);
+        SendSmsParams params = new SendSmsParams(intent, smsApi, Build.MODEL);
         new SendSmsAction().execute(params);
 
         return Service.START_STICKY;
@@ -62,13 +49,11 @@ public class SmsHandler extends Service {
     static class SendSmsParams {
         Intent intent;
         SmsApi smsApi;
-        MessageStorage messageStorage;
         String deviceId;
 
-        SendSmsParams(Intent intent, SmsApi smsApi, MessageStorage messageStorage, String deviceId) {
+        SendSmsParams(Intent intent, SmsApi smsApi, String deviceId) {
             this.intent = intent;
             this.smsApi = smsApi;
-            this.messageStorage = messageStorage;
             this.deviceId = deviceId;
         }
     }
@@ -102,14 +87,7 @@ public class SmsHandler extends Service {
             List<MessageContainer> extractedMessages = extractMessages(intentData);
 
             for (MessageContainer message : extractedMessages) {
-                long insertId = params.messageStorage.addMessage(message);
-
-                params.smsApi.addSms(
-                        params.deviceId,
-                        message.getDateTime(), message.getSmsCenterDateTime(),
-                        message.getAddressFrom(), message.getBody(),
-                        insertId
-                );
+                params.smsApi.addSms(message);
             }
         }
 
@@ -126,52 +104,6 @@ public class SmsHandler extends Service {
             }
 
             return data;
-        }
-    }
-
-    static class MarkSmsSentParams {
-        long dbId;
-        MessageStorage messageStorage;
-
-        MarkSmsSentParams(long dbId, MessageStorage messageStorage) {
-            this.dbId = dbId;
-            this.messageStorage = messageStorage;
-        }
-    }
-
-    static class MarkSmsSentAction extends AsyncTask<MarkSmsSentParams, Void, Void> {
-        @Override
-        @Nullable
-        protected Void doInBackground(MarkSmsSentParams... params) {
-            MarkSmsSentParams mainParams = AsyncTaskUtil.getParams(params, logTag);
-            if (mainParams == null) {
-                return null;
-            }
-
-            mainParams.messageStorage.markSent(mainParams.dbId);
-
-            return null;
-        }
-    }
-
-    static class SmsRequestListener implements SmsApi.RequestHandledListener {
-        private final MessageStorage messageStorage;
-
-        public SmsRequestListener(MessageStorage messageStorage) {
-            this.messageStorage = messageStorage;
-        }
-
-        @Override
-        public void onSuccess(long dbId) {
-            Logger.i(logTag, "Successfully sent SMS " + dbId);
-
-            MarkSmsSentParams params = new MarkSmsSentParams(dbId, messageStorage);
-            new MarkSmsSentAction().execute(params);
-        }
-
-        @Override
-        public void onError(long dbId, String errorMessage) {
-            Logger.e(logTag, "Error with SMS " + dbId + ": " + errorMessage);
         }
     }
 }

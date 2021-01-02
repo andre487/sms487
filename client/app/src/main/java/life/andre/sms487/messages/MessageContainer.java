@@ -18,20 +18,6 @@ public class MessageContainer {
     private final boolean isSent;
     private final long dbId;
 
-    public MessageContainer(
-            String deviceId, String addressFrom,
-            String dateTime, String smsCenterDateTime,
-            String body, boolean isSent, long dbId
-    ) {
-        this.deviceId = deviceId;
-        this.addressFrom = addressFrom;
-        this.dateTime = dateTime;
-        this.smsCenterDateTime = smsCenterDateTime;
-        this.body = body;
-        this.isSent = isSent;
-        this.dbId = dbId;
-    }
-
     @Nullable
     public static MessageContainer createFromJson(String messageJson) {
         try {
@@ -49,6 +35,20 @@ public class MessageContainer {
         }
 
         return null;
+    }
+
+    public MessageContainer(
+            String deviceId, String addressFrom,
+            String dateTime, String smsCenterDateTime,
+            String body, boolean isSent, long dbId
+    ) {
+        this.deviceId = deviceId;
+        this.addressFrom = addressFrom;
+        this.dateTime = dateTime;
+        this.smsCenterDateTime = smsCenterDateTime;
+        this.body = body;
+        this.isSent = isSent;
+        this.dbId = dbId;
     }
 
     public MessageContainer(String addressFrom, String dateTime, String smsCenterDateTime, String body) {
