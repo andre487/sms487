@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import life.andre.sms487.logging.Logger;
-import life.andre.sms487.services.notificationListener.NotificationListener;
+import life.andre.sms487.services.NotificationListener;
 
 public class AutoStart extends BroadcastReceiver {
     public void onReceive(Context context, Intent parentIntent) {

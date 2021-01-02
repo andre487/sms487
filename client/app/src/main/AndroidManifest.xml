@@ -28,7 +28,7 @@
         </activity>
 
         <service android:name=".services.SmsHandler" />
-        <service android:name=".services.notificationListener.NotificationListener"
+        <service android:name=".services.NotificationListener"
             android:label="@string/app_name"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>

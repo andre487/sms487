@@ -1,22 +1,29 @@
-package life.andre.sms487.services.notificationListener;
+package life.andre.sms487.services;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import androidx.core.app.NotificationCompat;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageStorage;
 import life.andre.sms487.network.SmsApi;
 import life.andre.sms487.preferences.AppSettings;
 import life.andre.sms487.services.smsHandler.SmsRequestListener;
+import utils.AsyncTaskUtil;
 
 public class NotificationListener extends NotificationListenerService {
     protected AppSettings appSettings;
@@ -24,11 +31,11 @@ public class NotificationListener extends NotificationListenerService {
     protected SmsApi smsApi;
     protected SmsRequestListener smsRequestListener;
 
+    private static final String logTag = "NotificationListener";
+
     @Override
     public void onCreate() {
         super.onCreate();
-        Logger.d("NotificationListener", "Service is started");
-
         appSettings = new AppSettings(this);
         messageStorage = new MessageStorage(this);
         smsApi = new SmsApi(this, appSettings);
@@ -56,12 +63,17 @@ public class NotificationListener extends NotificationListenerService {
         }
 
         Notification notification = sbn.getNotification();
+        if (sbn == null) {
+            Logger.w(logTag, "Sbn is null");
+            return;
+        }
+
         Bundle extras = notification.extras;
         CharSequence title = extras.getCharSequence(Notification.EXTRA_TITLE);
         CharSequence text = extras.getCharSequence(Notification.EXTRA_TEXT);
 
         if (title == null && text == null) {
-            Logger.e("NotificationListener", "No text in message");
+            Logger.w(logTag, "No text in message");
             return;
         }
 
@@ -70,7 +82,7 @@ public class NotificationListener extends NotificationListenerService {
 
         String fullText = (titleText + "\n" + textText).trim();
         if (fullText.isEmpty()) {
-            Logger.e("NotificationListener", "No text in message");
+            Logger.w(logTag, "No text in message");
             return;
         }
 
@@ -82,8 +94,6 @@ public class NotificationListener extends NotificationListenerService {
                 smsApi, messageStorage, appLabel, postTime, fullText, deviceId
         );
         new SendNotificationAction().execute(params);
-
-        Logger.d("NotificationListener", "Notification: " + text);
     }
 
     boolean isNotificationSuitable(StatusBarNotification sbn) {
@@ -97,7 +107,7 @@ public class NotificationListener extends NotificationListenerService {
         try {
             applicationInfo = packageManager.getApplicationInfo(packageName, 0);
         } catch (final PackageManager.NameNotFoundException e) {
-            Logger.e("NotificationListener", "Get app name error: " + e.getMessage());
+            Logger.e(logTag, "Get app name error: " + e.getMessage());
         }
 
         if (applicationInfo == null) {
@@ -114,12 +124,12 @@ public class NotificationListener extends NotificationListenerService {
                 NotificationManager.IMPORTANCE_DEFAULT
         );
 
-        NotificationManager nManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        if (nManager == null) {
-            Logger.e("NotificationListener", "NotificationManager is null");
+        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        if (manager == null) {
+            Logger.w(logTag, "NotificationManager is null");
             return;
         }
-        nManager.createNotificationChannel(channel);
+        manager.createNotificationChannel(channel);
 
         Notification notification = new NotificationCompat.Builder(this, channelId)
                 .setContentTitle("")
@@ -127,5 +137,61 @@ public class NotificationListener extends NotificationListenerService {
                 .build();
 
         startForeground(1, notification);
+    }
+
+    static class SendNotificationParams {
+        SmsApi smsApi;
+        MessageStorage messageStorage;
+
+        String appLabel;
+        long postTime;
+        String text;
+        String deviceId;
+
+        SendNotificationParams(
+                SmsApi smsApi, MessageStorage messageStorage, String appLabel, long postTime,
+                String text, String deviceId
+        ) {
+            this.smsApi = smsApi;
+            this.messageStorage = messageStorage;
+            this.appLabel = appLabel;
+            this.postTime = postTime;
+            this.text = text;
+            this.deviceId = deviceId;
+        }
+    }
+
+    static class SendNotificationAction extends AsyncTask<SendNotificationParams, Void, Void> {
+        private SimpleDateFormat dateFormat;
+
+        @SuppressLint("SimpleDateFormat")
+        @Override
+        protected Void doInBackground(SendNotificationParams... params) {
+            dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm Z");  // TODO: extract to utils
+            dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+            SendNotificationParams mainParams = AsyncTaskUtil.getParams(params, logTag);
+            if (mainParams == null) {
+                return null;
+            }
+
+            handleNotification(mainParams);
+
+            return null;
+        }
+
+        void handleNotification(SendNotificationParams params) {
+            String curTime = dateFormat.format(new Date());
+            String postTime = dateFormat.format(new Date(params.postTime));
+
+            long insertId = params.messageStorage.addMessage(
+                    params.deviceId, params.appLabel, curTime, postTime, params.text
+            );
+
+            params.smsApi.addNotification(
+                    params.deviceId, curTime, postTime,
+                    params.appLabel, params.text, insertId
+            );
+        }
     }
 }
