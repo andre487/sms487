@@ -100,9 +100,9 @@ public class AppSettings {
     }
 
     static class SaveSettingsParams {
-        SharedPreferences sharedPreferences;
-        String key;
-        String value;
+        final SharedPreferences sharedPreferences;
+        final String key;
+        final String value;
 
         SaveSettingsParams(SharedPreferences sharedPreferences, String key, String value) {
             this.sharedPreferences = sharedPreferences;

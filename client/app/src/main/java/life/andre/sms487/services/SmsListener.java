@@ -23,8 +23,8 @@ public class SmsListener extends BroadcastReceiver {
     }
 
     static class HandleMessageParams {
-        Context context;
-        Intent intent;
+        final Context context;
+        final Intent intent;
 
         HandleMessageParams(Context context, Intent intent) {
             this.context = context;

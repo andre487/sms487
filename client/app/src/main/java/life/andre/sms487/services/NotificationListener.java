@@ -124,12 +124,12 @@ public class NotificationListener extends NotificationListenerService {
     }
 
     static class SendNotificationParams {
-        SmsApi smsApi;
+        final SmsApi smsApi;
 
-        String appLabel;
-        long postTime;
-        String text;
-        String deviceId;
+        final String appLabel;
+        final long postTime;
+        final String text;
+        final String deviceId;
 
         SendNotificationParams(SmsApi smsApi, String appLabel, long postTime, String text, String deviceId) {
             this.smsApi = smsApi;

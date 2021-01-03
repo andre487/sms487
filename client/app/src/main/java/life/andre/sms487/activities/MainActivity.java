@@ -309,7 +309,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     static class GetMessagesParams {
-        MessageStorage messageStorage;
+        final MessageStorage messageStorage;
 
         GetMessagesParams(MessageStorage messageStorage) {
             this.messageStorage = messageStorage;

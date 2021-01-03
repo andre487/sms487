@@ -3,9 +3,7 @@
     <string name="server_placeholder">Server URL</string>
     <string name="server_key">Server key</string>
     <string name="save_label">Save</string>
-    <string name="renew_label">Renew</string>
     <string name="messages_label">Loading messages</string>
     <string name="logs_label">Loading logs</string>
-    <string name="user_name">User name</string>
     <string name="send_sms_label">Send SMS to server</string>
 </resources>

@@ -47,9 +47,9 @@ public class SmsHandler extends Service {
     }
 
     static class SendSmsParams {
-        Intent intent;
-        SmsApi smsApi;
-        String deviceId;
+        final Intent intent;
+        final SmsApi smsApi;
+        final String deviceId;
 
         SendSmsParams(Intent intent, SmsApi smsApi, String deviceId) {
             this.intent = intent;

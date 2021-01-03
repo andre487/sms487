@@ -122,10 +122,7 @@ public class SmsApi {
         requestParams.put("tel", tel);
         requestParams.put("text", text);
 
-        AddSmsApiRequest request = new AddSmsApiRequest(
-                serverUrl, serverKey, requestParams, dbId, messageStorage,
-                requestHandledListeners
-        );
+        AddSmsApiRequest request = new AddSmsApiRequest(serverUrl, serverKey, requestParams, dbId, messageStorage);
 
         this.requestQueue.add(request);
     }
@@ -136,14 +133,13 @@ public class SmsApi {
 
         AddSmsApiRequest(
                 String serverUrl, String serverKey,
-                Map<String, String> requestParams, long dbId, MessageStorage messageStorage,
-                List<SmsApi.RequestHandledListener> requestHandledListeners
+                Map<String, String> requestParams, long dbId, MessageStorage messageStorage
         ) {
             super(
                     Request.Method.POST,
                     serverUrl + "/add-sms",
-                    new ApiResponseListener(dbId, messageStorage, requestHandledListeners),
-                    new ApiErrorListener(dbId, requestHandledListeners)
+                    new ApiResponseListener(dbId, messageStorage),
+                    new ApiErrorListener(dbId)
             );
 
             this.requestParams = requestParams;
@@ -166,15 +162,10 @@ public class SmsApi {
     }
 
     static class ApiResponseListener implements Response.Listener<String> {
-        private final List<SmsApi.RequestHandledListener> requestHandledListeners;
         private final long dbId;
         private final MessageStorage messageStorage;
 
-        ApiResponseListener(
-                long dbId, MessageStorage messageStorage,
-                List<SmsApi.RequestHandledListener> requestHandledListeners
-        ) {
-            this.requestHandledListeners = requestHandledListeners;
+        ApiResponseListener(long dbId, MessageStorage messageStorage) {
             this.dbId = dbId;
             this.messageStorage = messageStorage;
         }
@@ -186,18 +177,16 @@ public class SmsApi {
             }
             Logger.i("AddSmsApiRequest", "Response: " + response);
 
-            RequestSuccessParams params = new RequestSuccessParams(dbId, messageStorage, requestHandledListeners);
+            RequestSuccessParams params = new RequestSuccessParams(dbId, messageStorage);
             new RunRequestSuccessHandlers().execute(params);
         }
     }
 
     static class ApiErrorListener implements Response.ErrorListener {
-        private final List<SmsApi.RequestHandledListener> requestHandledListeners;
         private final long dbId;
 
-        ApiErrorListener(long dbId, List<SmsApi.RequestHandledListener> requestHandledListeners) {
+        ApiErrorListener(long dbId) {
             this.dbId = dbId;
-            this.requestHandledListeners = requestHandledListeners;
         }
 
         @Override
@@ -211,20 +200,18 @@ public class SmsApi {
 
             Logger.e(logTag, "Response error: " + errorMessage);
 
-            RequestErrorParams params = new RequestErrorParams(dbId, errorMessage, requestHandledListeners);
+            RequestErrorParams params = new RequestErrorParams(dbId, errorMessage);
             new RunRequestErrorHandlers().execute(params);
         }
     }
 
     static class RequestSuccessParams {
-        long dbId;
-        MessageStorage messageStorage;
-        List<RequestHandledListener> requestHandledListeners;
+        final long dbId;
+        final MessageStorage messageStorage;
 
-        RequestSuccessParams(long dbId, MessageStorage messageStorage, List<SmsApi.RequestHandledListener> requestHandledListeners) {
+        RequestSuccessParams(long dbId, MessageStorage messageStorage) {
             this.dbId = dbId;
             this.messageStorage = messageStorage;
-            this.requestHandledListeners = requestHandledListeners;
         }
     }
 
@@ -238,7 +225,7 @@ public class SmsApi {
 
             mainParams.messageStorage.markSent(mainParams.dbId);
 
-            for (SmsApi.RequestHandledListener listener : mainParams.requestHandledListeners) {
+            for (SmsApi.RequestHandledListener listener : requestHandledListeners) {
                 listener.onSuccess(mainParams.dbId);
             }
 
@@ -247,14 +234,12 @@ public class SmsApi {
     }
 
     static class RequestErrorParams {
-        long dbId;
-        String errorMessage;
-        List<SmsApi.RequestHandledListener> requestHandledListeners;
+        final long dbId;
+        final String errorMessage;
 
-        RequestErrorParams(long dbId, String errorMessage, List<SmsApi.RequestHandledListener> requestHandledListeners) {
+        RequestErrorParams(long dbId, String errorMessage) {
             this.dbId = dbId;
             this.errorMessage = errorMessage;
-            this.requestHandledListeners = requestHandledListeners;
         }
     }
 
@@ -266,7 +251,7 @@ public class SmsApi {
                 return null;
             }
 
-            for (SmsApi.RequestHandledListener listener : mainParams.requestHandledListeners) {
+            for (SmsApi.RequestHandledListener listener : requestHandledListeners) {
                 listener.onError(mainParams.dbId, mainParams.errorMessage);
             }
 
@@ -275,8 +260,8 @@ public class SmsApi {
     }
 
     static class ResendMessagesParams {
-        MessageStorage messageStorage;
-        SmsApi smsApi;
+        final MessageStorage messageStorage;
+        final SmsApi smsApi;
 
         ResendMessagesParams(MessageStorage messageStorage, SmsApi smsApi) {
             this.messageStorage = messageStorage;
