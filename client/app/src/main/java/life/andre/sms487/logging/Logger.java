@@ -30,19 +30,16 @@ public class Logger {
     }
 
     public static List<String> getMessages() {
-        return new ArrayList<>(messages);
+        return messages;
     }
 
     private static void addMessage(String level, String tag, String msg) {
         String logLine = level + ": " + tag + ": " + msg;
 
         synchronized (messages) {
-            messages.add(logLine);
-
-            int toRemove =  messages.size() - MAX_SIZE;
-            while (toRemove > 0) {
-                messages.remove(0);
-                --toRemove;
+            messages.add(0, logLine);
+            while (messages.size() > MAX_SIZE) {
+                messages.remove(messages.size() - 1);
             }
         }
     }
