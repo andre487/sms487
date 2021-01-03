@@ -29,16 +29,16 @@ import life.andre.sms487.system.PermissionsChecker;
 import life.andre.sms487.utils.AsyncTaskUtil;
 
 public class MainActivity extends AppCompatActivity {
-    private final PermissionsChecker permissionsChecker = new PermissionsChecker(this);
-    private final static String logTag = "MainActivity";
+    private final static String TAG = MainActivity.class.getSimpleName();
 
+    private final PermissionsChecker permissionsChecker = new PermissionsChecker(this);
     private final Handler logUpdateHandler = new Handler();
     private final LogUpdater logUpdater = new LogUpdater(this);
+    private final SmsApi.RequestHandledListener smsRequestListener = new SmsRequestListener(this);
 
     private MessageStorage messageStorage;
     private SmsApi smsApi;
     private AppSettings appSettings;
-    private SmsApi.RequestHandledListener smsRequestListener;
 
     private AppCompatEditText serverKeyInput;
     private AppCompatEditText serverUrlInput;
@@ -55,14 +55,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        createFieldValues();
         startServiceTasks();
-
-        messageStorage = new MessageStorage(this);
-        appSettings = new AppSettings(this);
-        smsApi = new SmsApi(this, appSettings);
-
-        smsRequestListener = new SmsRequestListener(this);
-
         findViewComponents();
         bindEvents();
     }
@@ -75,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
         showServerUrl();
         showServerKey();
         showNeedSendSms();
-        renewMessagesFromDb();
+        showMessages();
         enableLogAutoRenew();
 
         smsApi.addRequestHandledListener(smsRequestListener);
@@ -100,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
 
         switch (action) {
             case "renewMessages":
-                renewMessagesFromDb();
+                showMessages();
                 break;
             case "toastMessage":
                 String message = intent.getStringExtra("message");
@@ -109,6 +103,12 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
         }
+    }
+
+    private void createFieldValues() {
+        messageStorage = new MessageStorage(this);
+        appSettings = new AppSettings(this);
+        smsApi = new SmsApi(this, appSettings);
     }
 
     private void startServiceTasks() {
@@ -129,11 +129,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void bindEvents() {
-        MainActivity mainActivity = this;
-
-        saveServerUrlButton.setOnClickListener(v -> mainActivity.saveServerUrl());
-        saveServerKeyButton.setOnClickListener(v -> mainActivity.saveServerKey());
-        sendSmsCheckBox.setOnCheckedChangeListener((v, c) -> mainActivity.saveNeedSendSms());
+        saveServerUrlButton.setOnClickListener(v -> this.saveServerUrl());
+        saveServerKeyButton.setOnClickListener(v -> this.saveServerKey());
+        sendSmsCheckBox.setOnCheckedChangeListener((v, c) -> this.saveNeedSendSms());
 
         messagesField.setMovementMethod(new ScrollingMovementMethod());
 
@@ -145,40 +143,6 @@ public class MainActivity extends AppCompatActivity {
                 enableLogAutoRenew();
             }
         });
-    }
-
-    void renewMessagesFromDb() {
-        final List<MessageContainer> messages = getMessages();
-        if (messages == null) {
-            Logger.w(logTag, "Messages are null");
-            return;
-        }
-        showMessages(messages);
-    }
-
-    void showLogsFromLogger() {
-        if (logsField == null) {
-            return;
-        }
-
-        StringBuilder logsString = new StringBuilder();
-        for (String logLine : Logger.getMessages()) {
-            logsString.append(logLine);
-            logsString.append('\n');
-        }
-
-        logsField.setText(logsString.toString().trim());
-    }
-
-    void saveServerKey() {
-        if (serverKeyInput == null) {
-            return;
-        }
-
-        Editable serverKeyText = serverKeyInput.getText();
-        if (serverKeyText != null) {
-            appSettings.saveServerKey(serverKeyText.toString());
-        }
     }
 
     public void showServerUrl() {
@@ -208,51 +172,14 @@ public class MainActivity extends AppCompatActivity {
         serverKeyInput.setText(appSettings.getServerKey());
     }
 
-    private List<MessageContainer> getMessages() {
-        GetMessagesParams params = new GetMessagesParams(messageStorage);
-        GetMessagesAction action = new GetMessagesAction();
-        action.execute(params);
-
-        try {
-            return action.get();
-        } catch (InterruptedException | ExecutionException e) {
-            Logger.w(logTag, "Get messages error: " + e.toString());
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    private void showMessages(List<MessageContainer> messages) {
-        if (messagesField == null) {
+    void saveServerKey() {
+        if (serverKeyInput == null) {
             return;
         }
 
-        StringBuilder messagesString = new StringBuilder();
-
-        for (MessageContainer message : messages) {
-            messagesString.append(message.getAddressFrom());
-            messagesString.append('\t');
-            messagesString.append(message.getDateTime());
-            messagesString.append("\nSent: ");
-            messagesString.append(message.isSent() ? "yes" : "no");
-            messagesString.append('\n');
-
-            messagesString.append(message.getBody());
-            messagesString.append("\n\n");
-        }
-
-        messagesField.setText(messagesString.toString().trim());
-    }
-
-    private void enableLogAutoRenew() {
-        if (!logUpdateHandler.hasCallbacks(logUpdater)) {
-            logUpdateHandler.post(logUpdater);
-        }
-    }
-
-    private void disableLogAutoRenew() {
-        if (logUpdateHandler.hasCallbacks(logUpdater)) {
-            logUpdateHandler.removeCallbacks(logUpdater);
+        Editable serverKeyText = serverKeyInput.getText();
+        if (serverKeyText != null) {
+            appSettings.saveServerKey(serverKeyText.toString());
         }
     }
 
@@ -269,6 +196,73 @@ public class MainActivity extends AppCompatActivity {
 
         boolean checked = sendSmsCheckBox.isChecked();
         appSettings.saveNeedSendSms(checked);
+    }
+
+    void showMessages() {
+        if (messagesField == null) {
+            return;
+        }
+
+        final List<MessageContainer> messages = getMessages();
+        if (messages == null) {
+            Logger.w(TAG, "Messages are null");
+            return;
+        }
+
+        StringBuilder messagesString = new StringBuilder();
+        for (MessageContainer message : messages) {
+            messagesString.append(message.getAddressFrom());
+            messagesString.append('\t');
+            messagesString.append(message.getDateTime());
+            messagesString.append("\nSent: ");
+            messagesString.append(message.isSent() ? "yes" : "no");
+            messagesString.append('\n');
+
+            messagesString.append(message.getBody());
+            messagesString.append("\n\n");
+        }
+
+        messagesField.setText(messagesString.toString().trim());
+    }
+
+    private List<MessageContainer> getMessages() {
+        GetMessagesParams params = new GetMessagesParams(messageStorage);
+        GetMessagesAction action = new GetMessagesAction();
+        action.execute(params);
+
+        try {
+            return action.get();
+        } catch (InterruptedException | ExecutionException e) {
+            Logger.w(TAG, "Get messages error: " + e.toString());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    void showLogsFromLogger() {
+        if (logsField == null) {
+            return;
+        }
+
+        StringBuilder logsString = new StringBuilder();
+        for (String logLine : Logger.getMessages()) {
+            logsString.append(logLine);
+            logsString.append('\n');
+        }
+
+        logsField.setText(logsString.toString().trim());
+    }
+
+    private void enableLogAutoRenew() {
+        if (!logUpdateHandler.hasCallbacks(logUpdater)) {
+            logUpdateHandler.post(logUpdater);
+        }
+    }
+
+    private void disableLogAutoRenew() {
+        if (logUpdateHandler.hasCallbacks(logUpdater)) {
+            logUpdateHandler.removeCallbacks(logUpdater);
+        }
     }
 
     static class SmsRequestListener implements SmsApi.RequestHandledListener {
