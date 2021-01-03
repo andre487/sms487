@@ -18,7 +18,7 @@ import androidx.core.app.NotificationCompat;
 
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
-import life.andre.sms487.network.SmsApi;
+import life.andre.sms487.network.ServerApi;
 import life.andre.sms487.system.AppSettings;
 import life.andre.sms487.utils.AsyncTaskUtil;
 import life.andre.sms487.utils.DateUtil;
@@ -27,13 +27,13 @@ public class NotificationListener extends NotificationListenerService {
     public static final String TAG = NotificationListener.class.getSimpleName();
 
     protected AppSettings appSettings;
-    protected SmsApi smsApi;
+    protected ServerApi serverApi;
 
     @Override
     public void onCreate() {
         super.onCreate();
         appSettings = new AppSettings(this);
-        smsApi = new SmsApi(this, appSettings);
+        serverApi = new ServerApi(this, appSettings);
 
         createServiceMessage();
     }
@@ -77,7 +77,7 @@ public class NotificationListener extends NotificationListenerService {
         String deviceId = Build.MODEL;
 
         SendNotificationParams params = new SendNotificationParams(
-                smsApi, appLabel, postTime, fullText, deviceId
+                serverApi, appLabel, postTime, fullText, deviceId
         );
         new SendNotificationAction().execute(params);
     }
@@ -127,14 +127,14 @@ public class NotificationListener extends NotificationListenerService {
     }
 
     static class SendNotificationParams {
-        final SmsApi smsApi;
+        final ServerApi serverApi;
         final String appLabel;
         final long postTime;
         final String text;
         final String deviceId;
 
-        SendNotificationParams(SmsApi smsApi, String appLabel, long postTime, String text, String deviceId) {
-            this.smsApi = smsApi;
+        SendNotificationParams(ServerApi serverApi, String appLabel, long postTime, String text, String deviceId) {
+            this.serverApi = serverApi;
             this.appLabel = appLabel;
             this.postTime = postTime;
             this.text = text;
@@ -164,7 +164,7 @@ public class NotificationListener extends NotificationListenerService {
                     params.deviceId, params.appLabel, curTime, postTime,
                     params.text, false, 0
             );
-            params.smsApi.addNotification(message);
+            params.serverApi.addNotification(message);
         }
     }
 }

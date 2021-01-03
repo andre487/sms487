@@ -14,7 +14,7 @@ import java.util.List;
 
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
-import life.andre.sms487.network.SmsApi;
+import life.andre.sms487.network.ServerApi;
 import life.andre.sms487.system.AppSettings;
 import life.andre.sms487.system.AppConstants;
 import life.andre.sms487.utils.AsyncTaskUtil;
@@ -23,12 +23,12 @@ public class SmsHandler extends Service {
     public static final String TAG = SmsHandler.class.getSimpleName();
 
     protected AppSettings appSettings;
-    protected SmsApi smsApi;
+    protected ServerApi serverApi;
 
     @Override
     public void onCreate() {
         appSettings = new AppSettings(this);
-        smsApi = new SmsApi(this, appSettings);
+        serverApi = new ServerApi(this, appSettings);
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -36,7 +36,7 @@ public class SmsHandler extends Service {
             return Service.START_STICKY;
         }
 
-        SendSmsParams params = new SendSmsParams(intent, smsApi, Build.MODEL);
+        SendSmsParams params = new SendSmsParams(intent, serverApi, Build.MODEL);
         new SendSmsAction().execute(params);
 
         return Service.START_STICKY;
@@ -50,13 +50,13 @@ public class SmsHandler extends Service {
 
     static class SendSmsParams {
         final Intent intent;
-        final SmsApi smsApi;
+        final ServerApi serverApi;
         final String deviceId;
 
         @SuppressWarnings("SameParameterValue")
-        SendSmsParams(Intent intent, SmsApi smsApi, String deviceId) {
+        SendSmsParams(Intent intent, ServerApi serverApi, String deviceId) {
             this.intent = intent;
-            this.smsApi = smsApi;
+            this.serverApi = serverApi;
             this.deviceId = deviceId;
         }
     }
@@ -91,7 +91,7 @@ public class SmsHandler extends Service {
             List<MessageContainer> extractedMessages = extractMessages(intentData);
 
             for (MessageContainer message : extractedMessages) {
-                params.smsApi.addSms(message);
+                params.serverApi.addSms(message);
             }
         }
 

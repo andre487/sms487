@@ -15,14 +15,14 @@ import androidx.work.WorkerParameters;
 import java.util.concurrent.TimeUnit;
 
 import life.andre.sms487.logging.Logger;
-import life.andre.sms487.network.SmsApi;
+import life.andre.sms487.network.ServerApi;
 import life.andre.sms487.system.AppSettings;
 
 public class MessageResendWorker extends Worker {
     public static final String TAG = MessageResendWorker.class.getSimpleName();
 
     @NonNull
-    private final SmsApi smsApi;
+    private final ServerApi serverApi;
 
     public static void schedule() {
         PeriodicWorkRequest task = new PeriodicWorkRequest.Builder(
@@ -45,14 +45,14 @@ public class MessageResendWorker extends Worker {
 
     public MessageResendWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
-        smsApi = new SmsApi(context, new AppSettings(context));
+        serverApi = new ServerApi(context, new AppSettings(context));
     }
 
     @NonNull
     @Override
     public Result doWork() {
         try {
-            smsApi.resendMessages();
+            serverApi.resendMessages();
             Logger.i(TAG, "Try to resend messages");
             return Result.success();
         } catch (Exception e) {

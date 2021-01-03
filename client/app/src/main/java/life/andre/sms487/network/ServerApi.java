@@ -25,8 +25,8 @@ import life.andre.sms487.messages.MessageStorage;
 import life.andre.sms487.system.AppSettings;
 import life.andre.sms487.utils.AsyncTaskUtil;
 
-public class SmsApi {
-    public static final String TAG = SmsApi.class.getSimpleName();
+public class ServerApi {
+    public static final String TAG = ServerApi.class.getSimpleName();
     public static final String MESSAGE_TYPE_SMS = "sms";
     public static final String MESSAGE_TYPE_NOTIFICATION = "notification";
 
@@ -44,7 +44,7 @@ public class SmsApi {
         void onError(long dbId, String errorMessage);
     }
 
-    public SmsApi(@NonNull Context ctx, AppSettings appSettings) {
+    public ServerApi(@NonNull Context ctx, AppSettings appSettings) {
         this.appSettings = appSettings;
         this.requestQueue = Volley.newRequestQueue(ctx);
         messageStorage = new MessageStorage(ctx);
@@ -58,31 +58,30 @@ public class SmsApi {
         requestHandledListeners.remove(listener);
     }
 
-    public void addSms(String deviceId, String dateTime, String smsCenterDateTime, String tel, String text, long dbId) {
-        Logger.i(
-                TAG,
-                "Sending SMS: " + deviceId + ", " + dateTime + ", " + smsCenterDateTime + ", " + tel + ", " + text
-        );
-        addRequest(MESSAGE_TYPE_SMS, deviceId, dateTime, smsCenterDateTime, tel, text, dbId);
-    }
-
     public void addSms(@NonNull MessageContainer msg) {
         long dbId = msg.getDbId();
         if (dbId == 0) {
             dbId = messageStorage.addMessage(msg);
         }
 
-        addSms(
-                msg.getDeviceId(), msg.getDateTime(), msg.getSmsCenterDateTime(),
-                msg.getAddressFrom(), msg.getBody(), dbId
-        );
+        String deviceId = msg.getDeviceId();
+        String dateTime = msg.getDateTime();
+        String smsCenterDateTime = msg.getSmsCenterDateTime();
+        String tel = msg.getAddressFrom();
+        String text = msg.getBody();
+
+        String logText = text != null ? text.replace('\n', ' ') : "null";
+        String logLine = "Sending SMS: " + deviceId + ", " + dateTime + ", " + smsCenterDateTime + ", " + tel + ", " + logText;
+        Logger.i(TAG, logLine);
+
+        addRequest(MESSAGE_TYPE_SMS, deviceId, dateTime, smsCenterDateTime, tel, text, dbId);
     }
 
     public void addNotification(String deviceId, String dateTime, String postDateTime, String tel, String text, long dbId) {
-        Logger.i(
-                TAG,
-                "Sending Notification: " + deviceId + ", " + dateTime + ", " + ", " + postDateTime + ", " + tel + ", " + text
-        );
+        String logText = text != null ? text.replace('\n', ' ') : "null";
+        String logLine = "Sending Notification: " + deviceId + ", " + dateTime + ", " + ", " + postDateTime + ", " + tel + ", " + logText;
+        Logger.i(TAG, logLine);
+
         addRequest(MESSAGE_TYPE_NOTIFICATION, deviceId, dateTime, postDateTime, tel, text, dbId);
     }
 
@@ -127,17 +126,17 @@ public class SmsApi {
         requestParams.put("tel", tel);
         requestParams.put("text", text);
 
-        AddSmsApiRequest request = new AddSmsApiRequest(serverUrl, serverKey, requestParams, dbId, messageStorage);
+        AddRequest request = new AddRequest(serverUrl, serverKey, requestParams, dbId, messageStorage);
 
         this.requestQueue.add(request);
     }
 
-    static class AddSmsApiRequest extends StringRequest {
+    static class AddRequest extends StringRequest {
         private final Map<String, String> requestParams;
         @NonNull
         private final String cookie;
 
-        AddSmsApiRequest(
+        AddRequest(
                 String serverUrl, String serverKey,
                 Map<String, String> requestParams, long dbId, MessageStorage messageStorage
         ) {
@@ -182,7 +181,7 @@ public class SmsApi {
             if (response == null) {
                 response = "Unknown response";
             }
-            Logger.i("AddSmsApiRequest", "Response: " + response);
+            Logger.i(TAG, "Response: " + response);
 
             RequestSuccessParams params = new RequestSuccessParams(dbId, messageStorage);
             new RunRequestSuccessHandlers().execute(params);
@@ -198,14 +197,14 @@ public class SmsApi {
 
         @Override
         public void onErrorResponse(@NonNull VolleyError error) {
-            String errorMessage = "Unknown network error";
+            String errorMessage = error.toString();
             if (error.networkResponse != null) {
                 errorMessage = error.toString() + ": " +
                         error.networkResponse.statusCode + ": " +
                         new String(error.networkResponse.data, StandardCharsets.UTF_8);
             }
 
-            Logger.e(TAG, "Response error: " + errorMessage);
+            Logger.e(TAG, errorMessage);
 
             RequestErrorParams params = new RequestErrorParams(dbId, errorMessage);
             new RunRequestErrorHandlers().execute(params);
@@ -233,7 +232,7 @@ public class SmsApi {
 
             mainParams.messageStorage.markSent(mainParams.dbId);
 
-            for (SmsApi.RequestHandledListener listener : requestHandledListeners) {
+            for (ServerApi.RequestHandledListener listener : requestHandledListeners) {
                 listener.onSuccess(mainParams.dbId);
             }
 
@@ -260,7 +259,7 @@ public class SmsApi {
                 return null;
             }
 
-            for (SmsApi.RequestHandledListener listener : requestHandledListeners) {
+            for (ServerApi.RequestHandledListener listener : requestHandledListeners) {
                 listener.onError(mainParams.dbId, mainParams.errorMessage);
             }
 
@@ -270,11 +269,11 @@ public class SmsApi {
 
     static class ResendMessagesParams {
         final MessageStorage messageStorage;
-        final SmsApi smsApi;
+        final ServerApi serverApi;
 
-        ResendMessagesParams(MessageStorage messageStorage, SmsApi smsApi) {
+        ResendMessagesParams(MessageStorage messageStorage, ServerApi serverApi) {
             this.messageStorage = messageStorage;
-            this.smsApi = smsApi;
+            this.serverApi = serverApi;
         }
     }
 
@@ -288,13 +287,17 @@ public class SmsApi {
             }
 
             List<MessageContainer> messages = mainParams.messageStorage.getNotSentMessages();
+            if (messages.size() == 0) {
+                Logger.i(TAG, "Resend: no messages to resend");
+                return null;
+            }
 
             int notSentCount = messages.size();
-            Logger.i(TAG, "Try to resend " + notSentCount + " messages");
+            Logger.i(TAG, "Resend: try to resend " + notSentCount + " messages");
 
             // TODO: notifications?
             for (MessageContainer message : messages) {
-                mainParams.smsApi.addSms(message);
+                mainParams.serverApi.addSms(message);
             }
 
             return null;

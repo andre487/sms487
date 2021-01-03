@@ -25,7 +25,7 @@ import life.andre.sms487.messages.MessageCleanupWorker;
 import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.messages.MessageResendWorker;
 import life.andre.sms487.messages.MessageStorage;
-import life.andre.sms487.network.SmsApi;
+import life.andre.sms487.network.ServerApi;
 import life.andre.sms487.system.AppSettings;
 import life.andre.sms487.system.PermissionsChecker;
 import life.andre.sms487.utils.AsyncTaskUtil;
@@ -36,10 +36,10 @@ public class MainActivity extends AppCompatActivity {
     private final PermissionsChecker permissionsChecker = new PermissionsChecker(this);
     private final Handler logUpdateHandler = new Handler();
     private final LogUpdater logUpdater = new LogUpdater(this);
-    private final SmsApi.RequestHandledListener smsRequestListener = new SmsRequestListener(this);
+    private final ServerApi.RequestHandledListener smsRequestListener = new SmsRequestListener(this);
 
     private MessageStorage messageStorage;
-    private SmsApi smsApi;
+    private ServerApi serverApi;
     private AppSettings appSettings;
 
     private AppCompatEditText serverKeyInput;
@@ -74,13 +74,13 @@ public class MainActivity extends AppCompatActivity {
         showMessages();
         enableLogAutoRenew();
 
-        smsApi.addRequestHandledListener(smsRequestListener);
-        smsApi.resendMessages();
+        serverApi.addRequestHandledListener(smsRequestListener);
+        serverApi.resendMessages();
     }
 
     @Override
     protected void onStop() {
-        smsApi.removeRequestHandledListener(smsRequestListener);
+        serverApi.removeRequestHandledListener(smsRequestListener);
         disableLogAutoRenew();
         super.onStop();
     }
@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
     private void createFieldValues() {
         messageStorage = new MessageStorage(this);
         appSettings = new AppSettings(this);
-        smsApi = new SmsApi(this, appSettings);
+        serverApi = new ServerApi(this, appSettings);
     }
 
     private void startServiceTasks() {
@@ -268,7 +268,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    static class SmsRequestListener implements SmsApi.RequestHandledListener {
+    static class SmsRequestListener implements ServerApi.RequestHandledListener {
         private final MainActivity activity;
 
         public SmsRequestListener(MainActivity activity) {
