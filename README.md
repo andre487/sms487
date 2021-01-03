@@ -5,7 +5,7 @@ for seeng them on PC.
 
 ## Android client
 
-Android client located in `client` dir. Requires Android 8.
+Android client located in `client` dir. Requires Android 10.
 
 ## Data API
 
