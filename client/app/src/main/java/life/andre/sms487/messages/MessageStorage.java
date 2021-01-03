@@ -12,8 +12,6 @@ import androidx.room.PrimaryKey;
 import androidx.room.Query;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
-import androidx.room.migration.Migration;
-import androidx.sqlite.db.SupportSQLiteDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,29 +19,17 @@ import java.util.List;
 public class MessageStorage {
     private final MessageDao messageDao;
 
-    @Database(entities = {Message.class}, version = 2, exportSchema = false)
+    @Database(entities = {Message.class}, version = 1, exportSchema = false)
     public static abstract class AppDatabase extends RoomDatabase {
         public abstract MessageDao messageDao();
     }
 
     public MessageStorage(@NonNull Context context) {
-        RoomDatabase.Builder<AppDatabase> builder = Room.databaseBuilder(context, AppDatabase.class, "messages-db");
-
-        builder.addMigrations(
-                new Migration(1, 2) {
-                    @Override
-                    public void migrate(@NonNull SupportSQLiteDatabase database) {
-                        database.execSQL("ALTER TABLE message ADD COLUMN sms_date_time TEXT DEFAULT \"\"");
-                    }
-                }
-        );
-
-        AppDatabase db = builder.build();
-        messageDao = db.messageDao();
+        messageDao = Room.databaseBuilder(context, AppDatabase.class, "messages-db").build().messageDao();
     }
 
     public long addMessage(@NonNull MessageContainer message) {
-        return messageDao.insert(Message.fromMessageContainer(message));
+        return messageDao.insert(Message.createFromMessageContainer(message));
     }
 
     public void markSent(long insertId) {
@@ -56,17 +42,7 @@ public class MessageStorage {
         List<MessageContainer> messages = new ArrayList<>();
 
         for (Message messageEntry : messageEntries) {
-            messages.add(
-                    new MessageContainer(
-                            messageEntry.deviceId,
-                            messageEntry.addressFrom,
-                            messageEntry.dateTime,
-                            messageEntry.smsCenterDateTime,
-                            messageEntry.body,
-                            messageEntry.isSent,
-                            messageEntry.id
-                    )
-            );
+            messages.add(MessageContainer.createFromMessageEntry(messageEntry));
         }
 
         return messages;
@@ -130,7 +106,7 @@ public class MessageStorage {
         public boolean isSent = false;
 
         @NonNull
-        public static Message fromMessageContainer(@NonNull MessageContainer messageContainer) {
+        public static Message createFromMessageContainer(@NonNull MessageContainer messageContainer) {
             Message message = new Message();
 
             message.deviceId = messageContainer.getDeviceId();
