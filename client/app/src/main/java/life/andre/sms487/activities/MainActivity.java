@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.method.ScrollingMovementMethod;
-import android.util.Log;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -158,12 +157,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void showLogsFromLogger() {
-        final List<String> logs = getLogs();
-        if (logs == null) {
-            Log.w(logTag, "Messages are null");
+        if (logsField == null) {
             return;
         }
-        showLogs(logs);
+
+        StringBuilder logsString = new StringBuilder();
+        for (String logLine : Logger.getMessages()) {
+            logsString.append(logLine);
+            logsString.append('\n');
+        }
+
+        logsField.setText(logsString.toString().trim());
     }
 
     void saveServerKey() {
@@ -237,35 +241,7 @@ public class MainActivity extends AppCompatActivity {
             messagesString.append("\n\n");
         }
 
-        messagesField.setText(messagesString.toString());
-    }
-
-    private List<String> getLogs() {
-        GetLogsAction action = new GetLogsAction();
-        action.execute();
-
-        try {
-            return action.get();
-        } catch (InterruptedException | ExecutionException e) {
-            Log.w(logTag, "Get logs error: " + e.toString());
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    private void showLogs(List<String> logs) {
-        if (logsField == null) {
-            return;
-        }
-
-        StringBuilder logsString = new StringBuilder();
-
-        for (String logLine : logs) {
-            logsString.append(logLine);
-            logsString.append('\n');
-        }
-
-        logsField.setText(logsString.toString());
+        messagesField.setText(messagesString.toString().trim());
     }
 
     private void enableLogAutoRenew() {
@@ -321,13 +297,6 @@ public class MainActivity extends AppCompatActivity {
             intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
             activity.startActivity(intent);
-        }
-    }
-
-    static class GetLogsAction extends AsyncTask<Void, Void, List<String>> {
-        @Override
-        protected List<String> doInBackground(Void... params) {
-            return Logger.getMessages();
         }
     }
 
