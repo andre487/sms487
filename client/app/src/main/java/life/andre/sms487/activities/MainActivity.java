@@ -8,6 +8,8 @@ import android.text.Editable;
 import android.text.method.ScrollingMovementMethod;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.AppCompatCheckBox;
@@ -84,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onNewIntent(Intent intent) {
+    protected void onNewIntent(@NonNull Intent intent) {
         super.onNewIntent(intent);
 
         String action = intent.getStringExtra("action");
@@ -225,6 +227,7 @@ public class MainActivity extends AppCompatActivity {
         messagesField.setText(messagesString.toString().trim());
     }
 
+    @Nullable
     private List<MessageContainer> getMessages() {
         GetMessagesParams params = new GetMessagesParams(messageStorage);
         GetMessagesAction action = new GetMessagesAction();
@@ -232,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             return action.get();
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (@NonNull InterruptedException | ExecutionException e) {
             Logger.w(TAG, "Get messages error: " + e.toString());
             e.printStackTrace();
             return null;
@@ -317,8 +320,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     static class GetMessagesAction extends AsyncTask<GetMessagesParams, Void, List<MessageContainer>> {
+        @Nullable
         @Override
-        protected List<MessageContainer> doInBackground(GetMessagesParams... params) {
+        protected List<MessageContainer> doInBackground(@NonNull GetMessagesParams... params) {
             GetMessagesParams mainParams = AsyncTaskUtil.getParams(params);
             if (mainParams == null) {
                 return null;

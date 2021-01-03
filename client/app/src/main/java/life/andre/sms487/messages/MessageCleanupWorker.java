@@ -18,6 +18,7 @@ public class MessageCleanupWorker extends Worker {
     private static final String logTag = "MessageCleanupWorker";
     private static final String taskName = "MessageCleanupWorker";
 
+    @NonNull
     private final MessageStorage messageStorage;
 
     public static void schedule() {

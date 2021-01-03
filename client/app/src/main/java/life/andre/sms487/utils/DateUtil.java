@@ -16,7 +16,7 @@ public class DateUtil {
     }
 
     @NonNull
-    public static String formatDate(Date dt) {
+    public static String formatDate(@NonNull Date dt) {
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         return dateFormat.format(dt);
     }

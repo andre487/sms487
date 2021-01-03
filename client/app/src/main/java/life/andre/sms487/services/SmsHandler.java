@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.IBinder;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.ArrayList;
@@ -51,6 +52,7 @@ public class SmsHandler extends Service {
         final SmsApi smsApi;
         final String deviceId;
 
+        @SuppressWarnings("SameParameterValue")
         SendSmsParams(Intent intent, SmsApi smsApi, String deviceId) {
             this.intent = intent;
             this.smsApi = smsApi;
@@ -59,8 +61,9 @@ public class SmsHandler extends Service {
     }
 
     static class SendSmsAction extends AsyncTask<SendSmsParams, Void, Void> {
+        @Nullable
         @Override
-        protected Void doInBackground(SendSmsParams... params) {
+        protected Void doInBackground(@NonNull SendSmsParams... params) {
             SendSmsParams mainParams = AsyncTaskUtil.getParams(params, logTag);
             if (mainParams == null) {
                 return null;
@@ -83,7 +86,7 @@ public class SmsHandler extends Service {
             return null;
         }
 
-        private void handleIntentData(SendSmsParams params, List<String> intentData) {
+        private void handleIntentData(@NonNull SendSmsParams params, @NonNull List<String> intentData) {
             List<MessageContainer> extractedMessages = extractMessages(intentData);
 
             for (MessageContainer message : extractedMessages) {
@@ -91,7 +94,8 @@ public class SmsHandler extends Service {
             }
         }
 
-        private List<MessageContainer> extractMessages(List<String> intentData) {
+        @NonNull
+        private List<MessageContainer> extractMessages(@NonNull List<String> intentData) {
             List<MessageContainer> data = new ArrayList<>();
 
             for (String messageJson : intentData) {

@@ -7,6 +7,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Telephony;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,8 +39,9 @@ public class SmsListener extends BroadcastReceiver {
         private static final String logTag = "HandleMessageAction";
         private final PduConverter converter = new PduConverter();
 
+        @Nullable
         @Override
-        protected Void doInBackground(HandleMessageParams... params) {
+        protected Void doInBackground(@NonNull HandleMessageParams... params) {
             HandleMessageParams mainParams = AsyncTaskUtil.getParams(params, logTag);
             if (mainParams == null) {
                 return null;
@@ -51,7 +55,8 @@ public class SmsListener extends BroadcastReceiver {
             return null;
         }
 
-        private List<MessageContainer> extractMessages(Intent intent) {
+        @Nullable
+        private List<MessageContainer> extractMessages(@NonNull Intent intent) {
             String action = intent.getAction();
             if (action == null || !action.equals(Telephony.Sms.Intents.SMS_RECEIVED_ACTION)) {
                 return null;
@@ -73,7 +78,7 @@ public class SmsListener extends BroadcastReceiver {
             return converter.convert(pdus, format);
         }
 
-        private void sendMessagesToHandler(Context context, List<MessageContainer> messages) {
+        private void sendMessagesToHandler(@NonNull Context context, @NonNull List<MessageContainer> messages) {
             Intent baseIntent = new Intent();
 
             ArrayList<String> intentData = new ArrayList<>();

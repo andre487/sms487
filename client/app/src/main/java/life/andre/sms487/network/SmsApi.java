@@ -3,6 +3,9 @@ package life.andre.sms487.network;
 import android.content.Context;
 import android.os.AsyncTask;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -30,7 +33,9 @@ public class SmsApi {
     private static final List<RequestHandledListener> requestHandledListeners = new ArrayList<>();
 
     private final AppSettings appSettings;
+    @NonNull
     private final MessageStorage messageStorage;
+    @NonNull
     private final RequestQueue requestQueue;
 
     public interface RequestHandledListener {
@@ -39,7 +44,7 @@ public class SmsApi {
         void onError(long dbId, String errorMessage);
     }
 
-    public SmsApi(Context ctx, AppSettings appSettings) {
+    public SmsApi(@NonNull Context ctx, AppSettings appSettings) {
         this.appSettings = appSettings;
         this.requestQueue = Volley.newRequestQueue(ctx);
         messageStorage = new MessageStorage(ctx);
@@ -61,7 +66,7 @@ public class SmsApi {
         addRequest(MESSAGE_TYPE_SMS, deviceId, dateTime, smsCenterDateTime, tel, text, dbId);
     }
 
-    public void addSms(MessageContainer msg) {
+    public void addSms(@NonNull MessageContainer msg) {
         long dbId = msg.getDbId();
         if (dbId == 0) {
             dbId = messageStorage.addMessage(msg);
@@ -81,7 +86,7 @@ public class SmsApi {
         addRequest(MESSAGE_TYPE_NOTIFICATION, deviceId, dateTime, postDateTime, tel, text, dbId);
     }
 
-    public void addNotification(MessageContainer msg) {
+    public void addNotification(@NonNull MessageContainer msg) {
         long dbId = msg.getDbId();
         if (dbId == 0) {
             dbId = messageStorage.addMessage(msg);
@@ -99,13 +104,13 @@ public class SmsApi {
     }
 
     private void addRequest(
-            String messageType, String deviceId, String dateTime, String smsCenterDateTime,
+            String messageType, String deviceId, String dateTime, @Nullable String smsCenterDateTime,
             String tel, String text, long dbId
     ) {
         String serverUrl = appSettings.getServerUrl();
         String serverKey = appSettings.getServerKey();
 
-        if (serverUrl.length() == 0 || serverKey.length() == 0) {
+        if (serverUrl == null || serverUrl.length() == 0 || serverKey == null || serverKey.length() == 0) {
             Logger.w(logTag, "Server params are empty, skip sending");
             return;
         }
@@ -129,6 +134,7 @@ public class SmsApi {
 
     static class AddSmsApiRequest extends StringRequest {
         private final Map<String, String> requestParams;
+        @NonNull
         private final String cookie;
 
         AddSmsApiRequest(
@@ -146,6 +152,7 @@ public class SmsApi {
             this.cookie = "__Secure-Auth-Token=" + serverKey;
         }
 
+        @NonNull
         @Override
         public Map<String, String> getHeaders() {
             Map<String, String> headers = new HashMap<>();
@@ -171,7 +178,7 @@ public class SmsApi {
         }
 
         @Override
-        public void onResponse(String response) {
+        public void onResponse(@Nullable String response) {
             if (response == null) {
                 response = "Unknown response";
             }
@@ -190,7 +197,7 @@ public class SmsApi {
         }
 
         @Override
-        public void onErrorResponse(VolleyError error) {
+        public void onErrorResponse(@NonNull VolleyError error) {
             String errorMessage = "Unknown network error";
             if (error.networkResponse != null) {
                 errorMessage = error.toString() + ": " +
@@ -216,8 +223,9 @@ public class SmsApi {
     }
 
     static class RunRequestSuccessHandlers extends AsyncTask<RequestSuccessParams, Void, Void> {
+        @Nullable
         @Override
-        protected Void doInBackground(RequestSuccessParams... params) {
+        protected Void doInBackground(@NonNull RequestSuccessParams... params) {
             RequestSuccessParams mainParams = AsyncTaskUtil.getParams(params, logTag);
             if (mainParams == null) {
                 return null;
@@ -244,8 +252,9 @@ public class SmsApi {
     }
 
     static class RunRequestErrorHandlers extends AsyncTask<RequestErrorParams, Void, Void> {
+        @Nullable
         @Override
-        protected Void doInBackground(RequestErrorParams... params) {
+        protected Void doInBackground(@NonNull RequestErrorParams... params) {
             RequestErrorParams mainParams = AsyncTaskUtil.getParams(params, logTag);
             if (mainParams == null) {
                 return null;
@@ -270,8 +279,9 @@ public class SmsApi {
     }
 
     static class ResendMessagesAction extends AsyncTask<ResendMessagesParams, Void, Void> {
+        @Nullable
         @Override
-        protected Void doInBackground(ResendMessagesParams... params) {
+        protected Void doInBackground(@NonNull ResendMessagesParams... params) {
             ResendMessagesParams mainParams = AsyncTaskUtil.getParams(params, logTag);
             if (mainParams == null) {
                 return null;

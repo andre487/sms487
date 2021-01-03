@@ -3,6 +3,7 @@ package life.andre.sms487.messages;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.room.ColumnInfo;
 import androidx.room.Dao;
 import androidx.room.Database;
@@ -66,9 +67,11 @@ public class MessageStorage {
 
     @Dao
     public interface MessageDao {
+        @NonNull
         @Query("SELECT * FROM message ORDER BY id DESC LIMIT 6")
         List<Message> getTail();
 
+        @NonNull
         @Query("SELECT * FROM message WHERE is_sent == 0 ORDER BY id DESC")
         List<Message> getNotSent();
 
@@ -87,18 +90,22 @@ public class MessageStorage {
         @PrimaryKey(autoGenerate = true)
         public int id;
 
+        @Nullable
         @ColumnInfo(name = "address_from")
         public String addressFrom;
 
+        @Nullable
         @ColumnInfo(name = "device_id")
         public String deviceId;
 
+        @Nullable
         @ColumnInfo(name = "date_time", index = true)
         public String dateTime;
 
         @ColumnInfo(name = "sms_date_time")
         public String smsCenterDateTime;
 
+        @Nullable
         @ColumnInfo(name = "body")
         public String body;
 

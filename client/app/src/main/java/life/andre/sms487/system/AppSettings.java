@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.io.IOException;
@@ -23,9 +24,10 @@ public class AppSettings {
     private static final String logTag = "AppSettings";
 
     private final SharedPreferences sharedPreferences;
+    @NonNull
     private final Context context;
 
-    public AppSettings(Context context) {
+    public AppSettings(@NonNull Context context) {
         this.context = context;
         this.sharedPreferences = context.getSharedPreferences(
                 AppConstants.PREFERENCES_KEY,
@@ -43,11 +45,12 @@ public class AppSettings {
 
         try {
             showMessage(action.get());
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (@NonNull InterruptedException | ExecutionException e) {
             showMessage(e.toString());
         }
     }
 
+    @Nullable
     public String getServerUrl() {
         return sharedPreferences.getString(SERVER_URL, "");
     }
@@ -62,11 +65,12 @@ public class AppSettings {
 
         try {
             showMessage(action.get());
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (@NonNull InterruptedException | ExecutionException e) {
             showMessage(e.toString());
         }
     }
 
+    @Nullable
     public String getServerKey() {
         return sharedPreferences.getString(SERVER_KEY, "");
     }
@@ -90,7 +94,7 @@ public class AppSettings {
                 val = "Param value is null";
             }
             showMessage(val);
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (@NonNull InterruptedException | ExecutionException e) {
             showMessage(e.toString());
         }
     }
@@ -114,7 +118,7 @@ public class AppSettings {
     static class SaveSettingsAction extends AsyncTask<SaveSettingsParams, Void, String> {
         @Override
         @Nullable
-        protected String doInBackground(SaveSettingsParams... params) {
+        protected String doInBackground(@NonNull SaveSettingsParams... params) {
             SaveSettingsParams mainParams = AsyncTaskUtil.getParams(params, logTag);
             if (mainParams == null) {
                 return null;
@@ -132,7 +136,8 @@ public class AppSettings {
             return null;
         }
 
-        private String saveServerUrl(SaveSettingsParams params) {
+        @NonNull
+        private String saveServerUrl(@NonNull SaveSettingsParams params) {
             try {
                 URL url = new URL(params.value);
                 URLConnection conn = url.openConnection();
@@ -148,7 +153,8 @@ public class AppSettings {
             return "Server URL saved";
         }
 
-        private String saveServerKey(SaveSettingsParams params) {
+        @NonNull
+        private String saveServerKey(@NonNull SaveSettingsParams params) {
             String serverKey = params.value.trim();
             if (serverKey.length() == 0) {
                 return "Error: server key is empty";
@@ -159,7 +165,8 @@ public class AppSettings {
             return "Server key saved";
         }
 
-        private String saveNeedSendSms(SaveSettingsParams params) {
+        @NonNull
+        private String saveNeedSendSms(@NonNull SaveSettingsParams params) {
             String val = params.value.trim();
             if (!val.equals("1") && !val.equals("0")) {
                 return "Error: invalid send SMS param";

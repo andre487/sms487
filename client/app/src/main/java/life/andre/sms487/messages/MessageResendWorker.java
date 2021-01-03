@@ -22,6 +22,7 @@ public class MessageResendWorker extends Worker {
     private static final String logTag = "MessageResendWorker";
     private static final String taskName = "MessageResendWorker";
 
+    @NonNull
     private final SmsApi smsApi;
 
     public static void schedule() {

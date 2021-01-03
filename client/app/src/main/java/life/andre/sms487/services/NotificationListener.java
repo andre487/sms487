@@ -12,6 +12,8 @@ import android.os.Bundle;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import life.andre.sms487.logging.Logger;
@@ -43,7 +45,7 @@ public class NotificationListener extends NotificationListenerService {
     }
 
     @Override
-    public void onNotificationPosted(StatusBarNotification sbn) {
+    public void onNotificationPosted(@NonNull StatusBarNotification sbn) {
         super.onNotificationPosted(sbn);
 
         if (!isNotificationSuitable(sbn)) {
@@ -80,17 +82,18 @@ public class NotificationListener extends NotificationListenerService {
         new SendNotificationAction().execute(params);
     }
 
-    boolean isNotificationSuitable(StatusBarNotification sbn) {
+    boolean isNotificationSuitable(@NonNull StatusBarNotification sbn) {
         return sbn.isClearable();
     }
 
-    public String getAppLabel(String packageName) {
+    @NonNull
+    public String getAppLabel(@NonNull String packageName) {
         ApplicationInfo applicationInfo = null;
 
         PackageManager packageManager = this.getPackageManager();
         try {
             applicationInfo = packageManager.getApplicationInfo(packageName, 0);
-        } catch (final PackageManager.NameNotFoundException e) {
+        } catch (@NonNull final PackageManager.NameNotFoundException e) {
             Logger.e(logTag, "Get app name error: " + e.getMessage());
         }
 
@@ -141,8 +144,9 @@ public class NotificationListener extends NotificationListenerService {
     }
 
     static class SendNotificationAction extends AsyncTask<SendNotificationParams, Void, Void> {
+        @Nullable
         @Override
-        protected Void doInBackground(SendNotificationParams... params) {
+        protected Void doInBackground(@NonNull SendNotificationParams... params) {
             SendNotificationParams mainParams = AsyncTaskUtil.getParams(params, logTag);
             if (mainParams == null) {
                 return null;
@@ -153,7 +157,7 @@ public class NotificationListener extends NotificationListenerService {
             return null;
         }
 
-        void handleNotification(SendNotificationParams params) {
+        void handleNotification(@NonNull SendNotificationParams params) {
             String curTime = DateUtil.nowFormatted();
             String postTime = DateUtil.formatDate(params.postTime);
 
