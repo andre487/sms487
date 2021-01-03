@@ -1,28 +1,18 @@
 package life.andre.sms487.messages;
 
-import android.annotation.SuppressLint;
 import android.telephony.SmsMessage;
 import android.util.Pair;
 
 import androidx.annotation.NonNull;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
+
+import life.andre.sms487.utils.DateUtil;
 
 public class PduConverter {
-    private final SimpleDateFormat dateFormat;
-
-    @SuppressLint("SimpleDateFormat")
-    public PduConverter() {
-        dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm Z");
-        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-    }
-
     @NonNull
     public List<MessageContainer> convert(Object[] pdus, String format) {
         Map<Pair<String, String>, List<SmsMessage>> messageTable = getMessageTable(pdus, format);
@@ -40,9 +30,7 @@ public class PduConverter {
             byte[] pduBytes = (byte[]) pdu;
 
             SmsMessage message = SmsMessage.createFromPdu(pduBytes, format);
-
-            Date smsCenterDt = new Date(message.getTimestampMillis());
-            String smsCenterDateTime = dateFormat.format(smsCenterDt);
+            String smsCenterDateTime = DateUtil.formatDate(message.getTimestampMillis());
 
             String tel = message.getOriginatingAddress();
             Pair<String, String> key = new Pair<>(tel, smsCenterDateTime);
@@ -73,7 +61,7 @@ public class PduConverter {
             String smsCenterDateTime = key.second;
             StringBuilder fullTextBuilder = new StringBuilder();
 
-            String dateTime = dateFormat.format(new Date());
+            String dateTime = DateUtil.nowFormatted();
 
             for (SmsMessage message : messages) {
                 String messageBody = message.getMessageBody();

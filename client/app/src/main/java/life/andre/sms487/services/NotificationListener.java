@@ -1,6 +1,5 @@
 package life.andre.sms487.services;
 
-import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -15,15 +14,14 @@ import android.service.notification.StatusBarNotification;
 
 import androidx.core.app.NotificationCompat;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.TimeZone;
 
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.network.SmsApi;
 import life.andre.sms487.system.AppSettings;
 import life.andre.sms487.utils.AsyncTaskUtil;
+import life.andre.sms487.utils.DateUtil;
 
 public class NotificationListener extends NotificationListenerService {
     protected AppSettings appSettings;
@@ -149,14 +147,8 @@ public class NotificationListener extends NotificationListenerService {
     }
 
     static class SendNotificationAction extends AsyncTask<SendNotificationParams, Void, Void> {
-        private SimpleDateFormat dateFormat;
-
-        @SuppressLint("SimpleDateFormat")
         @Override
         protected Void doInBackground(SendNotificationParams... params) {
-            dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm Z");  // TODO: extract to life.andre.sms487.utils
-            dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-
             SendNotificationParams mainParams = AsyncTaskUtil.getParams(params, logTag);
             if (mainParams == null) {
                 return null;
@@ -168,8 +160,8 @@ public class NotificationListener extends NotificationListenerService {
         }
 
         void handleNotification(SendNotificationParams params) {
-            String curTime = dateFormat.format(new Date());
-            String postTime = dateFormat.format(new Date(params.postTime));
+            String curTime = DateUtil.nowFormatted();
+            String postTime = DateUtil.formatDate(new Date(params.postTime));
 
             MessageContainer message = new MessageContainer(
                     params.deviceId, params.appLabel, curTime, postTime,
