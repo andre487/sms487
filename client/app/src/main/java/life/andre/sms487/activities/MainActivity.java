@@ -17,6 +17,7 @@ import java.util.concurrent.ExecutionException;
 
 import life.andre.sms487.R;
 import life.andre.sms487.logging.Logger;
+import life.andre.sms487.messages.MessageCleanupWorker;
 import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.messages.MessageStorage;
 import life.andre.sms487.network.SmsApi;
@@ -49,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        startServiceTasks();
 
         messageStorage = new MessageStorage(this);
         appSettings = new AppSettings(this);
@@ -100,6 +103,10 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
         }
+    }
+
+    private void startServiceTasks() {
+        MessageCleanupWorker.schedule();
     }
 
     private void findViewComponents() {

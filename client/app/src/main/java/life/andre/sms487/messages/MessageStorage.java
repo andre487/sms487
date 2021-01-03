@@ -84,6 +84,10 @@ public class MessageStorage {
         return messages;
     }
 
+    public int deleteOldMessages() {
+        return messageDao.deleteOld();
+    }
+
     @Dao
     public interface MessageDao {
         @Query("SELECT * FROM message ORDER BY id DESC LIMIT 30")
@@ -97,6 +101,9 @@ public class MessageStorage {
 
         @Query("UPDATE message SET is_sent=1 WHERE id=:insertId")
         void markSent(long insertId);
+
+        @Query("DELETE FROM message WHERE date_time < strftime('%Y-%m-%d 00:00', 'now', 'utc', '-2 days')")
+        int deleteOld();
     }
 
     @Entity
