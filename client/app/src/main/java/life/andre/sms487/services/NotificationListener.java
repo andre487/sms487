@@ -14,8 +14,6 @@ import android.service.notification.StatusBarNotification;
 
 import androidx.core.app.NotificationCompat;
 
-import java.util.Date;
-
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.network.SmsApi;
@@ -53,10 +51,6 @@ public class NotificationListener extends NotificationListenerService {
         }
 
         Notification notification = sbn.getNotification();
-        if (sbn == null) {
-            Logger.w(logTag, "Sbn is null");
-            return;
-        }
 
         Bundle extras = notification.extras;
         CharSequence title = extras.getCharSequence(Notification.EXTRA_TITLE);
@@ -161,7 +155,7 @@ public class NotificationListener extends NotificationListenerService {
 
         void handleNotification(SendNotificationParams params) {
             String curTime = DateUtil.nowFormatted();
-            String postTime = DateUtil.formatDate(new Date(params.postTime));
+            String postTime = DateUtil.formatDate(params.postTime);
 
             MessageContainer message = new MessageContainer(
                     params.deviceId, params.appLabel, curTime, postTime,
