@@ -26,6 +26,7 @@ import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.messages.MessageResendWorker;
 import life.andre.sms487.messages.MessageStorage;
 import life.andre.sms487.network.ServerApi;
+import life.andre.sms487.services.NotificationListener;
 import life.andre.sms487.system.AppSettings;
 import life.andre.sms487.system.PermissionsChecker;
 import life.andre.sms487.utils.AsyncTaskUtil;
@@ -114,6 +115,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startServiceTasks() {
+        Intent intent = new Intent(this, NotificationListener.class);
+        startService(intent);
+
         MessageCleanupWorker.schedule();
         MessageResendWorker.schedule();
     }
