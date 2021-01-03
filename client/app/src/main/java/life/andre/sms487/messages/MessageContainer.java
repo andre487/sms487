@@ -11,7 +11,7 @@ import org.json.JSONObject;
 import life.andre.sms487.logging.Logger;
 
 public class MessageContainer {
-    private static final String logTag = "MessageContainer";
+    public static final String TAG = MessageContainer.class.getSimpleName();
 
     private final String deviceId;
     private final String addressFrom;
@@ -33,7 +33,7 @@ public class MessageContainer {
 
             return new MessageContainer(addressFrom, dateTime, smsCenterDateTime, body);
         } catch (JSONException e) {
-            Logger.w(logTag, e.toString());
+            Logger.w(TAG, e.toString());
             e.printStackTrace();
         }
 

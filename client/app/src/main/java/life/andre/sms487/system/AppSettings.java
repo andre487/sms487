@@ -18,10 +18,10 @@ import life.andre.sms487.utils.AsyncTaskUtil;
 
 
 public class AppSettings {
-    private static final String SERVER_URL = "server_url";
-    private static final String SERVER_KEY = "server_key";
-    private static final String NEED_SEND_SMS = "need_send_sms";
-    private static final String logTag = "AppSettings";
+    public static final String TAG = AppSettings.class.getSimpleName();
+    public static final String SERVER_URL = "server_url";
+    public static final String SERVER_KEY = "server_key";
+    public static final String NEED_SEND_SMS = "need_send_sms";
 
     private final SharedPreferences sharedPreferences;
     @NonNull
@@ -119,7 +119,7 @@ public class AppSettings {
         @Override
         @Nullable
         protected String doInBackground(@NonNull SaveSettingsParams... params) {
-            SaveSettingsParams mainParams = AsyncTaskUtil.getParams(params, logTag);
+            SaveSettingsParams mainParams = AsyncTaskUtil.getParams(params, TAG);
             if (mainParams == null) {
                 return null;
             }

@@ -19,8 +19,7 @@ import life.andre.sms487.network.SmsApi;
 import life.andre.sms487.system.AppSettings;
 
 public class MessageResendWorker extends Worker {
-    private static final String logTag = "MessageResendWorker";
-    private static final String taskName = "MessageResendWorker";
+    public static final String TAG = MessageResendWorker.class.getSimpleName();
 
     @NonNull
     private final SmsApi smsApi;
@@ -41,7 +40,7 @@ public class MessageResendWorker extends Worker {
         ).build();
 
         WorkManager workManager = WorkManager.getInstance();
-        workManager.enqueueUniquePeriodicWork(taskName, ExistingPeriodicWorkPolicy.KEEP, task);
+        workManager.enqueueUniquePeriodicWork(TAG, ExistingPeriodicWorkPolicy.KEEP, task);
     }
 
     public MessageResendWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
@@ -54,10 +53,10 @@ public class MessageResendWorker extends Worker {
     public Result doWork() {
         try {
             smsApi.resendMessages();
-            Logger.i(logTag, "Try to resend messages");
+            Logger.i(TAG, "Try to resend messages");
             return Result.success();
         } catch (Exception e) {
-            Logger.i(logTag, e.toString());
+            Logger.i(TAG, e.toString());
             e.printStackTrace();
             return Result.failure();
         }

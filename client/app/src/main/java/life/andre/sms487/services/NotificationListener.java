@@ -24,10 +24,10 @@ import life.andre.sms487.utils.AsyncTaskUtil;
 import life.andre.sms487.utils.DateUtil;
 
 public class NotificationListener extends NotificationListenerService {
+    public static final String TAG = NotificationListener.class.getSimpleName();
+
     protected AppSettings appSettings;
     protected SmsApi smsApi;
-
-    private static final String logTag = "NotificationListener";
 
     @Override
     public void onCreate() {
@@ -59,7 +59,7 @@ public class NotificationListener extends NotificationListenerService {
         CharSequence text = extras.getCharSequence(Notification.EXTRA_TEXT);
 
         if (title == null && text == null) {
-            Logger.w(logTag, "No text in message");
+            Logger.w(TAG, "No text in message");
             return;
         }
 
@@ -68,7 +68,7 @@ public class NotificationListener extends NotificationListenerService {
 
         String fullText = (titleText + "\n" + textText).trim();
         if (fullText.isEmpty()) {
-            Logger.w(logTag, "No text in message");
+            Logger.w(TAG, "No text in message");
             return;
         }
 
@@ -94,7 +94,7 @@ public class NotificationListener extends NotificationListenerService {
         try {
             applicationInfo = packageManager.getApplicationInfo(packageName, 0);
         } catch (@NonNull final PackageManager.NameNotFoundException e) {
-            Logger.e(logTag, "Get app name error: " + e.getMessage());
+            Logger.e(TAG, "Get app name error: " + e.getMessage());
         }
 
         if (applicationInfo == null) {
@@ -113,7 +113,7 @@ public class NotificationListener extends NotificationListenerService {
 
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (manager == null) {
-            Logger.w(logTag, "NotificationManager is null");
+            Logger.w(TAG, "NotificationManager is null");
             return;
         }
         manager.createNotificationChannel(channel);
@@ -128,7 +128,6 @@ public class NotificationListener extends NotificationListenerService {
 
     static class SendNotificationParams {
         final SmsApi smsApi;
-
         final String appLabel;
         final long postTime;
         final String text;
@@ -147,7 +146,7 @@ public class NotificationListener extends NotificationListenerService {
         @Nullable
         @Override
         protected Void doInBackground(@NonNull SendNotificationParams... params) {
-            SendNotificationParams mainParams = AsyncTaskUtil.getParams(params, logTag);
+            SendNotificationParams mainParams = AsyncTaskUtil.getParams(params, TAG);
             if (mainParams == null) {
                 return null;
             }

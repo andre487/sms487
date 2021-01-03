@@ -15,8 +15,7 @@ import java.util.concurrent.TimeUnit;
 import life.andre.sms487.logging.Logger;
 
 public class MessageCleanupWorker extends Worker {
-    private static final String logTag = "MessageCleanupWorker";
-    private static final String taskName = "MessageCleanupWorker";
+    public static final String TAG = MessageCleanupWorker.class.getSimpleName();
 
     @NonNull
     private final MessageStorage messageStorage;
@@ -33,7 +32,7 @@ public class MessageCleanupWorker extends Worker {
         ).build();
 
         WorkManager workManager = WorkManager.getInstance();
-        workManager.enqueueUniquePeriodicWork(taskName, ExistingPeriodicWorkPolicy.KEEP, task);
+        workManager.enqueueUniquePeriodicWork(TAG, ExistingPeriodicWorkPolicy.KEEP, task);
     }
 
     public MessageCleanupWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
@@ -46,10 +45,10 @@ public class MessageCleanupWorker extends Worker {
     public Result doWork() {
         try {
             int oldCount = messageStorage.deleteOldMessages();
-            Logger.i(logTag, "Old messages deleted: " + oldCount);
+            Logger.i(TAG, "Old messages deleted: " + oldCount);
             return Result.success();
         } catch (Exception e) {
-            Logger.i(logTag, e.toString());
+            Logger.i(TAG, e.toString());
             e.printStackTrace();
             return Result.failure();
         }

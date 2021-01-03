@@ -11,6 +11,8 @@ import life.andre.sms487.messages.MessageCleanupWorker;
 import life.andre.sms487.messages.MessageResendWorker;
 
 public class AutoStart extends BroadcastReceiver {
+    public static final String TAG = AutoStart.class.getSimpleName();
+
     public void onReceive(@NonNull Context context, @NonNull Intent parentIntent) {
         String action = parentIntent.getAction();
         if (action == null || !action.equals(Intent.ACTION_BOOT_COMPLETED)) {
@@ -23,6 +25,6 @@ public class AutoStart extends BroadcastReceiver {
         MessageCleanupWorker.schedule();
         MessageResendWorker.schedule();
 
-        Logger.i("AutoStart", "Started");
+        Logger.i(TAG, "Started");
     }
 }

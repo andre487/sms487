@@ -9,6 +9,7 @@ import java.util.List;
 
 public class Logger {
     public static final int MAX_SIZE = 128;
+
     private static final ArrayList<String> messages = new ArrayList<>();
 
     public static void d(@NonNull String tag, @NonNull String msg) {

@@ -20,9 +20,10 @@ import life.andre.sms487.system.AppConstants;
 import life.andre.sms487.utils.AsyncTaskUtil;
 
 public class SmsHandler extends Service {
+    public static final String TAG = SmsHandler.class.getSimpleName();
+
     protected AppSettings appSettings;
     protected SmsApi smsApi;
-    private static final String logTag = "SmsHandler";
 
     @Override
     public void onCreate() {
@@ -64,20 +65,20 @@ public class SmsHandler extends Service {
         @Nullable
         @Override
         protected Void doInBackground(@NonNull SendSmsParams... params) {
-            SendSmsParams mainParams = AsyncTaskUtil.getParams(params, logTag);
+            SendSmsParams mainParams = AsyncTaskUtil.getParams(params, TAG);
             if (mainParams == null) {
                 return null;
             }
 
             Intent intent = mainParams.intent;
             if (intent == null) {
-                Logger.w(logTag, "Intent is null");
+                Logger.w(TAG, "Intent is null");
                 return null;
             }
 
             List<String> intentData = intent.getStringArrayListExtra(AppConstants.EXTRA_GOT_SMS);
             if (intentData == null) {
-                Logger.w(logTag, "Intent data is null");
+                Logger.w(TAG, "Intent data is null");
                 return null;
             }
 
@@ -99,7 +100,7 @@ public class SmsHandler extends Service {
             List<MessageContainer> data = new ArrayList<>();
 
             for (String messageJson : intentData) {
-                Logger.d(logTag, "Got message: " + messageJson);
+                Logger.d(TAG, "Got message: " + messageJson);
 
                 MessageContainer message = MessageContainer.createFromJson(messageJson);
                 if (message != null) {

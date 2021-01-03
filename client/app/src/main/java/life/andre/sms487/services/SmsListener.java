@@ -20,6 +20,8 @@ import life.andre.sms487.system.AppConstants;
 import life.andre.sms487.utils.AsyncTaskUtil;
 
 public class SmsListener extends BroadcastReceiver {
+    public static final String TAG = SmsListener.class.getSimpleName();
+
     @Override
     public void onReceive(Context context, Intent intent) {
         new HandleMessageAction().execute(new HandleMessageParams(context, intent));
@@ -36,13 +38,12 @@ public class SmsListener extends BroadcastReceiver {
     }
 
     static class HandleMessageAction extends AsyncTask<HandleMessageParams, Void, Void> {
-        private static final String logTag = "HandleMessageAction";
         private final PduConverter converter = new PduConverter();
 
         @Nullable
         @Override
         protected Void doInBackground(@NonNull HandleMessageParams... params) {
-            HandleMessageParams mainParams = AsyncTaskUtil.getParams(params, logTag);
+            HandleMessageParams mainParams = AsyncTaskUtil.getParams(params, TAG);
             if (mainParams == null) {
                 return null;
             }
@@ -64,14 +65,14 @@ public class SmsListener extends BroadcastReceiver {
 
             Bundle bundle = intent.getExtras();
             if (bundle == null) {
-                Logger.w(logTag, "Bundle is null");
+                Logger.w(TAG, "Bundle is null");
                 return null;
             }
 
             Object[] pdus = (Object[]) bundle.get("pdus");
             String format = bundle.getString("format");
             if (pdus == null || format == null) {
-                Logger.w(logTag, "PDUs or format is null");
+                Logger.w(TAG, "PDUs or format is null");
                 return null;
             }
 

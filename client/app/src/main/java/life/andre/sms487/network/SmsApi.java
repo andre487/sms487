@@ -26,10 +26,10 @@ import life.andre.sms487.system.AppSettings;
 import life.andre.sms487.utils.AsyncTaskUtil;
 
 public class SmsApi {
+    public static final String TAG = SmsApi.class.getSimpleName();
     public static final String MESSAGE_TYPE_SMS = "sms";
     public static final String MESSAGE_TYPE_NOTIFICATION = "notification";
 
-    private static final String logTag = "SmsApi";
     private static final List<RequestHandledListener> requestHandledListeners = new ArrayList<>();
 
     private final AppSettings appSettings;
@@ -60,7 +60,7 @@ public class SmsApi {
 
     public void addSms(String deviceId, String dateTime, String smsCenterDateTime, String tel, String text, long dbId) {
         Logger.i(
-                logTag,
+                TAG,
                 "Sending SMS: " + deviceId + ", " + dateTime + ", " + smsCenterDateTime + ", " + tel + ", " + text
         );
         addRequest(MESSAGE_TYPE_SMS, deviceId, dateTime, smsCenterDateTime, tel, text, dbId);
@@ -80,7 +80,7 @@ public class SmsApi {
 
     public void addNotification(String deviceId, String dateTime, String postDateTime, String tel, String text, long dbId) {
         Logger.i(
-                logTag,
+                TAG,
                 "Sending Notification: " + deviceId + ", " + dateTime + ", " + ", " + postDateTime + ", " + tel + ", " + text
         );
         addRequest(MESSAGE_TYPE_NOTIFICATION, deviceId, dateTime, postDateTime, tel, text, dbId);
@@ -111,7 +111,7 @@ public class SmsApi {
         String serverKey = appSettings.getServerKey();
 
         if (serverUrl == null || serverUrl.length() == 0 || serverKey == null || serverKey.length() == 0) {
-            Logger.w(logTag, "Server params are empty, skip sending");
+            Logger.w(TAG, "Server params are empty, skip sending");
             return;
         }
 
@@ -205,7 +205,7 @@ public class SmsApi {
                         new String(error.networkResponse.data, StandardCharsets.UTF_8);
             }
 
-            Logger.e(logTag, "Response error: " + errorMessage);
+            Logger.e(TAG, "Response error: " + errorMessage);
 
             RequestErrorParams params = new RequestErrorParams(dbId, errorMessage);
             new RunRequestErrorHandlers().execute(params);
@@ -226,7 +226,7 @@ public class SmsApi {
         @Nullable
         @Override
         protected Void doInBackground(@NonNull RequestSuccessParams... params) {
-            RequestSuccessParams mainParams = AsyncTaskUtil.getParams(params, logTag);
+            RequestSuccessParams mainParams = AsyncTaskUtil.getParams(params, TAG);
             if (mainParams == null) {
                 return null;
             }
@@ -255,7 +255,7 @@ public class SmsApi {
         @Nullable
         @Override
         protected Void doInBackground(@NonNull RequestErrorParams... params) {
-            RequestErrorParams mainParams = AsyncTaskUtil.getParams(params, logTag);
+            RequestErrorParams mainParams = AsyncTaskUtil.getParams(params, TAG);
             if (mainParams == null) {
                 return null;
             }
@@ -282,7 +282,7 @@ public class SmsApi {
         @Nullable
         @Override
         protected Void doInBackground(@NonNull ResendMessagesParams... params) {
-            ResendMessagesParams mainParams = AsyncTaskUtil.getParams(params, logTag);
+            ResendMessagesParams mainParams = AsyncTaskUtil.getParams(params, TAG);
             if (mainParams == null) {
                 return null;
             }
@@ -290,7 +290,7 @@ public class SmsApi {
             List<MessageContainer> messages = mainParams.messageStorage.getNotSentMessages();
 
             int notSentCount = messages.size();
-            Logger.i(logTag, "Try to resend " + notSentCount + " messages");
+            Logger.i(TAG, "Try to resend " + notSentCount + " messages");
 
             // TODO: notifications?
             for (MessageContainer message : messages) {

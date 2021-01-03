@@ -6,6 +6,8 @@ import androidx.annotation.Nullable;
 import life.andre.sms487.logging.Logger;
 
 public class AsyncTaskUtil {
+    public static final String TAG = AsyncTaskUtil.class.getSimpleName();
+
     @Nullable
     public static <T> T getParams(@NonNull T[] params, @NonNull String logTag) {
         if (params.length == 0) {
@@ -17,6 +19,6 @@ public class AsyncTaskUtil {
 
     @Nullable
     public static <T> T getParams(@NonNull T[] params) {
-        return getParams(params, "AsyncTaskUtil");
+        return getParams(params, TAG);
     }
 }
