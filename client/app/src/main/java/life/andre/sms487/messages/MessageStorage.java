@@ -90,10 +90,10 @@ public class MessageStorage {
 
     @Dao
     public interface MessageDao {
-        @Query("SELECT * FROM message ORDER BY id DESC LIMIT 30")
+        @Query("SELECT * FROM message ORDER BY id DESC LIMIT 6")
         List<Message> getTail();
 
-        @Query("SELECT * FROM message WHERE is_sent == 0 ORDER BY id ASC")
+        @Query("SELECT * FROM message WHERE is_sent == 0 ORDER BY id DESC")
         List<Message> getNotSent();
 
         @Insert
@@ -102,7 +102,7 @@ public class MessageStorage {
         @Query("UPDATE message SET is_sent=1 WHERE id=:insertId")
         void markSent(long insertId);
 
-        @Query("DELETE FROM message WHERE date_time < strftime('%Y-%m-%d 00:00', 'now', 'utc', '-2 days')")
+        @Query("DELETE FROM message WHERE date_time < strftime('%Y-%m-%d 00:00', 'now', 'utc', '-2 days') OR date_time IS NULL OR date_time == \"\"")
         int deleteOld();
     }
 

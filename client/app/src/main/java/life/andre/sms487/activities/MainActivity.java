@@ -3,7 +3,9 @@ package life.andre.sms487.activities;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Editable;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -11,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.AppCompatCheckBox;
 import androidx.appcompat.widget.AppCompatEditText;
+import androidx.appcompat.widget.AppCompatTextView;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -30,6 +33,9 @@ public class MainActivity extends AppCompatActivity {
     private final PermissionsChecker permissionsChecker = new PermissionsChecker(this);
     private final static String logTag = "MainActivity";
 
+    private final Handler logUpdateHandler = new Handler();
+    private final LogUpdater logUpdater = new LogUpdater(this);
+
     private MessageStorage messageStorage;
     private SmsApi smsApi;
     private AppSettings appSettings;
@@ -37,11 +43,9 @@ public class MainActivity extends AppCompatActivity {
 
     private AppCompatEditText serverKeyInput;
     private AppCompatEditText serverUrlInput;
-    private AppCompatEditText messagesField;
-    private AppCompatEditText logsField;
+    private AppCompatTextView messagesField;
+    private AppCompatTextView logsField;
 
-    private AppCompatButton renewMessagesButton;
-    private AppCompatButton renewLogsButton;
     private AppCompatButton saveServerKeyButton;
     private AppCompatButton saveServerUrlButton;
 
@@ -69,13 +73,12 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         permissionsChecker.checkPermissions();
 
-        renewMessagesFromDb();
-        showLogsFromLogger();
-
         showServerUrl();
         showServerKey();
-
         showNeedSendSms();
+        renewMessagesFromDb();
+        enableLogAutoRenew();
+
         smsApi.addRequestHandledListener(smsRequestListener);
         smsApi.resendMessages();
     }
@@ -83,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         smsApi.removeRequestHandledListener(smsRequestListener);
+        disableLogAutoRenew();
         super.onStop();
     }
 
@@ -91,6 +95,10 @@ public class MainActivity extends AppCompatActivity {
         super.onNewIntent(intent);
 
         String action = intent.getStringExtra("action");
+        if (action == null) {
+            return;
+        }
+
         switch (action) {
             case "renewMessages":
                 renewMessagesFromDb();
@@ -115,8 +123,6 @@ public class MainActivity extends AppCompatActivity {
         messagesField = findViewById(R.id.messagesField);
         logsField = findViewById(R.id.logsField);
 
-        renewMessagesButton = findViewById(R.id.renewMessages);
-        renewLogsButton = findViewById(R.id.renewLogs);
         saveServerUrlButton = findViewById(R.id.serverUrlSave);
         saveServerKeyButton = findViewById(R.id.serverKeySave);
 
@@ -126,13 +132,20 @@ public class MainActivity extends AppCompatActivity {
     private void bindEvents() {
         MainActivity mainActivity = this;
 
-        renewMessagesButton.setOnClickListener(v -> mainActivity.renewMessagesFromDb());
-        renewLogsButton.setOnClickListener(v -> mainActivity.showLogsFromLogger());
-
         saveServerUrlButton.setOnClickListener(v -> mainActivity.saveServerUrl());
         saveServerKeyButton.setOnClickListener(v -> mainActivity.saveServerKey());
-
         sendSmsCheckBox.setOnCheckedChangeListener((v, c) -> mainActivity.saveNeedSendSms());
+
+        messagesField.setMovementMethod(new ScrollingMovementMethod());
+
+        logsField.setMovementMethod(new ScrollingMovementMethod());
+        logsField.setOnFocusChangeListener((v, f) -> {
+            if (f) {
+                disableLogAutoRenew();
+            } else {
+                enableLogAutoRenew();
+            }
+        });
     }
 
     void renewMessagesFromDb() {
@@ -255,6 +268,18 @@ public class MainActivity extends AppCompatActivity {
         logsField.setText(logsString.toString());
     }
 
+    private void enableLogAutoRenew() {
+        if (!logUpdateHandler.hasCallbacks(logUpdater)) {
+            logUpdateHandler.post(logUpdater);
+        }
+    }
+
+    private void disableLogAutoRenew() {
+        if (logUpdateHandler.hasCallbacks(logUpdater)) {
+            logUpdateHandler.removeCallbacks(logUpdater);
+        }
+    }
+
     private void showNeedSendSms() {
         if (sendSmsCheckBox != null) {
             sendSmsCheckBox.setChecked(appSettings.getNeedSendSms());
@@ -303,6 +328,20 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected List<String> doInBackground(Void... params) {
             return Logger.getMessages();
+        }
+    }
+
+    static class LogUpdater implements Runnable {
+        private final MainActivity activity;
+
+        LogUpdater(MainActivity activity) {
+            this.activity = activity;
+        }
+
+        @Override
+        public void run() {
+            activity.showLogsFromLogger();
+            activity.logUpdateHandler.postDelayed(this, 2500);
         }
     }
 
