@@ -19,6 +19,7 @@ import life.andre.sms487.R;
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageCleanupWorker;
 import life.andre.sms487.messages.MessageContainer;
+import life.andre.sms487.messages.MessageResendWorker;
 import life.andre.sms487.messages.MessageStorage;
 import life.andre.sms487.network.SmsApi;
 import life.andre.sms487.system.AppSettings;
@@ -76,8 +77,6 @@ public class MainActivity extends AppCompatActivity {
 
         showNeedSendSms();
         smsApi.addRequestHandledListener(smsRequestListener);
-
-        // TODO: move to service
         smsApi.resendMessages();
     }
 
@@ -107,6 +106,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void startServiceTasks() {
         MessageCleanupWorker.schedule();
+        MessageResendWorker.schedule();
     }
 
     private void findViewComponents() {

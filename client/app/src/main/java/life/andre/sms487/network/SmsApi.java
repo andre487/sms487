@@ -294,6 +294,9 @@ public class SmsApi {
 
             List<MessageContainer> messages = mainParams.messageStorage.getNotSentMessages();
 
+            int notSentCount = messages.size();
+            Logger.i(logTag, "Try to resend " + notSentCount + " messages");
+
             // TODO: notifications?
             for (MessageContainer message : messages) {
                 mainParams.smsApi.addSms(message);

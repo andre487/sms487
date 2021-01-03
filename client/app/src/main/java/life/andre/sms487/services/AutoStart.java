@@ -6,6 +6,7 @@ import android.content.Intent;
 
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageCleanupWorker;
+import life.andre.sms487.messages.MessageResendWorker;
 
 public class AutoStart extends BroadcastReceiver {
     public void onReceive(Context context, Intent parentIntent) {
@@ -18,6 +19,7 @@ public class AutoStart extends BroadcastReceiver {
         context.startService(intent);
 
         MessageCleanupWorker.schedule();
+        MessageResendWorker.schedule();
 
         Logger.i("AutoStart", "Started");
     }
