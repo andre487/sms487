@@ -3,7 +3,7 @@ import os
 import re
 from flask import Markup
 
-LINK_PATTERN = re.compile(r'(https?://[\w.:/#?&=%!+-]+)([^\w.:/#?&=%!+-]|$)')
+LINK_PATTERN = re.compile(r'(https?://[\w.:/#?&@~=%!+-]+)([^\w.:/#?&@~=%!+-]|$)')
 LINK_REPLACEMENT = r'<a class="link" href="\1" target="_blank" rel="noopener">\1</a>\2'
 EOL_PATTERN = re.compile(r'[\r\n]+')
 EOL_REPLACEMENT = r'<br>'
