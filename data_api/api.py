@@ -117,7 +117,7 @@ def sw_js():
     return flask.Response(
         headers={
             'Content-Type': 'application/javascript; charset=utf-8',
-            'Cache-Control': 'private, max-age=86400, must-revalidate',
+            'Cache-Control': 'private, max-age=86400, must-revalidate, no-transform',
         },
         response=content,
     )
