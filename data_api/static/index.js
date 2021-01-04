@@ -10,6 +10,18 @@ document.addEventListener('visibilitychange', function() {
 });
 
 if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', e => {
+        if (e.data.type != 'offlineMode' || window.isOffline) {
+            return;
+        }
+
+        window.isOffline = true;
+
+        document.querySelectorAll('.offline').forEach(function(elem) {
+            elem.classList.add('offline_visible');
+        });
+    });
+
     navigator.serviceWorker
         .register(window.swUrl, { scope: window.indexUrl })
         .catch(function(error) {

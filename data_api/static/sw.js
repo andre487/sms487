@@ -26,8 +26,16 @@ addEventListener('fetch', e => {
     cacheUrl.search = '';
     const cacheKey = cacheUrl.toString();
 
+    const isDocument = request.mode == 'navigate';
+
     e.respondWith(result.catch(err => {
         console.error(err);
+
+        const clientId = isDocument ? e.resultingClientId : e.clientId;
+        clients.get(clientId).then(cl => {
+            cl.postMessage({ type: 'offlineMode' });
+        }).catch(err => console.log(err));
+
         return caches.match(cacheKey);
     }));
 

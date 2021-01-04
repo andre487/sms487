@@ -38,6 +38,10 @@
             <a target="_blank" rel="noopener" href="{{ auth_link }}" class="header__login">{{ login }}</a>
         </div>
 
+        <div class="offline-message offline">
+            <div class="offline__content">Offline mode</div>
+        </div>
+
         <ul class="message-list">
             {% for message in messages %}
             <li class="message-list__item message-view">
@@ -53,6 +57,7 @@
         <script nonce="{{ nonce }}">
             window.indexUrl = "{{ url_for('index') }}";
             window.swUrl = "{{ url_for('sw_js') }}";
+            window.isOffline = false;
         </script>
         <script async src="{{ url_for('static', filename='index.js') | static_version }}"></script>
     </body>

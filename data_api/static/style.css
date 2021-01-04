@@ -182,3 +182,22 @@
     color: #9c1a1c;
     text-decoration: underline;
 }
+
+.offline
+{
+    display: none;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.offline_visible
+{
+    display: flex;
+}
+
+.offline__content
+{
+    padding: 10px 20px;
+    background: #9c1a1c;
+    color: white;
+}
