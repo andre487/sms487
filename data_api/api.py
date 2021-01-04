@@ -1,3 +1,5 @@
+import secrets
+
 import flask
 import json
 import logging
@@ -10,6 +12,15 @@ from flask import request
 
 if sys.version_info[0] < 3 or sys.version_info[1] < 6:
     raise EnvironmentError('Use Python >= 3.6')
+
+
+def get_sw_content():
+    with open(os.path.join(PROJECT_DIR, 'static', 'sw.js')) as fp:
+        return fp.read()
+
+
+PROJECT_DIR = os.path.dirname(__file__)
+SW_JS = get_sw_content()
 
 app = flask.Flask(__name__)
 
@@ -24,10 +35,10 @@ ADDITIONAL_HEADERS = {
     'Content-Security-Policy': (
         "default-src 'none'; "
         "style-src 'self'; "
-        "script-src 'self'; "
+        "script-src 'self' 'nonce-<nonce>'; "
         "img-src 'self';"
     ),
-    'X-Frame-Options': 'deny'
+    'X-Frame-Options': 'deny',
 }
 
 
@@ -74,13 +85,13 @@ def get_sms():
         try:
             limit = int(limit)
         except ValueError:
-            return create_json_response([{'error': 'Incorrect limit'}], status=400)
+            return create_json_response({'error': 'Incorrect limit'}, status=400)
 
     try:
         result = data_handler.get_sms(device_id, limit)
     except data_handler.FormDataError as e:
         logging.info('Client error: %s', e)
-        return create_json_response([{'error': str(e)}], status=400)
+        return create_json_response({'error': str(e)}, status=400)
 
     return create_json_response(result)
 
@@ -91,10 +102,25 @@ def get_sms():
 def add_sms():
     try:
         data_handler.add_sms(request.form)
-        return create_json_response([{'status': 'OK'}])
+        return create_json_response({'status': 'OK'})
     except data_handler.FormDataError as e:
         logging.info('Client error: %s', e)
-        return create_json_response([{'error': str(e)}], status=400)
+        return create_json_response({'error': str(e)}, status=400)
+
+
+@app.route('/sw.js')
+def sw_js():
+    content = SW_JS
+    if app.debug:
+        content = get_sw_content()
+
+    return flask.Response(
+        headers={
+            'Content-Type': 'application/javascript; charset=utf-8',
+            'Cache-Control': 'private, max-age=86400, must-revalidate',
+        },
+        response=content,
+    )
 
 
 @app.route('/robots.txt')
@@ -113,7 +139,7 @@ if os.getenv('ENABLE_TEST_TOKEN_SET') == '1':
     def set_token():
         is_dev_env = os.getenv('FLASK_ENV') == 'dev' and app.debug
         if not is_dev_env:
-            return create_json_response([{'error': 'Not in dev env'}], status=403)
+            return create_json_response({'error': 'Not in dev env'}, status=403)
 
         token_file = os.path.join(os.path.dirname(__file__), 'test_data', 'test-auth-token.txt')
         with open(token_file) as fp:
@@ -127,13 +153,13 @@ if os.getenv('ENABLE_TEST_TOKEN_SET') == '1':
 # noinspection PyUnusedLocal
 @app.errorhandler(404)
 def error_404(*args):
-    return create_json_response([{'error': 'Not found'}], status=404)
+    return create_json_response({'error': 'Not found'}, status=404)
 
 
 # noinspection PyUnusedLocal
 @app.errorhandler(405)
 def error_405(*args):
-    return create_json_response([{'error': 'Method is not allowed'}], status=405)
+    return create_json_response({'error': 'Method is not allowed'}, status=405)
 
 
 def create_json_response(data, status=200, headers=None):
@@ -152,7 +178,10 @@ def create_html_response(template_name, data, status=200, headers=None):
     if headers is None:
         headers = {}
 
+    nonce = secrets.token_hex(2)
+
     app.jinja_env.globals.update(
+        nonce=nonce,
         auth_link=acm.AUTH_DOMAIN,
         login=data_handler.get_login(),
     )
@@ -166,6 +195,6 @@ def create_html_response(template_name, data, status=200, headers=None):
         resp.headers[name] = val
 
     for name, val in ADDITIONAL_HEADERS.items():
-        resp.headers[name] = val
+        resp.headers[name] = val.replace('<nonce>', nonce)
 
     return resp

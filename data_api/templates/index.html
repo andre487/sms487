@@ -31,7 +31,8 @@
                        value="{{ limit }}">
 
                 <button type="submit"
-                        class="button message-params__item message-params__item_submit">Setup</button>
+                        class="button message-params__item message-params__item_submit">Setup
+                </button>
             </form>
 
             <a target="_blank" rel="noopener" href="{{ auth_link }}" class="header__login">{{ login }}</a>
@@ -49,5 +50,10 @@
             </li>
             {% endfor %}
         </ul>
+        <script nonce="{{ nonce }}">
+            window.indexUrl = "{{ url_for('index') }}";
+            window.swUrl = "{{ url_for('sw_js') }}";
+        </script>
+        <script async src="{{ url_for('static', filename='index.js') | static_version }}"></script>
     </body>
 </html>
