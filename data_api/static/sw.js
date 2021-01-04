@@ -31,6 +31,7 @@ addEventListener('fetch', e => {
     e.respondWith(result.catch(err => {
         console.error(err);
 
+        // TODO: rewrite, doesn't work when all in HTTP cache
         const clientId = isDocument ? e.resultingClientId : e.clientId;
         clients.get(clientId).then(cl => {
             cl.postMessage({ type: 'offlineMode' });
