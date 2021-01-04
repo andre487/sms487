@@ -4,7 +4,9 @@ import re
 from flask import Markup
 
 LINK_PATTERN = re.compile(r'(https?://\S+)(\s|$)')
-LINT_REPLACEMENT = r'<a class="link" href="\1" target="_blank" rel="noopener">\1</a>\2'
+LINK_REPLACEMENT = r'<a class="link" href="\1" target="_blank" rel="noopener">\1</a>\2'
+EOL_PATTERN = re.compile(r'\s*\n+\s*')
+EOL_REPLACEMENT = '<br>'
 CUR_DIR = os.path.dirname(__file__)
 
 
@@ -26,5 +28,8 @@ def setup_filters(app):
         if not text:
             return text
 
-        original_markup = Markup(text).striptags()
-        return LINK_PATTERN.sub(LINT_REPLACEMENT, original_markup)
+        result = Markup(text).striptags()
+        result = LINK_PATTERN.sub(LINK_REPLACEMENT, result)
+        result = EOL_PATTERN.sub(EOL_REPLACEMENT, result)
+
+        return result
