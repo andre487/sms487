@@ -43,9 +43,7 @@ class TestError404:
         assert res.headers['content-type'] == 'application/json; charset=utf-8'
         assert res.status_code == 404
 
-        ans = res.json()
-        assert len(ans) == 1
-        assert ans[0].get('error') == 'Not found'
+        assert res.json().get('error') == 'Not found'
 
 
 class TestGetSms:
@@ -86,9 +84,7 @@ class TestGetSms:
         assert res.headers['content-type'] == 'application/json; charset=utf-8'
         assert res.status_code == 400
 
-        ans = res.json()
-        assert len(ans) == 1
-        assert ans[0].get('error') == 'Incorrect limit'
+        assert res.json().get('error') == 'Incorrect limit'
 
 
 class TestAddSms:
@@ -120,9 +116,7 @@ class TestAddSms:
         assert res.headers['content-type'] == 'application/json; charset=utf-8'
         assert res.status_code == 200
 
-        ans = res.json()
-        assert len(ans) == 1
-        assert ans[0].get('status') == 'OK'
+        assert res.json().get('status') == 'OK'
 
         res = make_app_request('/get-sms?limit=1')
         ans = res.json()
@@ -150,9 +144,7 @@ class TestAddSms:
         assert res.status_code == 405
         assert res.headers['content-type'] == 'application/json; charset=utf-8'
 
-        ans = res.json()
-        assert len(ans) == 1
-        assert ans[0].get('error') == 'Method is not allowed'
+        assert res.json().get('error') == 'Method is not allowed'
 
     def test_no_device_id(self):
         res = make_app_request('/add-sms', method='POST', data={
@@ -166,9 +158,7 @@ class TestAddSms:
         assert res.status_code == 400
         assert res.headers['content-type'] == 'application/json; charset=utf-8'
 
-        ans = res.json()
-        assert len(ans) == 1
-        assert ans[0].get('error') == 'There is no device ID'
+        assert res.json().get('error') == 'There is no device ID'
 
     def test_no_tel(self):
         res = make_app_request('/add-sms', method='POST', data={
@@ -182,9 +172,7 @@ class TestAddSms:
         assert res.status_code == 400
         assert res.headers['content-type'] == 'application/json; charset=utf-8'
 
-        ans = res.json()
-        assert len(ans) == 1
-        assert ans[0].get('error') == 'There is no tel'
+        assert res.json().get('error') == 'There is no tel'
 
     def test_no_date_time(self):
         res = make_app_request('/add-sms', method='POST', data={
@@ -198,9 +186,7 @@ class TestAddSms:
         assert res.status_code == 400
         assert res.headers['content-type'] == 'application/json; charset=utf-8'
 
-        ans = res.json()
-        assert len(ans) == 1
-        assert ans[0].get('error') == 'There is no date_time'
+        assert res.json().get('error') == 'There is no date_time'
 
     def test_no_text(self):
         res = make_app_request('/add-sms', method='POST', data={
@@ -214,9 +200,7 @@ class TestAddSms:
         assert res.status_code == 400
         assert res.headers['content-type'] == 'application/json; charset=utf-8'
 
-        ans = res.json()
-        assert len(ans) == 1
-        assert ans[0].get('error') == 'There is no text'
+        assert res.json().get('error') == 'There is no text'
 
     def test_no_message_type(self):
         res = make_app_request('/add-sms', method='POST', data={
@@ -230,9 +214,7 @@ class TestAddSms:
         assert res.status_code == 400
         assert res.headers['content-type'] == 'application/json; charset=utf-8'
 
-        ans = res.json()
-        assert len(ans) == 1
-        assert ans[0].get('error') == 'There is no message type'
+        assert res.json().get('error') == 'There is no message type'
 
     def test_wrong_message_type(self):
         res = make_app_request('/add-sms', method='POST', data={
@@ -247,9 +229,7 @@ class TestAddSms:
         assert res.status_code == 400
         assert res.headers['content-type'] == 'application/json; charset=utf-8'
 
-        ans = res.json()
-        assert len(ans) == 1
-        assert ans[0].get('error') == 'Wrong message type format'
+        assert res.json().get('error') == 'Wrong message type format'
 
     def test_wrong_date_time(self):
         res = make_app_request('/add-sms', method='POST', data={
@@ -264,9 +244,7 @@ class TestAddSms:
         assert res.status_code == 400
         assert res.headers['content-type'] == 'application/json; charset=utf-8'
 
-        ans = res.json()
-        assert len(ans) == 1
-        assert ans[0].get('error') == 'date_time is incorrect'
+        assert res.json().get('error') == 'date_time is incorrect'
 
     def test_wrong_sms_date_time(self):
         res = make_app_request('/add-sms', method='POST', data={
@@ -281,9 +259,7 @@ class TestAddSms:
         assert res.status_code == 400
         assert res.headers['content-type'] == 'application/json; charset=utf-8'
 
-        ans = res.json()
-        assert len(ans) == 1
-        assert ans[0].get('error') == 'sms_date_time is incorrect'
+        assert res.json().get('error') == 'sms_date_time is incorrect'
 
     def test_too_long_text(self):
         res = make_app_request('/add-sms', method='POST', data={
@@ -298,6 +274,4 @@ class TestAddSms:
         assert res.status_code == 400
         assert res.headers['content-type'] == 'application/json; charset=utf-8'
 
-        ans = res.json()
-        assert len(ans) == 1
-        assert ans[0].get('error') == 'Text is too long'
+        assert res.json().get('error') == 'Text is too long'
