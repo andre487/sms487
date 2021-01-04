@@ -5,7 +5,7 @@ from flask import Markup
 
 LINK_PATTERN = re.compile(r'(https?://[\w.:/#?&@~=%!+-]+)([^\w.:/#?&@~=%!+-]|$)')
 LINK_REPLACEMENT = r'<a class="link" href="\1" target="_blank" rel="noopener">\1</a>\2'
-EOL_PATTERN = re.compile(r'[\r\n]+')
+EOL_PATTERN = re.compile(r'\s*[\r\n]+\s*')
 EOL_REPLACEMENT = r'<br>'
 CUR_DIR = os.path.dirname(__file__)
 
