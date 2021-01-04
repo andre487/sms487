@@ -30,7 +30,7 @@ public class MessageContainer {
             String smsCenterDateTime = obj.getString("sms_date_time");
             String body = obj.getString("body");
             boolean isSent = obj.getBoolean("is_sent");
-            long dbId = obj.getInt("db_id");
+            long dbId = obj.getLong("db_id");
 
             return new MessageContainer(messageType, addressFrom, dateTime, smsCenterDateTime, body, isSent, dbId);
         } catch (JSONException e) {
