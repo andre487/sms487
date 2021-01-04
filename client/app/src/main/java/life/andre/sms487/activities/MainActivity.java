@@ -280,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onSuccess(long dbId) {
+        public void onSuccess() {
             Intent intent = new Intent(activity, MainActivity.class);
 
             intent.putExtra("action", "renewMessages");
@@ -290,14 +290,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onError(long dbId, String errorMessage) {
-            Intent intent = new Intent(activity, MainActivity.class);
+        public void onError(String errorMessage) {
+            Intent errorIntent = new Intent(activity, MainActivity.class);
+            errorIntent.putExtra("action", "toastMessage");
+            errorIntent.putExtra("message", errorMessage);
+            errorIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            activity.startActivity(errorIntent);
 
-            intent.putExtra("action", "toastMessage");
-            intent.putExtra("message", errorMessage);
-            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
-            activity.startActivity(intent);
+            Intent renewIntent = new Intent(activity, MainActivity.class);
+            renewIntent.putExtra("action", "renewMessages");
+            renewIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            activity.startActivity(renewIntent);
         }
     }
 

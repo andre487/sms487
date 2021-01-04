@@ -1,7 +1,5 @@
 package life.andre.sms487.messages;
 
-import android.os.Build;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -13,7 +11,7 @@ import life.andre.sms487.logging.Logger;
 public class MessageContainer {
     public static final String TAG = MessageContainer.class.getSimpleName();
 
-    private final String deviceId;
+    private final String messageType;
     private final String addressFrom;
     private final String dateTime;
     private final String smsCenterDateTime;
@@ -26,12 +24,15 @@ public class MessageContainer {
         try {
             JSONObject obj = new JSONObject(messageJson);
 
+            String messageType = obj.getString("message_type");
             String addressFrom = obj.getString("address_from");
             String dateTime = obj.getString("date_time");
             String smsCenterDateTime = obj.getString("sms_date_time");
             String body = obj.getString("body");
+            boolean isSent = obj.getBoolean("is_sent");
+            long dbId = obj.getInt("db_id");
 
-            return new MessageContainer(addressFrom, dateTime, smsCenterDateTime, body);
+            return new MessageContainer(messageType, addressFrom, dateTime, smsCenterDateTime, body, isSent, dbId);
         } catch (JSONException e) {
             Logger.w(TAG, e.toString());
             e.printStackTrace();
@@ -43,7 +44,7 @@ public class MessageContainer {
     @NonNull
     public static MessageContainer createFromMessageEntry(@NonNull MessageStorage.Message messageEntry) {
         return new MessageContainer(
-                messageEntry.deviceId,
+                messageEntry.messageType,
                 messageEntry.addressFrom,
                 messageEntry.dateTime,
                 messageEntry.smsCenterDateTime,
@@ -53,12 +54,8 @@ public class MessageContainer {
         );
     }
 
-    public MessageContainer(
-            String deviceId, String addressFrom,
-            String dateTime, String smsCenterDateTime,
-            String body, boolean isSent, long dbId
-    ) {
-        this.deviceId = deviceId;
+    public MessageContainer(String messageType, String addressFrom, String dateTime, String smsCenterDateTime, String body, boolean isSent, long dbId) {
+        this.messageType = messageType;
         this.addressFrom = addressFrom;
         this.dateTime = dateTime;
         this.smsCenterDateTime = smsCenterDateTime;
@@ -67,8 +64,14 @@ public class MessageContainer {
         this.dbId = dbId;
     }
 
-    public MessageContainer(String addressFrom, String dateTime, String smsCenterDateTime, String body) {
-        this(Build.MODEL, addressFrom, dateTime, smsCenterDateTime, body, false, 0);
+    public MessageContainer(String messageType, String addressFrom, String dateTime, String smsCenterDateTime, String body) {
+        this.messageType = messageType;
+        this.addressFrom = addressFrom;
+        this.dateTime = dateTime;
+        this.smsCenterDateTime = smsCenterDateTime;
+        this.body = body;
+        this.isSent = false;
+        this.dbId = 0;
     }
 
     @Nullable
@@ -76,12 +79,13 @@ public class MessageContainer {
         try {
             JSONObject obj = new JSONObject();
 
-            obj.put("device_id", deviceId);
+            obj.put("message_type", messageType);
             obj.put("address_from", addressFrom);
             obj.put("date_time", dateTime);
             obj.put("sms_date_time", smsCenterDateTime);
             obj.put("body", body);
             obj.put("is_sent", isSent);
+            obj.put("db_id", dbId);
 
             return obj.toString();
         } catch (JSONException e) {
@@ -112,16 +116,16 @@ public class MessageContainer {
         return body;
     }
 
-    @Nullable
-    public String getDeviceId() {
-        return deviceId;
-    }
-
     public long getDbId() {
         return dbId;
     }
 
     public boolean isSent() {
         return isSent;
+    }
+
+    @NonNull
+    public String getMessageType() {
+        return messageType;
     }
 }

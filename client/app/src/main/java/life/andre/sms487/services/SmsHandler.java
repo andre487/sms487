@@ -3,7 +3,6 @@ package life.andre.sms487.services;
 import android.app.Service;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.IBinder;
 
 import androidx.annotation.NonNull;
@@ -15,8 +14,8 @@ import java.util.List;
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.network.ServerApi;
-import life.andre.sms487.system.AppSettings;
 import life.andre.sms487.system.AppConstants;
+import life.andre.sms487.system.AppSettings;
 import life.andre.sms487.utils.AsyncTaskUtil;
 
 public class SmsHandler extends Service {
@@ -36,7 +35,7 @@ public class SmsHandler extends Service {
             return Service.START_STICKY;
         }
 
-        SendSmsParams params = new SendSmsParams(intent, serverApi, Build.MODEL);
+        SendSmsParams params = new SendSmsParams(intent, serverApi);
         new SendSmsAction().execute(params);
 
         return Service.START_STICKY;
@@ -51,13 +50,10 @@ public class SmsHandler extends Service {
     static class SendSmsParams {
         final Intent intent;
         final ServerApi serverApi;
-        final String deviceId;
 
-        @SuppressWarnings("SameParameterValue")
-        SendSmsParams(Intent intent, ServerApi serverApi, String deviceId) {
+        SendSmsParams(Intent intent, ServerApi serverApi) {
             this.intent = intent;
             this.serverApi = serverApi;
-            this.deviceId = deviceId;
         }
     }
 
@@ -91,7 +87,7 @@ public class SmsHandler extends Service {
             List<MessageContainer> extractedMessages = extractMessages(intentData);
 
             for (MessageContainer message : extractedMessages) {
-                params.serverApi.addSms(message);
+                params.serverApi.addMessage(message);
             }
         }
 

@@ -2,6 +2,7 @@ package life.andre.sms487.network;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Build;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -39,9 +40,9 @@ public class ServerApi {
     private final RequestQueue requestQueue;
 
     public interface RequestHandledListener {
-        void onSuccess(long dbId);
+        void onSuccess();
 
-        void onError(long dbId, String errorMessage);
+        void onError(String errorMessage);
     }
 
     public ServerApi(@NonNull Context ctx, AppSettings appSettings) {
@@ -58,43 +59,23 @@ public class ServerApi {
         requestHandledListeners.remove(listener);
     }
 
-    public void addSms(@NonNull MessageContainer msg) {
+    public void addMessage(@NonNull MessageContainer msg) {
         long dbId = msg.getDbId();
         if (dbId == 0) {
             dbId = messageStorage.addMessage(msg);
         }
 
-        String deviceId = msg.getDeviceId();
+        String messageType = msg.getMessageType();
         String dateTime = msg.getDateTime();
-        String smsCenterDateTime = msg.getSmsCenterDateTime();
+        String postDateTime = msg.getSmsCenterDateTime();
         String tel = msg.getAddressFrom();
         String text = msg.getBody();
 
         String logText = text != null ? text.replace('\n', ' ') : "null";
-        String logLine = "Sending SMS: " + deviceId + ", " + dateTime + ", " + smsCenterDateTime + ", " + tel + ", " + logText;
+        String logLine = "Sending message: " + messageType + ", " + dateTime + ", " + ", " + postDateTime + ", " + tel + ", " + logText;
         Logger.i(TAG, logLine);
 
-        addRequest(MESSAGE_TYPE_SMS, deviceId, dateTime, smsCenterDateTime, tel, text, dbId);
-    }
-
-    public void addNotification(String deviceId, String dateTime, String postDateTime, String tel, String text, long dbId) {
-        String logText = text != null ? text.replace('\n', ' ') : "null";
-        String logLine = "Sending Notification: " + deviceId + ", " + dateTime + ", " + ", " + postDateTime + ", " + tel + ", " + logText;
-        Logger.i(TAG, logLine);
-
-        addRequest(MESSAGE_TYPE_NOTIFICATION, deviceId, dateTime, postDateTime, tel, text, dbId);
-    }
-
-    public void addNotification(@NonNull MessageContainer msg) {
-        long dbId = msg.getDbId();
-        if (dbId == 0) {
-            dbId = messageStorage.addMessage(msg);
-        }
-
-        addNotification(
-                msg.getDeviceId(), msg.getDateTime(), msg.getSmsCenterDateTime(),
-                msg.getAddressFrom(), msg.getBody(), dbId
-        );
+        addRequest(messageType, dateTime, postDateTime, tel, text, dbId);
     }
 
     public void resendMessages() {
@@ -103,7 +84,7 @@ public class ServerApi {
     }
 
     private void addRequest(
-            String messageType, String deviceId, String dateTime, @Nullable String smsCenterDateTime,
+            String messageType, String dateTime, @Nullable String smsCenterDateTime,
             String tel, String text, long dbId
     ) {
         String serverUrl = appSettings.getServerUrl();
@@ -119,8 +100,9 @@ public class ServerApi {
         }
 
         Map<String, String> requestParams = new HashMap<>();
+
+        requestParams.put("device_id", Build.MODEL);
         requestParams.put("message_type", messageType);
-        requestParams.put("device_id", deviceId);
         requestParams.put("date_time", dateTime);
         requestParams.put("sms_date_time", smsCenterDateTime);
         requestParams.put("tel", tel);
@@ -233,7 +215,7 @@ public class ServerApi {
             mainParams.messageStorage.markSent(mainParams.dbId);
 
             for (ServerApi.RequestHandledListener listener : requestHandledListeners) {
-                listener.onSuccess(mainParams.dbId);
+                listener.onSuccess();
             }
 
             return null;
@@ -260,7 +242,7 @@ public class ServerApi {
             }
 
             for (ServerApi.RequestHandledListener listener : requestHandledListeners) {
-                listener.onError(mainParams.dbId, mainParams.errorMessage);
+                listener.onError(mainParams.errorMessage);
             }
 
             return null;
@@ -295,9 +277,8 @@ public class ServerApi {
             int notSentCount = messages.size();
             Logger.i(TAG, "Resend: try to resend " + notSentCount + " messages");
 
-            // TODO: notifications?
             for (MessageContainer message : messages) {
-                mainParams.serverApi.addSms(message);
+                mainParams.serverApi.addMessage(message);
             }
 
             return null;

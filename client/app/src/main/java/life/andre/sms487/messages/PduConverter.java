@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import life.andre.sms487.network.ServerApi;
 import life.andre.sms487.utils.DateUtil;
 
 public class PduConverter {
@@ -68,10 +69,10 @@ public class PduConverter {
                 fullTextBuilder.append(messageBody);
             }
 
-            MessageContainer container = new MessageContainer(
+            messageContainers.add(new MessageContainer(
+                    ServerApi.MESSAGE_TYPE_SMS,
                     tel, dateTime, smsCenterDateTime, fullTextBuilder.toString()
-            );
-            messageContainers.add(container);
+            ));
         }
 
         return messageContainers;

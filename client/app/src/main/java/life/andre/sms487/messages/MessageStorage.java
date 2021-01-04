@@ -67,11 +67,9 @@ public class MessageStorage {
 
     @Dao
     public interface MessageDao {
-        @NonNull
         @Query("SELECT * FROM message ORDER BY id DESC LIMIT 6")
         List<Message> getTail();
 
-        @NonNull
         @Query("SELECT * FROM message WHERE is_sent == 0 ORDER BY id DESC")
         List<Message> getNotSent();
 
@@ -91,12 +89,12 @@ public class MessageStorage {
         public int id;
 
         @Nullable
-        @ColumnInfo(name = "address_from")
-        public String addressFrom;
+        @ColumnInfo(name = "message_type")
+        public String messageType;
 
         @Nullable
-        @ColumnInfo(name = "device_id")
-        public String deviceId;
+        @ColumnInfo(name = "address_from")
+        public String addressFrom;
 
         @Nullable
         @ColumnInfo(name = "date_time", index = true)
@@ -109,16 +107,17 @@ public class MessageStorage {
         @ColumnInfo(name = "body")
         public String body;
 
-        @ColumnInfo(name = "is_sent", index = true)
-        public boolean isSent = false;
+        @ColumnInfo(name = "is_sent", index = true, defaultValue = "0")
+        public boolean isSent;
 
         @NonNull
         public static Message createFromMessageContainer(@NonNull MessageContainer messageContainer) {
             Message message = new Message();
 
-            message.deviceId = messageContainer.getDeviceId();
+            message.messageType = messageContainer.getMessageType();
             message.addressFrom = messageContainer.getAddressFrom();
             message.dateTime = messageContainer.getDateTime();
+            message.smsCenterDateTime = messageContainer.getSmsCenterDateTime();
             message.body = messageContainer.getBody();
 
             return message;

@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
@@ -74,11 +73,8 @@ public class NotificationListener extends NotificationListenerService {
 
         String appLabel = getAppLabel(sbn.getPackageName());
         long postTime = sbn.getPostTime();
-        String deviceId = Build.MODEL;
 
-        SendNotificationParams params = new SendNotificationParams(
-                serverApi, appLabel, postTime, fullText, deviceId
-        );
+        SendNotificationParams params = new SendNotificationParams(serverApi, appLabel, postTime, fullText);
         new SendNotificationAction().execute(params);
     }
 
@@ -131,14 +127,12 @@ public class NotificationListener extends NotificationListenerService {
         final String appLabel;
         final long postTime;
         final String text;
-        final String deviceId;
 
-        SendNotificationParams(ServerApi serverApi, String appLabel, long postTime, String text, String deviceId) {
+        SendNotificationParams(ServerApi serverApi, String appLabel, long postTime, String text) {
             this.serverApi = serverApi;
             this.appLabel = appLabel;
             this.postTime = postTime;
             this.text = text;
-            this.deviceId = deviceId;
         }
     }
 
@@ -160,11 +154,10 @@ public class NotificationListener extends NotificationListenerService {
             String curTime = DateUtil.nowFormatted();
             String postTime = DateUtil.formatDate(params.postTime);
 
-            MessageContainer message = new MessageContainer(
-                    params.deviceId, params.appLabel, curTime, postTime,
-                    params.text, false, 0
-            );
-            params.serverApi.addNotification(message);
+            params.serverApi.addMessage(new MessageContainer(
+                    ServerApi.MESSAGE_TYPE_NOTIFICATION,
+                    params.appLabel, curTime, postTime, params.text
+            ));
         }
     }
 }
