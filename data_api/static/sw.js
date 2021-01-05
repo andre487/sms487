@@ -59,8 +59,7 @@ addEventListener('message', e => {
         case 'requestOfflineMode':
             clients
                 .get(e.source.id)
-                // .then(client => client.postMessage({ type: 'offlineMode', val: isOffline }));
-                .then(client => client.postMessage({ type: 'offlineMode', val: true }));
+                .then(client => client.postMessage({ type: 'offlineMode', val: isOffline }));
             break;
     }
 });
