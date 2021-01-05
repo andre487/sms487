@@ -47,7 +47,7 @@ ADDITIONAL_HEADERS = {
 @ath.protected_from_brute_force
 @ath.require_auth(access=['sms'])
 def index():
-    device_id = request.args.get('device_id', '').strip()
+    device_id = request.args.get('device-id', '').strip()
     limit = request.args.get('limit', '30')
 
     if device_id == 'All':
@@ -79,7 +79,7 @@ def index():
 @ath.protected_from_brute_force
 @ath.require_auth(access=['sms'])
 def get_sms():
-    device_id = request.args.get('device_id', '').strip()
+    device_id = request.args.get('device-id', '').strip()
     limit = request.args.get('limit', '30')
 
     if limit:
