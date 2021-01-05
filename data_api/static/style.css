@@ -186,18 +186,19 @@
 .offline
 {
     display: none;
-    justify-content: center;
     margin: 20px 0;
 }
 
 .offline_visible
 {
-    display: flex;
+    display: block;
 }
 
 .offline__content
 {
+    display: inline-block;
     padding: 10px 20px;
+    margin-left: 20px;
     background: #9c1a1c;
     color: white;
 }

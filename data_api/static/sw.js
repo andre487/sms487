@@ -1,5 +1,7 @@
 const currentCache = 'v1';
 
+let isOffline = false;
+
 addEventListener('activate', event => {
     const clean = caches.keys().then(keyList => {
         return Promise.all(keyList.map(key => {
@@ -28,15 +30,16 @@ addEventListener('fetch', e => {
 
     const isDocument = request.mode == 'navigate';
 
-    e.respondWith(result.catch(err => {
+    e.respondWith(result.then(res => {
+        if (isDocument) {
+            isOffline = false;
+        }
+        return res;
+    }).catch(err => {
         console.error(err);
-
-        // TODO: rewrite, doesn't work when all in HTTP cache
-        const clientId = isDocument ? e.resultingClientId : e.clientId;
-        clients.get(clientId).then(cl => {
-            cl.postMessage({ type: 'offlineMode' });
-        }).catch(err => console.log(err));
-
+        if (isDocument) {
+            isOffline = true;
+        }
         return caches.match(cacheKey);
     }));
 
@@ -49,4 +52,15 @@ addEventListener('fetch', e => {
             console.error(err);
         });
     }));
+});
+
+addEventListener('message', e => {
+    switch (e.data.type) {
+        case 'requestOfflineMode':
+            clients
+                .get(e.source.id)
+                // .then(client => client.postMessage({ type: 'offlineMode', val: isOffline }));
+                .then(client => client.postMessage({ type: 'offlineMode', val: true }));
+            break;
+    }
 });

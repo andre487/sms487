@@ -58,7 +58,6 @@
         <script nonce="{{ nonce }}">
             window.indexUrl = "{{ url_for('index') }}";
             window.swUrl = "{{ url_for('sw_js') }}";
-            window.isOffline = false;
         </script>
         <script async src="{{ url_for('static', filename='index.js') | static_version }}"></script>
     </body>
