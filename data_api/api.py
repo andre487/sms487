@@ -36,7 +36,8 @@ ADDITIONAL_HEADERS = {
         "default-src 'none'; "
         "style-src 'self'; "
         "script-src 'self' 'nonce-<nonce>'; "
-        "img-src 'self';"
+        "img-src 'self'; "
+        "manifest-src 'self';"
     ),
     'X-Frame-Options': 'deny',
 }
@@ -120,6 +121,24 @@ def sw_js():
             'Cache-Control': 'private, max-age=86400, must-revalidate, no-transform',
         },
         response=content,
+    )
+
+
+@app.route('/manifest.json')
+def web_manifest():
+    origin = flask.request.headers.get('origin', 'http://localhost:8080')
+
+    data = {
+        'name': 'Sms 487 – test' if app.debug else 'Sms 487',
+        'start_url': os.getenv("START_URL", origin),
+    }
+
+    return flask.Response(
+        headers={
+            'Content-Type': 'application/json; charset=utf-8',
+            'Cache-Control': 'private, max-age=600, must-revalidate, no-transform',
+        },
+        response=flask.render_template('manifest.json', **data),
     )
 
 

@@ -139,5 +139,7 @@
           MONGO_PASSWORD: /etc/sms487/mongo/password
           MONGO_AUTH_SOURCE: /etc/sms487/mongo/auth_src
           MONGO_DB_NAME: sms487
+          HTTP_DOMAIN: '{{ http_domain }}'
+          START_URL: '{{ start_url }}'
           AUTH_DOMAIN: '{{ auth_domain }}'
       when: docker_network.changed or docker_image.changed

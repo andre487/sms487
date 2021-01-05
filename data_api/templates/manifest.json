@@ -1,0 +1,17 @@
+{
+  "name": "{{ name }}",
+  "description": "Shows Notifications and SMS from a mobile phone",
+  "start_url": "{{ start_url }}",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#9c1a1c",
+  "background_color": "#9c1a1c",
+  "icons": [
+    {
+      "src": "{{ url_for('static', filename='icon.svg') | static_version }}",
+      "size": "380x380",
+      "sizes": "72x72 96x96 128x128 144x144 256x256 380x380 any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
