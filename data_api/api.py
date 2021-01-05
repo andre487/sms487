@@ -129,7 +129,7 @@ def web_manifest():
     origin = flask.request.headers.get('origin', 'http://localhost:8080')
 
     data = {
-        'name': 'Sms 487 – test' if app.debug else 'Sms 487',
+        'name': 'SMS 487 – test' if app.debug else 'SMS 487',
         'start_url': os.getenv("START_URL", origin),
     }
 

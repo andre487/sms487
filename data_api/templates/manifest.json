@@ -1,5 +1,6 @@
 {
   "name": "{{ name }}",
+  "short_name": "SMS 487",
   "description": "Shows Notifications and SMS from a mobile phone",
   "start_url": "{{ start_url }}",
   "display": "standalone",
