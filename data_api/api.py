@@ -126,7 +126,7 @@ def sw_js():
 
 @app.route('/manifest.json')
 def web_manifest():
-    origin = flask.request.headers.get('origin', 'http://localhost:8080')
+    origin = flask.request.headers.get('origin', '')
 
     data = {
         'name': 'SMS 487 – test' if app.debug else 'SMS 487',
