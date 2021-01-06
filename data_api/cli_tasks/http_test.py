@@ -4,7 +4,7 @@ import time
 from . import common
 
 
-def run(c, recreate_venv):
+def run(c, recreate_venv, test_filter):
     common.prepare_virtual_env(c, recreate_venv)
     port = common.get_free_port()
     logging.info('Using port %s', port)
@@ -13,7 +13,11 @@ def run(c, recreate_venv):
     app_proc, mongo_port = common.start_dev_instance(port, db_name=common.TEST_DB_NAME)
     time.sleep(2)
 
-    test_proc = subprocess.Popen((common.PYTHON, '-m', 'pytest', '-s', 'http_test.py'), env={
+    cmd = [common.PYTHON, '-m', 'pytest', '-s', 'http_test.py']
+    if test_filter:
+        cmd.extend(('-k', test_filter))
+
+    test_proc = subprocess.Popen(cmd, env={
         'APP_PORT': str(port),
         'AUTH_DEV_MODE': '1',
         'AUTH_MONGO_DB_NAME': common.TEST_DB_NAME,

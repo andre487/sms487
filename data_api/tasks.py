@@ -28,9 +28,9 @@ def freeze(c, recreate_venv=False):
 
 
 @task
-def http_test(c, recreate_venv=False):
+def http_test(c, recreate_venv=False, k=None):
     """Run HTTP handlers test on dev instance"""
-    cli_tasks.http_test.run(c, recreate_venv)
+    cli_tasks.http_test.run(c, recreate_venv, test_filter=k)
 
 
 @task

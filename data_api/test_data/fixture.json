@@ -15,7 +15,9 @@
       "login": "test"
     },
     {
+      "message_type": "notification",
       "date_time": "2018-01-01 00:00:00 +0000",
+      "sms_date_time": "2018-01-01 00:01:00 +0000",
       "tel": "111",
       "device_id": "Test_4",
       "text": "Baz https://yandex.ru Quux",
@@ -29,7 +31,9 @@
       "login": "test"
     },
     {
+      "message_type": "notification",
       "date_time": "2018-01-01 00:00:00 +0000",
+      "sms_date_time": "2018-01-01 00:01:00 +0000",
       "tel": "000",
       "device_id": "Test_5",
       "text": "Baz https://yandex.ru Quux",
@@ -54,14 +58,18 @@
       "login": "test"
     },
     {
+      "message_type": "notification",
       "date_time": "2018-01-01 00:03:00 +0000",
+      "sms_date_time": "2018-01-01 00:01:00 +0000",
       "tel": "000",
       "device_id": "Test_3",
       "text": "Baz https://yandex.ru Quux",
       "login": "test"
     },
     {
+      "message_type": "notification",
       "date_time": "2018-01-01 00:03:00 +0000",
+      "sms_date_time": "2018-01-01 00:01:00 +0000",
       "tel": "000",
       "device_id": "Test_3",
       "text": "Baz https://yandex.ru Quux",
@@ -79,7 +87,8 @@
       "created": 0
     },
     {"login": "test", "op": "and", "tel": "222", "device_id": "Test_4", "action": "hide", "created": 1},
-    {"login": "test", "op": "and", "device_id": "Test_1", "action": "mark", "created": 2}
+    {"login": "test", "op": "and", "device_id": "Test_1", "action": "mark", "created": 2},
+    {"login": "test", "op": "or", "text": "<script>alert(1)</script>", "action": "hide"}
   ],
   "remote_addresses": [
     {"remote_addr": "8.8.8.8", "mistakes": 1}

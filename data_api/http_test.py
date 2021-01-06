@@ -91,22 +91,22 @@ class TestGetSms(BaseTest):
         assert len(ans) >= 2
 
         assert ans[0].get('date_time') == '01 Jan 2018 03:03'
-        assert ans[0].get('sms_date_time') == '01 Jan 2018 03:03'
-        assert ans[0].get('printable_date_time') == '01 Jan 2018 03:03'
+        assert ans[0].get('sms_date_time') == '01 Jan 2018 03:01'
+        assert ans[0].get('printable_date_time') == '01 Jan 2018 03:03 (01 Jan 2018 03:01)'
         assert ans[0].get('tel') == '000'
         assert ans[0].get('device_id') == 'Test_3'
         assert ans[0].get('text') == 'Baz https://yandex.ru Quux'
-        assert ans[0].get('message_type') == 'sms'
-        assert ans[0].get('printable_message_type') == 'SMS'
+        assert ans[0].get('message_type') == 'notification'
+        assert ans[0].get('printable_message_type') == 'Notification'
 
-        assert ans[1].get('date_time') == '01 Jan 2018 03:01'
-        assert ans[1].get('sms_date_time') == '01 Jan 2018 02:59'
-        assert ans[1].get('printable_date_time') == '01 Jan 2018 03:01 (01 Jan 2018 02:59)'
+        assert ans[1].get('date_time') == '01 Jan 2018 03:00'
+        assert ans[1].get('sms_date_time') == '01 Jan 2018 03:00'
+        assert ans[1].get('printable_date_time') == '01 Jan 2018 03:00'
         assert ans[1].get('tel') == '000'
-        assert ans[1].get('device_id') == 'Test_2'
-        assert ans[1].get('text') == 'https://yandex.ru Bar https://google.ru <script>alert(1)</script>'
-        assert ans[1].get('message_type') == 'notification'
-        assert ans[1].get('printable_message_type') == 'Notification'
+        assert ans[1].get('device_id') == 'Test_1'
+        assert ans[1].get('text') == 'Foo https://yandex.ru'
+        assert ans[1].get('message_type') == 'sms'
+        assert ans[1].get('printable_message_type') == 'SMS'
 
     def test_incorrect_limit(self):
         res = make_app_request('/get-sms?limit=foo')
@@ -114,6 +114,27 @@ class TestGetSms(BaseTest):
         assert res.status_code == 400
 
         assert res.json().get('error') == 'Incorrect limit'
+
+    def test_filtering(self):
+        res = make_app_request('/get-sms')
+        assert res.headers['content-type'] == 'application/json; charset=utf-8'
+        assert res.status_code == 200
+
+        ans = res.json()
+
+        assert ans[0]['text'] == 'Baz https://yandex.ru Quux'
+        assert ans[1]['text'] == 'Foo https://yandex.ru'
+
+    def test_no_filters(self):
+        res = make_app_request('/get-sms?no-filters=1')
+        assert res.headers['content-type'] == 'application/json; charset=utf-8'
+        assert res.status_code == 200
+
+        ans = res.json()
+
+        assert ans[0]['text'] == 'Baz https://yandex.ru Quux'
+        assert ans[1]['text'] == 'https://yandex.ru Bar https://google.ru <script>alert(1)</script>'
+        assert ans[2]['text'] == 'Foo https://yandex.ru'
 
 
 class TestAddSms(BaseTest):
@@ -653,7 +674,7 @@ class TestImportFilters(BaseTest):
         assert res.status_code == 400
         assert res.headers['content-type'] == 'application/json; charset=utf-8'
 
-        assert res.json().get('error') == 'Invalid JSON: Unterminated string starting at: line 1 column 328 (char 327)'
+        assert res.json().get('error').startswith('Invalid JSON: Unterminated string starting at')
 
     def test_import_invalid_json_structure(self):
         filters0 = {'foo': 'bar'}

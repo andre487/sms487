@@ -2,7 +2,6 @@ import json
 import logging
 import os
 import re
-import ssl
 import time
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -59,13 +58,16 @@ def get_login():
     return login
 
 
-def get_sms(device_id, limit=None):
+def get_sms(device_id, limit=None, apply_filters=True):
     params = {'login': get_login()}
     if device_id:
         params['device_id'] = device_id
 
     if not limit:
         limit = 256
+
+    if apply_filters:
+        params.update(get_filter_mongo_query())
 
     cursor = _get_sms_collection().find(params).sort(
         [('date_time', pymongo.DESCENDING), ('device_id', pymongo.ASCENDING)]
@@ -202,6 +204,36 @@ def get_filters():
         ))
 
     return result
+
+
+def get_filter_mongo_query():
+    result = []
+    for data in get_filters():
+        if data.get('action') != 'hide':
+            continue
+
+        tel = data.get('tel')
+        device_id = data.get('device_id')
+        text = data.get('text')
+
+        item = []
+        if tel:
+            item.append({'tel': tel})
+
+        if device_id:
+            item.append({'device_id': device_id})
+
+        if text:
+            text = re.escape(text)
+            item.append({'text': {'$regex': f'.*{text}.*'}})
+
+        if not item:
+            continue
+
+        operand = '$and' if data.get('op') == 'and' else '$or'
+        result.append({operand: item})
+
+    return {'$nor': [{'$or': result}]}
 
 
 def get_filter_fields(filter_record, validate=True):
