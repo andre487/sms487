@@ -136,7 +136,7 @@ def save_filters():
 
 @app.route('/export-filters')
 @ath.protected_from_brute_force
-@ath.require_auth(access=['sms'])
+@ath.require_auth(access=['sms'], no_redirect=True)
 def export_filters():
     filters = data_handler.get_filters()
     return create_json_response(filters, headers={

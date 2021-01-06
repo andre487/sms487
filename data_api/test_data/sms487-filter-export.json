@@ -1,0 +1,26 @@
+[
+  {
+    "op": "and",
+    "tel": "",
+    "device_id": "Test_1",
+    "text": "",
+    "action": "mark",
+    "id": "5ff56c7d884589eff599b47b"
+  },
+  {
+    "op": "and",
+    "tel": "222",
+    "device_id": "Test_4",
+    "text": "",
+    "action": "hide",
+    "id": "5ff56c7d884589eff599b47d"
+  },
+  {
+    "op": "or",
+    "tel": "111",
+    "device_id": "Test_5",
+    "text": "marked text",
+    "action": "hide",
+    "id": "5ff56c7d884589eff599b47c"
+  }
+]

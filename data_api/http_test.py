@@ -1,4 +1,7 @@
+import json
 import os
+
+import pytest
 import requests
 from auth487 import common as acm
 from cli_tasks import common
@@ -22,13 +25,13 @@ def make_app_request(handler, method='GET', data=None, headers=None, cookies=Non
 class TestHomePage:
     def test_no_auth(self):
         res = make_app_request('/', set_token=False)
-        assert '<title>SMS 487</title>' not in res.text
+        assert '<title>SMS 487 – Messages</title>' not in res.text
         assert 'Redirecting...' in res.text
         assert res.status_code == 302
 
     def test_main(self):
         res = make_app_request('/')
-        assert '<title>SMS 487</title>' in res.text
+        assert '<title>SMS 487 – Messages</title>' in res.text
         assert res.headers['content-type'] == 'text/html; charset=utf-8'
         assert res.status_code == 200
 
@@ -275,3 +278,46 @@ class TestAddSms:
         assert res.headers['content-type'] == 'application/json; charset=utf-8'
 
         assert res.json().get('error') == 'Text is too long'
+
+
+class TestFiltersPage:
+    def test_no_auth(self):
+        res = make_app_request('/filters', set_token=False)
+        assert 'Redirecting...' in res.text
+        assert res.status_code == 302
+
+    def test_main(self):
+        res = make_app_request('/filters')
+        assert '<title>SMS 487 – Filters</title>' in res.text
+        assert res.headers['content-type'] == 'text/html; charset=utf-8'
+        assert res.status_code == 200
+
+
+class TestExportFilters:
+    def test_no_auth(self):
+        res = make_app_request('/export-filters', set_token=False)
+        assert res.status_code == 403
+        assert res.headers['content-type'] == 'application/json'
+
+        assert res.json().get('error') == 'Auth error'
+
+    def test_main(self):
+        res = make_app_request('/export-filters')
+
+        assert res.status_code == 200
+        assert res.headers['content-type'] == 'application/json; charset=utf-8'
+        assert res.headers['content-disposition'] == 'attachment; filename="sms487-filter-export.json"'
+
+        ans = res.json()
+        first = ans[0]
+
+        assert 'id' in first
+
+        first.pop('id')
+        assert ans[0] == {
+            'op': 'and',
+            'tel': '',
+            'device_id': 'Test_1',
+            'text': '',
+            'action': 'mark',
+        }
