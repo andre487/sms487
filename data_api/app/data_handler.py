@@ -1,15 +1,15 @@
 import json
 import logging
 import os
-import pymongo
 import re
 import ssl
 import time
-from datetime import datetime, timedelta
-from auth487 import flask as ath, common as acm
-from bson import ObjectId
-
 from collections import defaultdict
+from datetime import datetime, timedelta
+
+import pymongo
+from auth487 import common as acm, flask as ath
+from bson import ObjectId
 
 
 def get_env_param(name, def_val=None, try_file=False):
@@ -319,7 +319,7 @@ def import_filters(file_obj):
         collection.update_one(upsert=True, **query)
 
 
-def _get_mongo_client():
+def get_mongo_client():
     global _mongo_client
     if _mongo_client:
         return _mongo_client
@@ -339,16 +339,20 @@ def _get_mongo_client():
         connect=True,
         username=MONGO_USER,
         password=MONGO_PASSWORD,
-        ssl_ca_certs=MONGO_SSL_CERT,
-        ssl_cert_reqs=ssl.CERT_REQUIRED if MONGO_SSL_CERT else ssl.CERT_NONE,
+        tlsCAFile=MONGO_SSL_CERT,
+        tlsAllowInvalidCertificates=not bool(MONGO_SSL_CERT),
         **mongo_options
     )
 
     return _mongo_client
 
 
+def get_mongo_db():
+    return get_mongo_client()[MONGO_DB_NAME]
+
+
 def _get_sms_collection():
-    client = _get_mongo_client()
+    client = get_mongo_client()
     collection = client[MONGO_DB_NAME]['sms_items']
 
     collection.create_index([
@@ -380,7 +384,7 @@ def _get_sms_collection():
 
 
 def _get_filters_collection():
-    client = _get_mongo_client()
+    client = get_mongo_client()
     collection = client[MONGO_DB_NAME]['filters']
 
     collection.create_index([

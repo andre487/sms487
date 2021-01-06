@@ -10,12 +10,16 @@ def run(c, recreate_venv):
     logging.info('Using port %s', port)
 
     logging.info('Start dev instance')
-    app_proc = common.start_dev_instance(port, db_name=common.TEST_DB_NAME)
+    app_proc, mongo_port = common.start_dev_instance(port, db_name=common.TEST_DB_NAME)
     time.sleep(2)
 
     test_proc = subprocess.Popen((common.PYTHON, '-m', 'pytest', '-s', 'http_test.py'), env={
         'APP_PORT': str(port),
         'AUTH_DEV_MODE': '1',
+        'AUTH_MONGO_DB_NAME': common.TEST_DB_NAME,
+        'MONGO_DB_NAME': common.TEST_DB_NAME,
+        'MONGO_PORT': mongo_port,
+
     }, cwd=common.PROJECT_DIR)
     test_proc.wait()
 

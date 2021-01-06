@@ -1,12 +1,17 @@
 import json
 import os
 
-import pytest
 import requests
 from auth487 import common as acm
+from app import data_handler
 from cli_tasks import common
 
 APP_PORT = int(os.getenv('APP_PORT', 8080))
+PROJECT_DIR = os.path.dirname(__file__)
+TEST_DATA_PATH = os.path.join(PROJECT_DIR, 'test_data')
+
+with open(os.path.join(TEST_DATA_PATH, 'fixture.json')) as fp:
+    FIXTURE = json.load(fp)
 
 
 def make_app_request(handler, method='GET', data=None, headers=None, cookies=None, set_token=True):
@@ -22,7 +27,22 @@ def make_app_request(handler, method='GET', data=None, headers=None, cookies=Non
     return requests.request(method, url, cookies=cookies, headers=headers, allow_redirects=False, data=data)
 
 
-class TestHomePage:
+class BaseTest:
+    def setup_method(self):
+        db = data_handler.get_mongo_db()
+
+        for name in db.list_collection_names():
+            collection = db.get_collection(name)
+            collection.drop()
+
+        for name, data in FIXTURE.items():
+            db.get_collection(name).insert_many(data)
+
+    def teardown_method(self):
+        data_handler.get_mongo_client().drop_database(data_handler.MONGO_DB_NAME)
+
+
+class TestHomePage(BaseTest):
     def test_no_auth(self):
         res = make_app_request('/', set_token=False)
         assert '<title>SMS 487 – Messages</title>' not in res.text
@@ -36,7 +56,7 @@ class TestHomePage:
         assert res.status_code == 200
 
 
-class TestError404:
+class TestError404(BaseTest):
     def test_no_auth(self):
         res = make_app_request('/404', set_token=False)
         assert res.status_code == 404
@@ -49,7 +69,7 @@ class TestError404:
         assert res.json().get('error') == 'Not found'
 
 
-class TestGetSms:
+class TestGetSms(BaseTest):
     def test_no_auth(self):
         res = make_app_request('/get-sms', set_token=False)
         assert '<title>SMS 487</title>' not in res.text
@@ -90,7 +110,7 @@ class TestGetSms:
         assert res.json().get('error') == 'Incorrect limit'
 
 
-class TestAddSms:
+class TestAddSms(BaseTest):
     def test_no_auth(self):
         res = make_app_request('/add-sms', method='POST', data={
             'message_type': 'sms',
@@ -280,7 +300,7 @@ class TestAddSms:
         assert res.json().get('error') == 'Text is too long'
 
 
-class TestFiltersPage:
+class TestFiltersPage(BaseTest):
     def test_no_auth(self):
         res = make_app_request('/filters', set_token=False)
         assert 'Redirecting...' in res.text
@@ -293,7 +313,7 @@ class TestFiltersPage:
         assert res.status_code == 200
 
 
-class TestExportFilters:
+class TestExportFilters(BaseTest):
     def test_no_auth(self):
         res = make_app_request('/export-filters', set_token=False)
         assert res.status_code == 403
@@ -321,3 +341,8 @@ class TestExportFilters:
             'text': '',
             'action': 'mark',
         }
+
+
+class TestEditFilters(BaseTest):
+    # TODO: setup and tear down base move here
+    pass

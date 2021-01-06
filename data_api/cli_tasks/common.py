@@ -61,7 +61,7 @@ def start_dev_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
         (PYTHON, '-m', 'flask', 'run', '-p', str(port)),
         cwd=PROJECT_DIR,
         env=env,
-    )
+    ), mongo_port
 
 
 def start_docker_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
