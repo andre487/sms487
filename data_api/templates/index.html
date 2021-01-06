@@ -34,7 +34,7 @@
 {% block main_content %}
     <ul class="message-list">
         {% for message in messages %}
-            <li class="message-list__item message-view">
+            <li class="message-list__item message-view {% if message.marked %}message-view_marked{% endif %}">
                 <div class="message-view__header">
                     <div class="message-view__device-id">{{ message.device_id }}</div>
                     <div class="message-view__tel">{{ message.printable_message_type }}: {{ message.tel }}</div>

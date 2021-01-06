@@ -87,7 +87,7 @@
       "created": 0
     },
     {"login": "test", "op": "and", "tel": "222", "device_id": "Test_4", "action": "hide", "created": 1},
-    {"login": "test", "op": "and", "device_id": "Test_1", "action": "mark", "created": 2},
+    {"login": "test", "op": "and", "text": "Foo", "action": "mark", "created": 2},
     {"login": "test", "op": "or", "text": "<script>alert(1)</script>", "action": "hide"}
   ],
   "remote_addresses": [

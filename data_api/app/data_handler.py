@@ -59,19 +59,26 @@ def get_login():
 
 
 def get_sms(device_id, limit=None, apply_filters=True):
-    params = {'login': get_login()}
+    query = {'login': get_login()}
     if device_id:
-        params['device_id'] = device_id
+        query['device_id'] = device_id
 
     if not limit:
         limit = 256
 
     if apply_filters:
-        params.update(get_filter_mongo_query())
+        query.update(get_filters_match_query())
 
-    cursor = _get_sms_collection().find(params).sort(
-        [('date_time', pymongo.DESCENDING), ('device_id', pymongo.ASCENDING)]
-    ).limit(limit * 5)
+    aggregation = [{'$match': query}]
+    if apply_filters:
+        aggregation.extend(get_filters_mongo_aggregations())
+
+    aggregation.extend((
+        {'$sort': {'date_time': pymongo.DESCENDING, 'device_id': pymongo.ASCENDING}},
+        {'$limit': limit * 5},
+    ))
+
+    cursor = _get_sms_collection().aggregate(aggregation)
 
     result = []
     for idx, doc in enumerate(deduplicate_messages(cursor)):
@@ -206,8 +213,9 @@ def get_filters():
     return result
 
 
-def get_filter_mongo_query():
+def get_filters_match_query():
     result = []
+
     for data in get_filters():
         if data.get('action') != 'hide':
             continue
@@ -237,6 +245,47 @@ def get_filter_mongo_query():
         return {'$nor': [{'$or': result}]}
 
     return {}
+
+
+def get_filters_mongo_aggregations():
+    result = []
+
+    for data in get_filters():
+        if data.get('action') != 'mark':
+            continue
+
+        tel = data.get('tel')
+        device_id = data.get('device_id')
+        text = data.get('text')
+
+        item = []
+        if tel:
+            item.append({'$eq': ('$tel', tel)})
+
+        if device_id:
+            item.append({'$eq': ('$device_id', device_id)})
+
+        if text:
+            text = re.escape(text)
+            item.append({
+                '$regexMatch': {
+                    'input': '$text',
+                    'regex': f'.*{text}.*',
+                }
+            })
+
+        if not item:
+            continue
+
+        operand = '$and' if data.get('op') == 'and' else '$or'
+        result.append({operand: item})
+
+    if result:
+        return (
+            {'$addFields': {'marked': {'$or': result}}},
+        )
+
+    return ()
 
 
 def get_filter_fields(filter_record, validate=True):

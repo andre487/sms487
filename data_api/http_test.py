@@ -123,7 +123,10 @@ class TestGetSms(BaseTest):
         ans = res.json()
 
         assert ans[0]['text'] == 'Baz https://yandex.ru Quux'
+        assert ans[0]['marked'] is False
+
         assert ans[1]['text'] == 'Foo https://yandex.ru'
+        assert ans[1]['marked'] is True
 
     def test_no_filters(self):
         res = make_app_request('/get-sms?no-filters=1')
@@ -133,8 +136,13 @@ class TestGetSms(BaseTest):
         ans = res.json()
 
         assert ans[0]['text'] == 'Baz https://yandex.ru Quux'
+        assert 'marked' not in ans[0]
+
         assert ans[1]['text'] == 'https://yandex.ru Bar https://google.ru <script>alert(1)</script>'
+        assert 'marked' not in ans[1]
+
         assert ans[2]['text'] == 'Foo https://yandex.ru'
+        assert 'marked' not in ans[2]
 
 
 class TestAddSms(BaseTest):
@@ -364,8 +372,8 @@ class TestExportFilters(BaseTest):
         assert ans[0] == {
             'op': 'and',
             'tel': '',
-            'device_id': 'Test_1',
-            'text': '',
+            'device_id': '',
+            'text': 'Foo',
             'action': 'mark',
         }
 
@@ -384,8 +392,8 @@ class TestSaveFilters(BaseTest):
     def test_update(self):
         filters = self._get_filters()
 
-        assert filters[0]['device_id'] == 'Test_1'
-        filters[0]['device_id'] = 'Device Foo'
+        assert filters[0]['text'] == 'Foo'
+        filters[0]['text'] = 'Bar'
 
         req_data = self._create_update_data(filters)
         res = make_app_request('/save-filters', method='POST', data=req_data, cookies={
@@ -397,7 +405,7 @@ class TestSaveFilters(BaseTest):
 
         filters = self._get_filters()
 
-        assert filters[0]['device_id'] == 'Device Foo'
+        assert filters[0]['text'] == 'Bar'
 
     def test_update_invalid_id(self):
         filters = self._get_filters()
@@ -467,7 +475,7 @@ class TestSaveFilters(BaseTest):
     def test_create(self):
         filters = self._get_filters()
 
-        assert filters[0]['device_id'] == 'Test_1'
+        assert filters[0]['text'] == 'Foo'
 
         req_data = self._create_update_data(filters)
         req_data.update({
@@ -497,7 +505,7 @@ class TestSaveFilters(BaseTest):
         assert first['text'] == 'Quux'
         assert first['action'] == 'mark'
 
-        assert second['device_id'] == 'Test_1'
+        assert second['text'] == 'Foo'
 
     def test_create_no_csrf(self):
         res = make_app_request('/save-filters', method='POST', data={}, cookies={

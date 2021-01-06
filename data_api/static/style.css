@@ -292,6 +292,7 @@ input + .checkbox-label
 
 .message-view
 {
+    position: relative;
     max-width: 1024px;
     padding: 10px;
     border-radius: 2px;
@@ -300,6 +301,22 @@ input + .checkbox-label
     font-size: 14px;
     line-height: 1.5;
     background: white;
+}
+
+.message-view_marked::after
+{
+    content: '';
+
+    display: block;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+
+    width: 15px;
+    height: 15px;
+    background-image: url("/static/star.svg?v=1");
+    background-size: contain;
 }
 
 .message-view__header
