@@ -70,6 +70,7 @@ def index():
     ]
 
     return create_html_response('index.html', {
+        'title': 'SMS 487 – Message list',
         'messages': result, 'limit': limit,
         'device_id': device_id, 'device_ids': device_ids,
     })

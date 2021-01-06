@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+    <head>
+        <title>{{ title }}</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') | static_version }}">
+        <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='icon.svg') | static_version }}">
+        <link rel="manifest" href="{{ url_for('web_manifest') }}">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+    </head>
+    <body class="page">
+        <div class="header">
+            <h1 class="header__app-name">SMS 487</h1>
+
+            {% block header_content %}{% endblock %}
+
+            <a target="_blank" rel="noopener" href="{{ auth_link }}" class="header__login">{{ login }}</a>
+        </div>
+
+        <div class="offline-message offline">
+            <div class="offline__content">Offline mode</div>
+        </div>
+
+        {% block main_content %}{% endblock %}
+
+        {% block scripts %}
+            <script nonce="{{ nonce }}">
+                window.indexUrl = "{{ url_for('index') }}";
+                window.swUrl = "{{ url_for('sw_js') }}";
+            </script>
+            <script async src="{{ url_for('static', filename='common.js') | static_version }}"></script>
+        {% endblock %}
+    </body>
+</html>

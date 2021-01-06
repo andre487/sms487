@@ -1,50 +1,35 @@
-<!DOCTYPE html>
-<html lang="ru">
-    <head>
-        <title>SMS 487</title>
-        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') | static_version }}">
-        <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='icon.svg') | static_version }}">
-        <link rel="manifest" href="{{ url_for('web_manifest') }}">
-        <meta name="viewport" content="width=device-width,initial-scale=1">
-    </head>
-    <body class="page">
-        <div class="header">
-            <h1 class="header__app-name">SMS 487</h1>
+{% extends "layout.html" %}
 
-            <form class="message-params">
-                <label for="message-params__device-id"
-                       class="message-params__item message-params__item_label">Device ID:</label>
-                <select name="device-id"
-                        id="message-params__device-id"
-                        class="message-params__item message-params__item_device-id">
-                    {% for device_id_data in device_ids %}
-                    <option value="{{ device_id_data[0] }}" {% if device_id_data[1] %}selected{%endif%}>
-                        {{ device_id_data[0] }}
-                    </option>
-                    {% endfor %}
-                </select>
+{% block header_content %}
+    <form class="message-params">
+        <label for="message-params__device-id"
+               class="message-params__item message-params__item_label">Device ID:</label>
+        <select name="device-id"
+                id="message-params__device-id"
+                class="message-params__item message-params__item_device-id">
+            {% for device_id_data in device_ids %}
+                <option value="{{ device_id_data[0] }}" {% if device_id_data[1] %}selected{%endif%}>
+                    {{ device_id_data[0] }}
+                </option>
+            {% endfor %}
+        </select>
 
-                <label for="message-params__limit"
-                       class="message-params__item message-params__item_label">Limit:</label>
-                <input name="limit" type="number" placeholder="Limit"
-                       id="message-params__limit"
-                       class="message-params__item message-params__item_limit"
-                       value="{{ limit }}">
+        <label for="message-params__limit"
+               class="message-params__item message-params__item_label">Limit:</label>
+        <input name="limit" type="number" placeholder="Limit"
+               id="message-params__limit"
+               class="message-params__item message-params__item_limit"
+               value="{{ limit }}">
 
-                <button type="submit"
-                        class="button message-params__item message-params__item_submit">Setup
-                </button>
-            </form>
+        <button type="submit"
+                class="button message-params__item message-params__item_submit">Setup
+        </button>
+    </form>
+{% endblock %}
 
-            <a target="_blank" rel="noopener" href="{{ auth_link }}" class="header__login">{{ login }}</a>
-        </div>
-
-        <div class="offline-message offline">
-            <div class="offline__content">Offline mode</div>
-        </div>
-
-        <ul class="message-list">
-            {% for message in messages %}
+{% block main_content %}
+    <ul class="message-list">
+        {% for message in messages %}
             <li class="message-list__item message-view">
                 <div class="message-view__header">
                     <div class="message-view__device-id">{{ message.device_id }}</div>
@@ -53,12 +38,11 @@
                 <div class="message-view__date-time">{{ message.printable_date_time }}</div>
                 <div class="message-view__text">{{ message.text | handle_tags | safe }}</div>
             </li>
-            {% endfor %}
-        </ul>
-        <script nonce="{{ nonce }}">
-            window.indexUrl = "{{ url_for('index') }}";
-            window.swUrl = "{{ url_for('sw_js') }}";
-        </script>
-        <script async src="{{ url_for('static', filename='index.js') | static_version }}"></script>
-    </body>
-</html>
+        {% endfor %}
+    </ul>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script async src="{{ url_for('static', filename='index.js') | static_version }}"></script>
+{% endblock %}
