@@ -212,13 +212,13 @@ def get_filter_fields(filter_record, validate=True):
 
     if validate:
         if fields['op'] not in {'or', 'and'}:
-            raise FormDataError(f'Invalid op: {fields["op"]}')
+            raise FormDataError(f'Invalid op: {fields["op"]} in {filter_record}')
 
         if fields['action'] not in {'mark', 'hide'}:
-            raise FormDataError(f'Invalid action: {fields["action"]}')
+            raise FormDataError(f'Invalid action: {fields["action"]} in {filter_record}')
 
         if not fields['tel'] and not fields['device_id'] and not fields['text']:
-            raise EmptyData('All text fields are empty')
+            raise EmptyData(f'All text fields are empty in {filter_record}')
 
     return fields
 
@@ -273,8 +273,12 @@ def save_filters(form_data):
     for query in update_queries:
         collection.update_one(**query)
 
+    new_data = data.get('new')
+    if not new_data:
+        return
+
     try:
-        new_data = get_filter_fields(data.get('new', {}))
+        new_data = get_filter_fields(new_data)
         doc = dict(new_data, login=login, created=time.time())
         collection.insert_one(doc)
     except EmptyData:

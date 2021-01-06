@@ -131,7 +131,7 @@ def show_filters():
 
 @app.route('/save-filters', methods=['POST'])
 @ath.protected_from_brute_force
-@ath.require_auth(access=['sms'])
+@ath.require_auth(access=['sms'], no_redirect=True)
 def save_filters():
     try:
         data_handler.save_filters(request.form)

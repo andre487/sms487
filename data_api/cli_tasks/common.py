@@ -225,3 +225,9 @@ def get_free_port():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.bind(('0.0.0.0', 0))
     return sock.getsockname()[1]
+
+
+def get_csrf_token():
+    token_file = os.path.join(TEST_DATA_DIR, 'test-csrf-token.txt')
+    with open(token_file) as fp:
+        return fp.read().strip()

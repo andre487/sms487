@@ -343,6 +343,217 @@ class TestExportFilters(BaseTest):
         }
 
 
-class TestEditFilters(BaseTest):
-    # TODO: setup and tear down base move here
-    pass
+class TestSaveFilters(BaseTest):
+    def test_no_auth(self):
+        res = make_app_request('/save-filters', method='POST', set_token=False, cookies={
+            acm.CSRF_COOKIE_NAME: common.get_csrf_token(),
+        }, data={acm.CSRF_FIELD_NAME: common.get_csrf_token()})
+
+        assert res.status_code == 403
+        assert res.headers['content-type'] == 'application/json'
+
+        assert res.json().get('error') == 'Auth error'
+
+    def test_update(self):
+        filters = self._get_filters()
+
+        assert filters[0]['device_id'] == 'Test_1'
+        filters[0]['device_id'] = 'Device Foo'
+
+        req_data = self._create_update_data(filters)
+        res = make_app_request('/save-filters', method='POST', data=req_data, cookies={
+            acm.CSRF_COOKIE_NAME: common.get_csrf_token(),
+        })
+
+        assert 'Redirecting...' in res.text
+        assert res.status_code == 302
+
+        filters = self._get_filters()
+
+        assert filters[0]['device_id'] == 'Device Foo'
+
+    def test_update_invalid_id(self):
+        filters = self._get_filters()
+
+        filters[0]['id'] = 'invalid'
+
+        req_data = self._create_update_data(filters)
+        res = make_app_request('/save-filters', method='POST', data=req_data, cookies={
+            acm.CSRF_COOKIE_NAME: common.get_csrf_token(),
+        })
+
+        assert res.headers['content-type'] == 'application/json; charset=utf-8'
+        assert res.json().get('error') == 'Invalid filter ID: invalid'
+        assert res.status_code == 400
+
+    def test_remove_by_param(self):
+        filters = self._get_filters()
+        len0 = len(filters)
+
+        req_data = self._create_update_data(filters)
+
+        rec_id0 = filters[0]['id']
+        req_data[f'remove:{rec_id0}'] = '1'
+
+        res = make_app_request('/save-filters', method='POST', data=req_data, cookies={
+            acm.CSRF_COOKIE_NAME: common.get_csrf_token(),
+        })
+
+        assert 'Redirecting...' in res.text
+        assert res.status_code == 302
+
+        filters = self._get_filters()
+
+        assert len(filters) == len0 - 1
+
+        ids = set()
+        for rec in filters:
+            ids.add(rec['id'])
+
+        assert rec_id0 not in ids
+
+    def test_remove_by_empty_update(self):
+        filters = self._get_filters()
+        len0 = len(filters)
+        rec_id0 = filters[0]['id']
+
+        req_data = self._create_update_data(filters)
+        req_data[f'tel:{rec_id0}'] = req_data[f'device_id:{rec_id0}'] = req_data[f'text:{rec_id0}'] = ''
+
+        res = make_app_request('/save-filters', method='POST', data=req_data, cookies={
+            acm.CSRF_COOKIE_NAME: common.get_csrf_token(),
+        })
+
+        assert 'Redirecting...' in res.text
+        assert res.status_code == 302
+
+        filters = self._get_filters()
+
+        assert len(filters) == len0 - 1
+
+        ids = set()
+        for rec in filters:
+            ids.add(rec['id'])
+
+        assert rec_id0 not in ids
+
+    def test_create(self):
+        filters = self._get_filters()
+
+        assert filters[0]['device_id'] == 'Test_1'
+
+        req_data = self._create_update_data(filters)
+        req_data.update({
+            'op:new': 'and',
+            'tel:new': '487',
+            'device_id:new': 'Device Foo',
+            'text:new': 'Quux',
+            'action:new': 'mark',
+        })
+
+        res = make_app_request('/save-filters', method='POST', data=req_data, cookies={
+            acm.CSRF_COOKIE_NAME: common.get_csrf_token(),
+        })
+
+        assert 'Redirecting...' in res.text
+        assert res.status_code == 302
+
+        filters = self._get_filters()
+
+        assert len(filters) > 1
+        first = filters[0]
+        second = filters[1]
+
+        assert first['op'] == 'and'
+        assert first['tel'] == '487'
+        assert first['device_id'] == 'Device Foo'
+        assert first['text'] == 'Quux'
+        assert first['action'] == 'mark'
+
+        assert second['device_id'] == 'Test_1'
+
+    def test_create_no_csrf(self):
+        res = make_app_request('/save-filters', method='POST', data={}, cookies={
+            acm.CSRF_COOKIE_NAME: common.get_csrf_token(),
+        })
+
+        assert res.status_code == 403
+        assert res.headers['content-type'] == 'text/html; charset=utf-8'
+
+        assert res.text == 'No CSRF token'
+
+    def test_create_invalid_field_name(self):
+        filters = self._get_filters()
+        req_data = self._create_update_data(filters)
+        req_data.update({
+            'op:new': 'and',
+            'tel:new': '487',
+            'device_id:new': 'Device Foo',
+            'text:new': 'Quux',
+            'action:new': 'mark',
+            'invalid_field': 'foo',
+        })
+
+        res = make_app_request('/save-filters', method='POST', data=req_data, cookies={
+            acm.CSRF_COOKIE_NAME: common.get_csrf_token(),
+        })
+
+        assert res.headers['content-type'] == 'application/json; charset=utf-8'
+        assert res.json().get('error') == 'Invalid field name: invalid_field'
+        assert res.status_code == 400
+
+    def test_create_invalid_op(self):
+        filters = self._get_filters()
+        req_data = self._create_update_data(filters)
+        req_data.update({
+            'op:new': 'xor',
+            'tel:new': '487',
+            'device_id:new': 'Device Foo',
+            'text:new': 'Quux',
+            'action:new': 'mark',
+        })
+
+        res = make_app_request('/save-filters', method='POST', data=req_data, cookies={
+            acm.CSRF_COOKIE_NAME: common.get_csrf_token(),
+        })
+
+        assert res.headers['content-type'] == 'application/json; charset=utf-8'
+        assert res.json().get('error', '').startswith('Invalid op: xor')
+        assert res.status_code == 400
+
+    def test_create_invalid_action(self):
+        filters = self._get_filters()
+        req_data = self._create_update_data(filters)
+        req_data.update({
+            'op:new': 'or',
+            'tel:new': '487',
+            'device_id:new': 'Device Foo',
+            'text:new': 'Quux',
+            'action:new': 'make',
+        })
+
+        res = make_app_request('/save-filters', method='POST', data=req_data, cookies={
+            acm.CSRF_COOKIE_NAME: common.get_csrf_token(),
+        })
+
+        assert res.headers['content-type'] == 'application/json; charset=utf-8'
+        assert res.json().get('error', '').startswith('Invalid action: make')
+        assert res.status_code == 400
+
+    def _get_filters(self):
+        filters = make_app_request('/export-filters').json()
+
+        assert len(filters) > 0
+
+        return filters
+
+    def _create_update_data(self, filters):
+        req_data = {acm.CSRF_FIELD_NAME: common.get_csrf_token()}
+        for filter_data in filters:
+            rec_id = filter_data['id']
+            for name, val in filter_data.items():
+                if name == 'id':
+                    continue
+
+                req_data[f'{name}:{rec_id}'] = val
+        return req_data
