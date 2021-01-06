@@ -1,5 +1,6 @@
 import json
 import os
+from io import StringIO
 
 import requests
 from auth487 import common as acm
@@ -14,7 +15,7 @@ with open(os.path.join(TEST_DATA_PATH, 'fixture.json')) as fp:
     FIXTURE = json.load(fp)
 
 
-def make_app_request(handler, method='GET', data=None, headers=None, cookies=None, set_token=True):
+def make_app_request(handler, method='GET', data=None, files=None, headers=None, cookies=None, set_token=True):
     if cookies is None:
         cookies = {}
 
@@ -24,7 +25,12 @@ def make_app_request(handler, method='GET', data=None, headers=None, cookies=Non
     if set_token:
         cookies[acm.AUTH_COOKIE_NAME] = auth_token
 
-    return requests.request(method, url, cookies=cookies, headers=headers, allow_redirects=False, data=data)
+    return requests.request(
+        method, url,
+        cookies=cookies, headers=headers,
+        allow_redirects=False,
+        data=data, files=files,
+    )
 
 
 class BaseTest:
@@ -556,4 +562,177 @@ class TestSaveFilters(BaseTest):
                     continue
 
                 req_data[f'{name}:{rec_id}'] = val
+
         return req_data
+
+
+class TestImportFilters(BaseTest):
+    def test_no_auth(self):
+        res = make_app_request('/import-filters', method='POST', set_token=False, cookies={
+            acm.CSRF_COOKIE_NAME: common.get_csrf_token(),
+        }, data={acm.CSRF_FIELD_NAME: common.get_csrf_token()})
+
+        assert res.status_code == 403
+        assert res.headers['content-type'] == 'application/json'
+
+        assert res.json().get('error') == 'Auth error'
+
+    def test_import(self):
+        filters0 = self._remove_filters()
+
+        upload = {
+            'filters_file': ('filters.json', self._create_filters_file(filters0), 'application/json')
+        }
+
+        res = make_app_request('/import-filters', method='POST', cookies={
+            acm.CSRF_COOKIE_NAME: common.get_csrf_token(),
+        }, data={acm.CSRF_FIELD_NAME: common.get_csrf_token()}, files=upload)
+
+        assert 'Redirecting...' in res.text
+        assert res.status_code == 302
+
+        filters = self._get_filters()
+        assert filters == filters0
+
+    def test_import_no_csrf(self):
+        filters0 = self._remove_filters()
+        upload = {
+            'filters_file': ('filters.json', self._create_filters_file(filters0), 'application/json')
+        }
+
+        res = make_app_request('/import-filters', method='POST', cookies={
+            acm.CSRF_COOKIE_NAME: common.get_csrf_token(),
+        }, files=upload)
+
+        assert res.status_code == 403
+        assert res.headers['content-type'] == 'text/html; charset=utf-8'
+
+        assert res.text == 'No CSRF token'
+
+    def test_import_no_file(self):
+        upload = {}
+
+        res = make_app_request('/import-filters', method='POST', cookies={
+            acm.CSRF_COOKIE_NAME: common.get_csrf_token(),
+        }, data={acm.CSRF_FIELD_NAME: common.get_csrf_token()}, files=upload)
+
+        assert res.status_code == 400
+        assert res.headers['content-type'] == 'application/json; charset=utf-8'
+
+        assert res.json().get('error') == 'No uploaded file'
+
+    def test_import_invalid_content_type(self):
+        filters0 = self._remove_filters()
+        upload = {
+            'filters_file': ('filters.json', self._create_filters_file(filters0), 'text/plain')
+        }
+
+        res = make_app_request('/import-filters', method='POST', cookies={
+            acm.CSRF_COOKIE_NAME: common.get_csrf_token(),
+        }, data={acm.CSRF_FIELD_NAME: common.get_csrf_token()}, files=upload)
+
+        assert res.status_code == 400
+        assert res.headers['content-type'] == 'application/json; charset=utf-8'
+
+        assert res.json().get('error') == 'Invalid content type: text/plain. Need JSON'
+
+    def test_import_invalid_corrupted_json(self):
+        filters0 = self._remove_filters()
+
+        json_string = json.dumps(filters0)
+        f = StringIO(json_string[:-10])
+
+        upload = {
+            'filters_file': ('filters.json', f, 'application/json')
+        }
+
+        res = make_app_request('/import-filters', method='POST', cookies={
+            acm.CSRF_COOKIE_NAME: common.get_csrf_token(),
+        }, data={acm.CSRF_FIELD_NAME: common.get_csrf_token()}, files=upload)
+
+        assert res.status_code == 400
+        assert res.headers['content-type'] == 'application/json; charset=utf-8'
+
+        assert res.json().get('error') == 'Invalid JSON: Unterminated string starting at: line 1 column 328 (char 327)'
+
+    def test_import_invalid_json_structure(self):
+        filters0 = {'foo': 'bar'}
+        upload = {
+            'filters_file': ('filters.json', self._create_filters_file(filters0), 'application/json')
+        }
+
+        res = make_app_request('/import-filters', method='POST', cookies={
+            acm.CSRF_COOKIE_NAME: common.get_csrf_token(),
+        }, data={acm.CSRF_FIELD_NAME: common.get_csrf_token()}, files=upload)
+
+        assert res.status_code == 400
+        assert res.headers['content-type'] == 'application/json; charset=utf-8'
+
+        assert res.json().get('error') == 'Filter data should be a list, got dict instead'
+
+    def test_import_invalid_id(self):
+        filters0 = self._remove_filters()
+        filters0[0]['id'] = 'invalid'
+
+        upload = {
+            'filters_file': ('filters.json', self._create_filters_file(filters0), 'application/json')
+        }
+
+        res = make_app_request('/import-filters', method='POST', cookies={
+            acm.CSRF_COOKIE_NAME: common.get_csrf_token(),
+        }, data={acm.CSRF_FIELD_NAME: common.get_csrf_token()}, files=upload)
+
+        assert res.status_code == 400
+        assert res.headers['content-type'] == 'application/json; charset=utf-8'
+
+        assert res.json().get('error') == 'Invalid filter ID: invalid. Should be in "id" field'
+
+    def test_import_invalid_op(self):
+        filters0 = self._remove_filters()
+        filters0[0]['op'] = 'xor'
+
+        upload = {
+            'filters_file': ('filters.json', self._create_filters_file(filters0), 'application/json')
+        }
+
+        res = make_app_request('/import-filters', method='POST', cookies={
+            acm.CSRF_COOKIE_NAME: common.get_csrf_token(),
+        }, data={acm.CSRF_FIELD_NAME: common.get_csrf_token()}, files=upload)
+
+        assert res.status_code == 400
+        assert res.headers['content-type'] == 'application/json; charset=utf-8'
+
+        assert res.json().get('error', '').startswith('Invalid op: xor')
+
+    def test_import_invalid_action(self):
+        filters0 = self._remove_filters()
+        filters0[0]['action'] = 'make'
+
+        upload = {
+            'filters_file': ('filters.json', self._create_filters_file(filters0), 'application/json')
+        }
+
+        res = make_app_request('/import-filters', method='POST', cookies={
+            acm.CSRF_COOKIE_NAME: common.get_csrf_token(),
+        }, data={acm.CSRF_FIELD_NAME: common.get_csrf_token()}, files=upload)
+
+        assert res.status_code == 400
+        assert res.headers['content-type'] == 'application/json; charset=utf-8'
+
+        assert res.json().get('error', '').startswith('Invalid action: make')
+
+    def _remove_filters(self):
+        filters0 = self._get_filters()
+        assert len(filters0) > 0
+
+        data_handler.get_mongo_db().get_collection('filters').drop()
+        filters = self._get_filters()
+        assert len(filters) == 0
+
+        return filters0
+
+    def _get_filters(self):
+        return make_app_request('/export-filters').json()
+
+    def _create_filters_file(self, content):
+        return StringIO(json.dumps(content, indent=2))

@@ -286,7 +286,7 @@ def save_filters(form_data):
 
 
 def import_filters(file_obj):
-    if not file_obj.filename:
+    if not file_obj or not file_obj.filename:
         raise FormDataError('No uploaded file')
 
     if file_obj.mimetype != 'application/json':
@@ -298,7 +298,8 @@ def import_filters(file_obj):
         raise FormDataError(f'Invalid JSON: {e}')
 
     if not isinstance(filter_data, list):
-        raise FormDataError('Filter data should be a list')
+        type_name = filter_data.__class__.__name__
+        raise FormDataError(f'Filter data should be a list, got {type_name} instead')
 
     login = get_login()
     queries = []

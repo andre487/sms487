@@ -153,7 +153,7 @@ def export_filters():
 
 @app.route('/import-filters', methods=['POST'])
 @ath.protected_from_brute_force
-@ath.require_auth(access=['sms'])
+@ath.require_auth(access=['sms'], no_redirect=True)
 def import_filters():
     try:
         data_handler.import_filters(request.files.get('filters_file'))
