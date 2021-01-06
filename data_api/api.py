@@ -114,9 +114,18 @@ def add_sms():
 @ath.protected_from_brute_force
 @ath.require_auth(access=['sms'])
 def show_filters():
+    filters = data_handler.get_filters()
     return create_html_response('show_filters.html', {
         'title': 'SMS 487 – Filters',
+        'filters': filters,
     })
+
+
+@app.route('/save-filters', methods=['POST'])
+@ath.protected_from_brute_force
+@ath.require_auth(access=['sms'])
+def save_filters():
+    return create_json_response(dict(request.form))
 
 
 @app.route('/sw.js')

@@ -181,6 +181,24 @@ def get_device_ids():
     return device_ids
 
 
+def get_filters():
+    login = get_login()
+    cursor = _get_filters_collection().find({'login': login}).sort('created', pymongo.DESCENDING)
+
+    result = []
+    for mongo_item in cursor:
+        res_item = {}
+        for name, val in mongo_item.items():
+            if name == '_id':
+                res_item['id'] = str(val)
+            else:
+                res_item[name] = val
+
+        result.append(res_item)
+
+    return result
+
+
 def _get_mongo_client():
     global _mongo_client
     if _mongo_client:
@@ -236,6 +254,18 @@ def _get_sms_collection():
         ('login', pymongo.ASCENDING),
         ('date_time', pymongo.DESCENDING),
         ('device_id', pymongo.ASCENDING),
+    ], background=True)
+
+    return collection
+
+
+def _get_filters_collection():
+    client = _get_mongo_client()
+    collection = client[MONGO_DB_NAME]['filters']
+
+    collection.create_index([
+        ('login', pymongo.ASCENDING),
+        ('created', pymongo.DESCENDING),
     ], background=True)
 
     return collection

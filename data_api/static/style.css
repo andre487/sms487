@@ -10,7 +10,6 @@
     font-size: 16px;
     color: #333;
     background: #fafafa;
-    overflow-y: scroll;
 }
 
 .header
@@ -53,6 +52,98 @@
     color: #f1f1f1;
 }
 
+.document-section
+{
+    margin: 20px;
+}
+
+.document-section__title
+{
+    font-size: 24px;
+    font-weight: normal;
+    margin: 0 0 15px 0;
+}
+
+.edit-list
+{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.edit-list__item
+{
+    display: flex;
+    flex-wrap: wrap;
+    white-space: nowrap;
+    align-items: baseline;
+}
+
+.edit-list__item + .edit-list__item
+{
+    margin-top: 10px;
+}
+
+.edit-list__item + .edit-list__item_delimiter
+{
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #ccc;
+}
+
+.edit-list__control
+{
+    margin: 5px 0;
+}
+
+.edit-list__control + .edit-list__control
+{
+    margin-left: 10px;
+}
+
+.edit-list__control_check
+{
+    display: flex;
+    align-items: center;
+}
+
+.edit-list__control_pseudo
+{
+    visibility: hidden;
+}
+
+.filters-list__remove, .filters-list__new-label
+{
+    box-sizing: border-box;
+    min-width: 72px;
+    max-width: 72px;
+    overflow: hidden;
+}
+
+.filters-list__new-label
+{
+    font-size: 16px;
+}
+
+.hidden-label
+{
+    display: inline-block;
+    width: 0;
+    height: 0;
+    line-height: 0;
+    overflow: hidden;
+}
+
+.checkbox-label
+{
+    font-size: 14px;
+}
+
+input + .checkbox-label
+{
+    margin-left: 5px;
+}
+
 .button
 {
     box-sizing: border-box;
@@ -70,6 +161,30 @@
 .button:focus
 {
     background: black;
+}
+
+.control
+{
+    color: #333;
+    background: white;
+    font-size: 15px;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+}
+
+.control_text
+{
+    min-width: 250px;
+}
+
+.control_text, .control_select
+{
+    padding: 5px;
+}
+
+.control_checkbox
+{
+    margin: 0;
 }
 
 .message-params
@@ -209,6 +324,8 @@
 {
     margin: 20px;
     font-size: 14px;
+    padding-top: 20px;
+    border-top: 1px solid #ccc;
 }
 
 .navigation__link
