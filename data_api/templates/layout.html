@@ -8,19 +8,32 @@
         <meta name="viewport" content="width=device-width,initial-scale=1">
     </head>
     <body class="page">
-        <div class="header">
+        <header class="header">
             <h1 class="header__app-name">SMS 487</h1>
 
             {% block header_content %}{% endblock %}
 
             <a target="_blank" rel="noopener" href="{{ auth_link }}" class="header__login">{{ login }}</a>
-        </div>
+        </header>
 
         <div class="offline-message offline">
             <div class="offline__content">Offline mode</div>
         </div>
 
         {% block main_content %}{% endblock %}
+
+        <nav class="navigation navigation_active_{{ request.endpoint }}">
+            <ul class="tabs">
+                <li class="tabs__item">
+                    <a href="{{ url_for('index') }}"
+                       class="navigation__link navigation__link_name_index">Messages</a>
+                </li>
+                <li class="tabs__item">
+                    <a href="{{ url_for('show_filters') }}"
+                       class="navigation__link navigation__link_name_show_filters">Filters</a>
+                </li>
+            </ul>
+        </nav>
 
         {% block scripts %}
             <script nonce="{{ nonce }}">

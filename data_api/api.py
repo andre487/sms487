@@ -68,7 +68,7 @@ def index():
     ]
 
     return create_html_response('index.html', {
-        'title': 'SMS 487 – Message list',
+        'title': 'SMS 487 – Messages',
         'messages': result, 'limit': limit,
         'device_id': device_id, 'device_ids': device_ids,
     })
@@ -106,6 +106,15 @@ def add_sms():
     except data_handler.FormDataError as e:
         logging.info('Client error: %s', e)
         return create_json_response({'error': str(e)}, status=400)
+
+
+@app.route('/filters')
+@ath.protected_from_brute_force
+@ath.require_auth(access=['sms'])
+def show_filters():
+    return create_html_response('show_filters.html', {
+        'title': 'SMS 487 – Filters',
+    })
 
 
 @app.route('/sw.js')
