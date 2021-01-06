@@ -11,12 +11,15 @@ def run(c, recreate_venv):
     logging.info('Using port %s', port)
 
     logging.info('Start Docker instance')
-    common.start_docker_instance(port, db_name=common.TEST_DB_NAME)
+    _, mongo_port = common.start_docker_instance(port, db_name=common.TEST_DB_NAME)
     time.sleep(2)
 
     test_proc = subprocess.Popen((common.PYTHON, '-m', 'pytest', '-s', 'http_test.py'), env={
         'APP_PORT': str(port),
         'AUTH_DEV_MODE': '1',
+        'AUTH_MONGO_DB_NAME': common.TEST_DB_NAME,
+        'MONGO_DB_NAME': common.TEST_DB_NAME,
+        'MONGO_PORT': mongo_port,
     }, cwd=common.PROJECT_DIR)
     test_proc.wait()
 

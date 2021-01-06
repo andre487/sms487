@@ -66,7 +66,7 @@ def start_dev_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
 
 def start_docker_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
     logging.info('Starting Docker app instance')
-    run_mongo(force_db_cleaning=force_db_cleaning, db_name=db_name)
+    mongo_port = run_mongo(force_db_cleaning=force_db_cleaning, db_name=db_name)
     mongo_cont_name = DOCKER_MONGO_NAME + '-' + db_name
 
     docker = get_docker()
@@ -93,6 +93,8 @@ def start_docker_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
 
     atexit.register(partial(remove_docker_container, cont_id))
     atexit.register(partial(get_docker_instance_logs, cont_id))
+
+    return cont_id, mongo_port
 
 
 def remove_docker_container(cont_id):
