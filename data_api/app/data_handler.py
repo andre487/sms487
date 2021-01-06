@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import pymongo
@@ -241,6 +242,9 @@ def save_filters(form_data):
         if rec_id == 'new':
             continue
 
+        if not ObjectId.is_valid(rec_id):
+            raise FormDataError(f'Invalid filter ID: {rec_id}')
+
         rec_filter = {'login': login, '_id': ObjectId(rec_id)}
 
         if rec_data.get('remove') == '1':
@@ -272,6 +276,44 @@ def save_filters(form_data):
         collection.insert_one(doc)
     except EmptyData:
         logging.info('No new filter')
+
+
+def import_filters(file_obj):
+    if not file_obj.filename:
+        raise FormDataError('No uploaded file')
+
+    if file_obj.mimetype != 'application/json':
+        raise FormDataError(f'Invalid content type: {file_obj.mimetype}. Need JSON')
+
+    try:
+        filter_data = json.load(file_obj.stream)
+    except ValueError as e:
+        raise FormDataError(f'Invalid JSON: {e}')
+
+    if not isinstance(filter_data, list):
+        raise FormDataError('Filter data should be a list')
+
+    login = get_login()
+    queries = []
+
+    for filter_item in filter_data:
+        rec_id = filter_item.get('id')
+        if not ObjectId.is_valid(rec_id):
+            raise FormDataError(f'Invalid filter ID: {rec_id}. Should be in "id" field')
+
+        try:
+            fields = get_filter_fields(filter_item)
+        except EmptyData:
+            continue
+
+        queries.append({
+            'filter': {'login': login, '_id': ObjectId(rec_id)},
+            'update': {'$set': fields},
+        })
+
+    collection = _get_filters_collection()
+    for query in queries:
+        collection.update_one(upsert=True, **query)
 
 
 def _get_mongo_client():

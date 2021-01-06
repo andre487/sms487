@@ -120,6 +120,12 @@
 .control-row
 {
     display: flex;
+    align-items: baseline;
+}
+
+.control-row__item + .control-row__item
+{
+    margin-left: 10px;
 }
 
 .filters-list__remove, .filters-list__new-label
@@ -167,6 +173,8 @@ input + .checkbox-label
 
     padding: 10px 15px;
     border-radius: 4px;
+
+    cursor: pointer;
 }
 
 .button:focus, .button:hover, .button:active
@@ -196,6 +204,25 @@ input + .checkbox-label
 .control_checkbox
 {
     margin: 0;
+}
+
+.file-input__input
+{
+    width: 0;
+    height: 0;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
+
+/*noinspection CssOverwrittenProperties*/
+.file-input__input:focus + .file-input__label-button
+{
+    background: black;
+
+    outline: 1px dotted #000;
+    outline: -webkit-focus-ring-color auto 5px;
 }
 
 .message-params

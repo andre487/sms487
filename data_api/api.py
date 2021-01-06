@@ -21,6 +21,7 @@ PROJECT_DIR = os.path.dirname(__file__)
 SW_JS = get_sw_content()
 
 app = flask.Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024
 
 # noinspection SpellCheckingInspection
 LOG_FORMAT = '%(asctime)s %(levelname)s\t%(message)s\t%(pathname)s:%(lineno)d %(funcName)s %(process)d %(threadName)s'
@@ -141,6 +142,18 @@ def export_filters():
     return create_json_response(filters, headers={
         'Content-Disposition': 'attachment; filename="sms487-filter-export.json"'
     }, pretty=True)
+
+
+@app.route('/import-filters', methods=['POST'])
+@ath.protected_from_brute_force
+@ath.require_auth(access=['sms'])
+def import_filters():
+    try:
+        data_handler.import_filters(request.files.get('filters_file'))
+        return flask.redirect(flask.url_for('show_filters'))
+    except data_handler.FormDataError as e:
+        logging.info('Client error: %s', e)
+        return create_json_response({'error': str(e)}, status=400)
 
 
 @app.route('/sw.js')
