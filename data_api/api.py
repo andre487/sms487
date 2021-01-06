@@ -125,7 +125,12 @@ def show_filters():
 @ath.protected_from_brute_force
 @ath.require_auth(access=['sms'])
 def save_filters():
-    return create_json_response(dict(request.form))
+    try:
+        data_handler.save_filters(request.form)
+        return flask.redirect(flask.url_for('show_filters'))
+    except data_handler.FormDataError as e:
+        logging.info('Client error: %s', e)
+        return create_json_response({'error': str(e)}, status=400)
 
 
 @app.route('/sw.js')

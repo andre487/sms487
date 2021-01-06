@@ -1,10 +1,14 @@
 import logging
 import os
+import pymongo
 import re
 import ssl
-import pymongo
+import time
 from datetime import datetime, timedelta
 from auth487 import flask as ath, common as acm
+from bson import ObjectId
+
+from collections import defaultdict
 
 
 def get_env_param(name, def_val=None, try_file=False):
@@ -40,6 +44,10 @@ _mongo_client = None
 
 
 class FormDataError(Exception):
+    pass
+
+
+class EmptyData(Exception):
     pass
 
 
@@ -197,6 +205,77 @@ def get_filters():
         result.append(res_item)
 
     return result
+
+
+def save_filters(form_data):
+    data = defaultdict(dict)
+    for name, value in form_data.items():
+        name_data = name.split(':')
+        if len(name_data) != 2:
+            raise FormDataError(f'Invalid field name: {name}')
+
+        field, rec_id = name_data
+        data[rec_id][field] = value
+
+    login = get_login()
+
+    delete_queries = []
+    update_queries = []
+
+    for rec_id, rec_data in data.items():
+        if rec_id == 'new':
+            continue
+
+        rec_filter = {'login': login, '_id': ObjectId(rec_id)}
+
+        if rec_data.get('remove') == '1':
+            delete_queries.append({'filter': rec_filter})
+            continue
+
+        try:
+            fields = get_filter_fields(rec_data)
+        except EmptyData:
+            delete_queries.append({'filter': rec_filter})
+            continue
+
+        update_queries.append({
+            'filter': rec_filter,
+            'update': {'$set': fields},
+        })
+
+    collection = _get_filters_collection()
+
+    for query in delete_queries:
+        collection.delete_one(**query)
+
+    for query in update_queries:
+        collection.update_one(**query)
+
+    try:
+        new_data = get_filter_fields(data.get('new', {}))
+        doc = dict(new_data, login=login, created=time.time())
+        collection.insert_one(doc)
+    except EmptyData:
+        logging.info('No new filter')
+
+
+def get_filter_fields(filter_record, validate=True):
+    fields = {}
+    for name in ('op', 'tel', 'device_id', 'text', 'action'):
+        val = filter_record.get(name, '').strip()
+        fields[name] = val
+
+    if validate:
+        if fields['op'] not in {'or', 'and'}:
+            raise FormDataError(f'Invalid op: {fields["op"]}')
+
+        if fields['action'] not in {'mark', 'hide'}:
+            raise FormDataError(f'Invalid action: {fields["action"]}')
+
+        if not fields['tel'] and not fields['device_id'] and not fields['text']:
+            raise EmptyData('All text fields are empty')
+
+    return fields
 
 
 def _get_mongo_client():
