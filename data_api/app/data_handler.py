@@ -233,7 +233,10 @@ def get_filter_mongo_query():
         operand = '$and' if data.get('op') == 'and' else '$or'
         result.append({operand: item})
 
-    return {'$nor': [{'$or': result}]}
+    if result:
+        return {'$nor': [{'$or': result}]}
+
+    return {}
 
 
 def get_filter_fields(filter_record, validate=True):
