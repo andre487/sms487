@@ -118,7 +118,7 @@ def sw_js():
     return flask.Response(
         headers={
             'Content-Type': 'application/javascript; charset=utf-8',
-            'Cache-Control': 'private, max-age=86400, must-revalidate, no-transform',
+            'Cache-Control': 'private, max-age=0, no-transform',
         },
         response=content,
     )
@@ -136,7 +136,7 @@ def web_manifest():
     return flask.Response(
         headers={
             'Content-Type': 'application/json; charset=utf-8',
-            'Cache-Control': 'private, max-age=600, must-revalidate, no-transform',
+            'Cache-Control': 'private, max-age=600, no-transform',
         },
         response=flask.render_template('manifest.json', **data),
     )
