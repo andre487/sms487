@@ -9,7 +9,9 @@
     </head>
     <body class="page">
         <header class="header">
-            <h1 class="header__app-name">SMS 487</h1>
+            <a href="{{ url_for('index') }}" class="header__index-link">
+                <h1 class="header__app-name">SMS 487</h1>
+            </a>
 
             {% block header_content %}{% endblock %}
 
