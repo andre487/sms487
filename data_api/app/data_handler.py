@@ -226,6 +226,9 @@ def get_filter_fields(filter_record, validate=True):
 def save_filters(form_data):
     data = defaultdict(dict)
     for name, value in form_data.items():
+        if name == acm.CSRF_FIELD_NAME:
+            continue
+
         name_data = name.split(':')
         if len(name_data) != 2:
             raise FormDataError(f'Invalid field name: {name}')

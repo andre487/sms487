@@ -42,6 +42,13 @@ ADDITIONAL_HEADERS = {
 }
 
 
+@app.before_request
+def before_request():
+    ath.check_csrf_token(app, api_urls=(
+        flask.url_for('add_sms'),
+    ))
+
+
 @app.route('/')
 @ath.protected_from_brute_force
 @ath.require_auth(access=['sms'])
@@ -248,17 +255,18 @@ def create_html_response(template_name, data, status=200, headers=None):
     if headers is None:
         headers = {}
 
-    nonce = secrets.token_hex(4)
+    resp = flask.Response(status=status)
 
+    nonce = secrets.token_hex(4)
     app.jinja_env.globals.update(
         nonce=nonce,
         auth_link=acm.AUTH_DOMAIN,
         login=data_handler.get_login(),
+        csrf_field_name=acm.CSRF_FIELD_NAME,
+        csrf_token=ath.set_csrf_token(app, resp=resp),
     )
 
-    html = flask.render_template(template_name, **data)
-
-    resp = flask.make_response(html, status)
+    resp.response = flask.render_template(template_name, **data)
     resp.headers['content-type'] = 'text/html; charset=utf-8'
 
     for name, val in headers.items():

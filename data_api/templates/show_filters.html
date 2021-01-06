@@ -6,6 +6,7 @@
             <h2 class="document-section__title">Filter management</h2>
         </header>
         <form action="{{ url_for('save_filters') }}" method="POST">
+            <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
             <ul class="edit-list filters-list">
                 {% for item in filters %}
                     <li class="edit-list__item">
@@ -144,6 +145,7 @@
                            name="filters_file"
                            accept="application/json">
                     <label class="file-input__label-button button" for="import-json-file">Import</label>
+                    <input type="hidden" name="{{ csrf_field_name }}" value="{{ csrf_token }}">
                 </form>
             </div>
         </div>
