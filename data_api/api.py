@@ -47,6 +47,7 @@ ADDITIONAL_HEADERS = {
 def index():
     device_id = request.args.get('device-id', '').strip()
     limit = request.args.get('limit', '5')
+    refresh = request.args.get('refresh')
 
     if device_id == 'All':
         device_id = None
@@ -71,6 +72,7 @@ def index():
         'title': 'SMS 487 – Messages',
         'messages': result, 'limit': limit,
         'device_id': device_id, 'device_ids': device_ids,
+        'refresh': refresh,
     })
 
 

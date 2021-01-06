@@ -1,10 +1,15 @@
-document.addEventListener('visibilitychange', function() {
-    if (document.visibilityState != 'visible') {
-        return;
-    }
+(function() {
+    setupAutoRefresh();
 
-    var url = location.toString();
-    if (url.indexOf('no-reload=1') == -1) {
-        location.assign(url);
+    function setupAutoRefresh() {
+        if (location.toString().indexOf('refresh=1') == -1) {
+            return;
+        }
+
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState == 'visible') {
+                location.assign(location.toString());
+            }
+        });
     }
-});
+})();

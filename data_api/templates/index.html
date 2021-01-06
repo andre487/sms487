@@ -8,7 +8,7 @@
                 id="message-params__device-id"
                 class="message-params__item message-params__item_device-id">
             {% for device_id_data in device_ids %}
-                <option value="{{ device_id_data[0] }}" {% if device_id_data[1] %}selected{%endif%}>
+                <option value="{{ device_id_data[0] }}" {% if device_id_data[1] %}selected{% endif %}>
                     {{ device_id_data[0] }}
                 </option>
             {% endfor %}
@@ -20,6 +20,10 @@
                id="message-params__limit"
                class="message-params__item message-params__item_limit"
                value="{{ limit }}">
+
+        {% if refresh %}
+            <input type="hidden" name="refresh" value="{{ refresh }}">
+        {% endif %}
 
         <button type="submit"
                 class="button message-params__item message-params__item_submit">Setup
