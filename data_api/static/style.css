@@ -57,6 +57,11 @@
     margin: 20px;
 }
 
+.document-section + .document-section
+{
+    margin-top: 35px;
+}
+
 .document-section__title
 {
     font-size: 24px;
@@ -112,6 +117,11 @@
     visibility: hidden;
 }
 
+.control-row
+{
+    display: flex;
+}
+
 .filters-list__remove, .filters-list__new-label
 {
     box-sizing: border-box;
@@ -153,12 +163,13 @@ input + .checkbox-label
     border: none;
 
     font-size: 16px;
+    text-decoration: none;
 
     padding: 10px 15px;
     border-radius: 4px;
 }
 
-.button:focus
+.button:focus, .button:hover, .button:active
 {
     background: black;
 }

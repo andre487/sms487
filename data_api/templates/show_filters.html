@@ -3,7 +3,7 @@
 {% block main_content %}
     <section class="document-section">
         <header class="document-section__header">
-            <h2 class="document-section__title">Filters</h2>
+            <h2 class="document-section__title">Filter management</h2>
         </header>
         <form action="{{ url_for('save_filters') }}" method="POST">
             <ul class="edit-list filters-list">
@@ -119,5 +119,17 @@
                 </li>
             </ul>
         </form>
+    </section>
+
+    <section class="document-section">
+        <header class="document-section__header">
+            <h2 class="document-section__title">Filter export / import</h2>
+        </header>
+
+        <div class="control-row">
+            <div class="control-row__item">
+                <a href="{{ url_for('export_filters') }}" class="button">Export</a>
+            </div>
+        </div>
     </section>
 {% endblock %}

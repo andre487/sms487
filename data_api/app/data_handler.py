@@ -195,16 +195,31 @@ def get_filters():
 
     result = []
     for mongo_item in cursor:
-        res_item = {}
-        for name, val in mongo_item.items():
-            if name == '_id':
-                res_item['id'] = str(val)
-            else:
-                res_item[name] = val
-
-        result.append(res_item)
+        result.append(dict(
+            get_filter_fields(mongo_item, validate=False),
+            id=str(mongo_item['_id']),
+        ))
 
     return result
+
+
+def get_filter_fields(filter_record, validate=True):
+    fields = {}
+    for name in ('op', 'tel', 'device_id', 'text', 'action'):
+        val = filter_record.get(name, '').strip()
+        fields[name] = str(val or '')
+
+    if validate:
+        if fields['op'] not in {'or', 'and'}:
+            raise FormDataError(f'Invalid op: {fields["op"]}')
+
+        if fields['action'] not in {'mark', 'hide'}:
+            raise FormDataError(f'Invalid action: {fields["action"]}')
+
+        if not fields['tel'] and not fields['device_id'] and not fields['text']:
+            raise EmptyData('All text fields are empty')
+
+    return fields
 
 
 def save_filters(form_data):
@@ -257,25 +272,6 @@ def save_filters(form_data):
         collection.insert_one(doc)
     except EmptyData:
         logging.info('No new filter')
-
-
-def get_filter_fields(filter_record, validate=True):
-    fields = {}
-    for name in ('op', 'tel', 'device_id', 'text', 'action'):
-        val = filter_record.get(name, '').strip()
-        fields[name] = val
-
-    if validate:
-        if fields['op'] not in {'or', 'and'}:
-            raise FormDataError(f'Invalid op: {fields["op"]}')
-
-        if fields['action'] not in {'mark', 'hide'}:
-            raise FormDataError(f'Invalid action: {fields["action"]}')
-
-        if not fields['tel'] and not fields['device_id'] and not fields['text']:
-            raise EmptyData('All text fields are empty')
-
-    return fields
 
 
 def _get_mongo_client():

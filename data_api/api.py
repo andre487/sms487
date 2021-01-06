@@ -133,6 +133,16 @@ def save_filters():
         return create_json_response({'error': str(e)}, status=400)
 
 
+@app.route('/export-filters')
+@ath.protected_from_brute_force
+@ath.require_auth(access=['sms'])
+def export_filters():
+    filters = data_handler.get_filters()
+    return create_json_response(filters, headers={
+        'Content-Disposition': 'attachment; filename="sms487-filter-export.json"'
+    }, pretty=True)
+
+
 @app.route('/sw.js')
 def sw_js():
     content = SW_JS
@@ -205,11 +215,15 @@ def error_405(*args):
     return create_json_response({'error': 'Method is not allowed'}, status=405)
 
 
-def create_json_response(data, status=200, headers=None):
+def create_json_response(data, status=200, headers=None, pretty=False):
     if headers is None:
         headers = {}
 
-    resp = flask.make_response(json.dumps(data, ensure_ascii=False), status)
+    dump_options = {'ensure_ascii': False}
+    if pretty:
+        dump_options['indent'] = 2
+
+    resp = flask.make_response(json.dumps(data, **dump_options), status)
     resp.headers['content-type'] = 'application/json; charset=utf-8'
     for name, val in headers.items():
         resp.headers[name] = val
