@@ -1,11 +1,9 @@
-import secrets
-
 import flask
 import json
 import logging
 import os
+import secrets
 import sys
-
 from app import data_handler, templating
 from auth487 import flask as ath, common as acm
 from flask import request
@@ -48,7 +46,7 @@ ADDITIONAL_HEADERS = {
 @ath.require_auth(access=['sms'])
 def index():
     device_id = request.args.get('device-id', '').strip()
-    limit = request.args.get('limit', '30')
+    limit = request.args.get('limit', '5')
 
     if device_id == 'All':
         device_id = None
@@ -198,7 +196,7 @@ def create_html_response(template_name, data, status=200, headers=None):
     if headers is None:
         headers = {}
 
-    nonce = secrets.token_hex(2)
+    nonce = secrets.token_hex(4)
 
     app.jinja_env.globals.update(
         nonce=nonce,
