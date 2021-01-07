@@ -49,8 +49,10 @@ public class AppSettingStorage {
         return item;
     }
 
+    @SuppressWarnings("NotNullFieldNotInitialized")
     @Entity
     public static class SettingsItem {
+        @NonNull
         @PrimaryKey
         public String name;
 

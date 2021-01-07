@@ -77,7 +77,7 @@
             android:fontFamily="sans-serif"
             android:hint="@string/messages_label"
             android:scrollbars="vertical"
-            android:background="@drawable/text_view_border" />
+            android:background="@drawable/ic_text_view_border" />
 
         <TextView
             android:id="@+id/logsField"
@@ -89,6 +89,6 @@
             android:fontFamily="monospace"
             android:hint="@string/logs_label"
             android:scrollbars="vertical"
-            android:background="@drawable/text_view_border" />
+            android:background="@drawable/ic_text_view_border" />
     </LinearLayout>
 </LinearLayout>
