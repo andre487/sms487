@@ -13,17 +13,18 @@ import android.service.notification.StatusBarNotification;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.app.NotificationCompat;
 
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.network.ServerApi;
+import life.andre.sms487.system.AppConstants;
 import life.andre.sms487.system.AppSettings;
 import life.andre.sms487.utils.AsyncTaskUtil;
 import life.andre.sms487.utils.DateUtil;
 
 public class NotificationListener extends NotificationListenerService {
     public static final String TAG = NotificationListener.class.getSimpleName();
+    public static final String CHANNEL_ID = "NotificationListener::ServiceMessage";
 
     protected AppSettings appSettings;
     protected ServerApi serverApi;
@@ -101,9 +102,8 @@ public class NotificationListener extends NotificationListenerService {
     }
 
     private void createServiceMessage() {
-        String channelId = "NotificationListener::ServiceMessage";
         NotificationChannel channel = new NotificationChannel(
-                channelId, "SMS487 Notification Listener",
+                CHANNEL_ID, "SMS 487 Notification Listener",
                 NotificationManager.IMPORTANCE_DEFAULT
         );
 
@@ -114,12 +114,12 @@ public class NotificationListener extends NotificationListenerService {
         }
         manager.createNotificationChannel(channel);
 
-        Notification notification = new NotificationCompat.Builder(this, channelId)
-                .setContentTitle("")
-                .setContentText("")
+        Notification notification = new Notification.Builder(this, CHANNEL_ID)
+                .setContentTitle("SMS 487")
+                .setContentText("Service is running for listening notifications")
                 .build();
 
-        startForeground(1, notification);
+        startForeground(AppConstants.DEFAULT_ID, notification);
     }
 
     static class SendNotificationParams {

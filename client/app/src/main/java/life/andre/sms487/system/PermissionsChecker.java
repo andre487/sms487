@@ -4,8 +4,8 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.provider.Settings;
 
-import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
@@ -49,12 +49,13 @@ public class PermissionsChecker {
         int permCount = requiredPermissions.size();
         if (permCount > 0) {
             String[] permissions = requiredPermissions.toArray(new String[permCount]);
-            activity.requestPermissions(permissions, AppConstants.PERMISSIONS_REQUEST_ID);
+            activity.requestPermissions(permissions, AppConstants.DEFAULT_ID);
         }
 
-        boolean hasNotificationPermission = NotificationManagerCompat
-                .getEnabledListenerPackages(activity)
-                .contains(activity.getPackageName());
+        boolean hasNotificationPermission = Settings.Secure.getString(
+                activity.getContentResolver(),
+                "enabled_notification_listeners"
+        ).contains(activity.getPackageName());
 
         if (!hasNotificationPermission) {
             Intent intent = new Intent(AppConstants.NOTIFICATION_SETTING_ACTIVITY);
