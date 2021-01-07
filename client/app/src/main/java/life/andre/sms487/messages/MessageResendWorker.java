@@ -19,7 +19,7 @@ import life.andre.sms487.network.ServerApi;
 import life.andre.sms487.system.AppSettings;
 
 public class MessageResendWorker extends Worker {
-    public static final String TAG = MessageResendWorker.class.getSimpleName();
+    public static final String TAG = "MessageResendWorker";
 
     @NonNull
     private final ServerApi serverApi;

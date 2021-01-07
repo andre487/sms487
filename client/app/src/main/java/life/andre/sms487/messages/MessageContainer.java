@@ -9,7 +9,7 @@ import org.json.JSONObject;
 import life.andre.sms487.logging.Logger;
 
 public class MessageContainer {
-    public static final String TAG = MessageContainer.class.getSimpleName();
+    public static final String TAG = "MessageContainer";
 
     private final String messageType;
     private final String addressFrom;

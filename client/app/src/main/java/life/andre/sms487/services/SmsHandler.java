@@ -19,7 +19,7 @@ import life.andre.sms487.system.AppSettings;
 import life.andre.sms487.utils.AsyncTaskUtil;
 
 public class SmsHandler extends Service {
-    public static final String TAG = SmsHandler.class.getSimpleName();
+    public static final String TAG = "SmsHandler";
 
     protected AppSettings appSettings;
     protected ServerApi serverApi;

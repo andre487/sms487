@@ -23,7 +23,7 @@ import life.andre.sms487.utils.AsyncTaskUtil;
 import life.andre.sms487.utils.DateUtil;
 
 public class NotificationListener extends NotificationListenerService {
-    public static final String TAG = NotificationListener.class.getSimpleName();
+    public static final String TAG = "NotificationListener";
     public static final String CHANNEL_ID = "NotificationListener::ServiceMessage";
 
     protected AppSettings appSettings;

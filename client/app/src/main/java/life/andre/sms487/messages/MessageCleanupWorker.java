@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 import life.andre.sms487.logging.Logger;
 
 public class MessageCleanupWorker extends Worker {
-    public static final String TAG = MessageCleanupWorker.class.getSimpleName();
+    public static final String TAG = "MessageCleanupWorker";
 
     @NonNull
     private final MessageStorage messageStorage;

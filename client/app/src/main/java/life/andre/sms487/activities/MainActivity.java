@@ -32,7 +32,7 @@ import life.andre.sms487.system.PermissionsChecker;
 import life.andre.sms487.utils.AsyncTaskUtil;
 
 public class MainActivity extends Activity {
-    private final static String TAG = MainActivity.class.getSimpleName();
+    private final static String TAG = "MainActivity";
 
     private final PermissionsChecker permissionsChecker = new PermissionsChecker(this);
     private final Handler logUpdateHandler = new Handler();

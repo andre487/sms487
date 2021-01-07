@@ -27,7 +27,7 @@ import life.andre.sms487.system.AppSettings;
 import life.andre.sms487.utils.AsyncTaskUtil;
 
 public class ServerApi {
-    public static final String TAG = ServerApi.class.getSimpleName();
+    public static final String TAG = "ServerApi";
     public static final String MESSAGE_TYPE_SMS = "sms";
     public static final String MESSAGE_TYPE_NOTIFICATION = "notification";
 

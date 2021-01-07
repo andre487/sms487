@@ -18,7 +18,7 @@ import life.andre.sms487.utils.AsyncTaskUtil;
 
 
 public class AppSettings {
-    public static final String TAG = AppSettings.class.getSimpleName();
+    public static final String TAG = "AppSettings";
     public static final String SERVER_URL = "server_url";
     public static final String SERVER_KEY = "server_key";
     public static final String NEED_SEND_SMS = "need_send_sms";

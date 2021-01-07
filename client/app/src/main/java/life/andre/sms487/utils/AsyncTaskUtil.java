@@ -6,7 +6,7 @@ import androidx.annotation.Nullable;
 import life.andre.sms487.logging.Logger;
 
 public class AsyncTaskUtil {
-    public static final String TAG = AsyncTaskUtil.class.getSimpleName();
+    public static final String TAG = "AsyncTaskUtil";
 
     @Nullable
     public static <T> T getParams(@NonNull T[] params, @NonNull String logTag) {

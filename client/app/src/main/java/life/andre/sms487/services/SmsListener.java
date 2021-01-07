@@ -20,7 +20,7 @@ import life.andre.sms487.system.AppConstants;
 import life.andre.sms487.utils.AsyncTaskUtil;
 
 public class SmsListener extends BroadcastReceiver {
-    public static final String TAG = SmsListener.class.getSimpleName();
+    public static final String TAG = "SmsListener";
 
     @Override
     public void onReceive(Context context, Intent intent) {
