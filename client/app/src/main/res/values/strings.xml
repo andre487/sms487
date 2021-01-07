@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Sms487</string>
+    <string name="app_name">SMS 487</string>
     <string name="server_placeholder">Server URL</string>
     <string name="server_key">Server key</string>
     <string name="save_label">Save</string>
