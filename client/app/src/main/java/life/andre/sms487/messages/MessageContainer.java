@@ -89,7 +89,7 @@ public class MessageContainer {
 
             return obj.toString();
         } catch (JSONException e) {
-            Logger.w("MessageContainer", e.toString());
+            Logger.w(TAG, e.toString());
             e.printStackTrace();
         }
 

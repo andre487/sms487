@@ -72,7 +72,13 @@ public class ServerApi {
         String text = msg.getBody();
 
         String logText = text != null ? text.replace('\n', ' ') : "null";
-        String logLine = "Sending message: " + messageType + ", " + dateTime + ", " + ", " + postDateTime + ", " + tel + ", " + logText;
+
+        int maxLogTextSize = 32;
+        if (logText.length() > maxLogTextSize) {
+            logText = logText.substring(0, maxLogTextSize) + "…";
+        }
+
+        String logLine = "Sending " + messageType + ": " + logText;
         Logger.i(TAG, logLine);
 
         addRequest(messageType, dateTime, postDateTime, tel, text, dbId);
@@ -270,7 +276,6 @@ public class ServerApi {
 
             List<MessageContainer> messages = mainParams.messageStorage.getNotSentMessages();
             if (messages.size() == 0) {
-                Logger.i(TAG, "Resend: no messages to resend");
                 return null;
             }
 

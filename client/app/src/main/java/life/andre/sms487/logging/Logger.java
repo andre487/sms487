@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Logger {
-    public static final int MAX_SIZE = 128;
+    public static final int MAX_SIZE = 64;
 
     private static final ArrayList<String> messages = new ArrayList<>();
 

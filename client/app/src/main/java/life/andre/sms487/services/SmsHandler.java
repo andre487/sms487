@@ -96,8 +96,6 @@ public class SmsHandler extends Service {
             List<MessageContainer> data = new ArrayList<>();
 
             for (String messageJson : intentData) {
-                Logger.d(TAG, "Got message: " + messageJson);
-
                 MessageContainer message = MessageContainer.createFromJson(messageJson);
                 if (message != null) {
                     data.add(message);

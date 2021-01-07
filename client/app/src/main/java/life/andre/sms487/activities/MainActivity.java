@@ -261,15 +261,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void enableLogAutoRenew() {
-        if (!logUpdateHandler.hasCallbacks(logUpdater)) {
-            logUpdateHandler.post(logUpdater);
-        }
+        logUpdateHandler.post(logUpdater);
     }
 
     private void disableLogAutoRenew() {
-        if (logUpdateHandler.hasCallbacks(logUpdater)) {
-            logUpdateHandler.removeCallbacks(logUpdater);
-        }
+        logUpdateHandler.removeCallbacks(logUpdater);
     }
 
     static class SmsRequestListener implements ServerApi.RequestHandledListener {
