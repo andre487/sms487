@@ -31,8 +31,6 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'android.arch.work:work-runtime-ktx:1.0.1'
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'androidx.room:room-runtime:2.2.6'
     implementation 'com.android.volley:volley:1.1.0'
     implementation 'cat.ereza:customactivityoncrash:2.2.0'
