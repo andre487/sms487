@@ -69,25 +69,28 @@ def get_sms(device_id, limit=None, apply_filters=True):
     if apply_filters:
         query.update(get_filters_match_query())
 
-    aggregation = [{'$match': query}]
+    aggregation = [
+        {'$match': query},
+        {'$sort': {'date_time': pymongo.DESCENDING, 'device_id': pymongo.ASCENDING}},
+        {'$limit': limit * 10},
+        {'$group': {
+            '_id': {'device_id': '$device_id', 'tel': '$tel', 'text_prefix': {'$substr': ['$text', 0, 140]}},
+            'message_type': {'$last': 'message_type'},
+            'device_id': {'$last': '$device_id'},
+            'tel': {'$last': '$tel'},
+            'date_time': {'$last': '$date_time'},
+            'sms_date_time': {'$last': '$sms_date_time'},
+            'text': {'$last': '$text'},
+        }},
+        {'$limit': limit},
+    ]
+
     if apply_filters:
         aggregation.extend(get_filters_mongo_aggregations())
 
-    aggregation.extend((
-        {'$sort': {'date_time': pymongo.DESCENDING, 'device_id': pymongo.ASCENDING}},
-        {'$limit': limit * 5},
-    ))
-
     cursor = _get_sms_collection().aggregate(aggregation)
 
-    result = []
-    for idx, doc in enumerate(deduplicate_messages(cursor)):
-        if idx == limit:
-            break
-
-        result.append(dress_sms_doc(doc))
-
-    return result
+    return [dress_sms_doc(doc) for doc in cursor]
 
 
 def add_sms(data):
@@ -139,18 +142,6 @@ def add_sms(data):
         'sms_date_time': sms_date_time,
         'text': text,
     })
-
-
-def deduplicate_messages(cursor):
-    param_set = set()
-
-    for message in cursor:
-        params_key = tuple((k, message[k]) for k in ('device_id', 'tel', 'text'))
-        if params_key in param_set:
-            continue
-
-        param_set.add(params_key)
-        yield message
 
 
 def dress_sms_doc(doc):

@@ -4,9 +4,9 @@ from invoke import task
 
 
 @task
-def run_dev(c, port=8080, recreate_venv=False):
+def run_dev(c, port=8080, recreate_venv=False, clear_db=False):
     """Run Flask dev server"""
-    cli_tasks.run_dev.run(c, port, recreate_venv)
+    cli_tasks.run_dev.run(c, port, recreate_venv, clear_db)
 
 
 @task

@@ -2,6 +2,7 @@
   "sms_items": [
     {
       "date_time": "2018-01-01 00:00:00 +0000",
+      "sms_date_time": "2018-01-01 00:00:00 +0000",
       "tel": "000",
       "device_id": "Test_1",
       "text": "Foo https://yandex.ru",
@@ -9,6 +10,7 @@
     },
     {
       "date_time": "2018-01-01 00:00:00 +0000",
+      "sms_date_time": "2018-01-01 00:00:00 +0000",
       "tel": "000",
       "device_id": "Test_1",
       "text": "Foo https://yandex.ru",
@@ -25,6 +27,7 @@
     },
     {
       "date_time": "2018-01-01 00:00:00 +0000",
+      "sms_date_time": "2018-01-01 00:00:00 +0000",
       "tel": "222",
       "device_id": "Test_4",
       "text": "Special marked text",
@@ -41,20 +44,20 @@
     },
     {
       "date_time": "2018-01-01 00:01:00 +0000",
+      "sms_date_time": "2017-12-31 23:59:59 +0000",
       "tel": "000",
       "device_id": "Test_2",
       "text": "https://yandex.ru Bar https://google.ru <script>alert(1)</script>",
       "message_type": "notification",
-      "sms_date_time": "2017-12-31 23:59:59 +0000",
       "login": "test"
     },
     {
       "date_time": "2018-01-01 00:01:00 +0000",
+      "sms_date_time": "2017-12-31 23:59:59 +0000",
       "tel": "000",
       "device_id": "Test_2",
       "text": "https://yandex.ru Bar https://google.ru <script>alert(1)</script>",
       "message_type": "notification",
-      "sms_date_time": "2017-12-31 23:59:59 +0000",
       "login": "test"
     },
     {
