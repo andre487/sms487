@@ -6,8 +6,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.provider.Settings;
 
-import androidx.core.content.ContextCompat;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,48 +17,35 @@ public class PermissionsChecker {
     }
 
     public void checkPermissions() {
-        List<String> requiredPermissions = new ArrayList<>();
+        String[] required = {
+                Manifest.permission.RECEIVE_SMS,
+                Manifest.permission.INTERNET,
+                Manifest.permission.ACCESS_NETWORK_STATE,
+                Manifest.permission.RECEIVE_BOOT_COMPLETED,
+                Manifest.permission.FOREGROUND_SERVICE,
+        };
 
-        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.RECEIVE_SMS)
-                != PackageManager.PERMISSION_GRANTED) {
-            requiredPermissions.add(Manifest.permission.RECEIVE_SMS);
+        List<String> absent = new ArrayList<>();
+
+        for (String permission : required) {
+            if (activity.checkSelfPermission(permission) != PackageManager.PERMISSION_GRANTED) {
+                absent.add(permission);
+            }
         }
 
-        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.INTERNET)
-                != PackageManager.PERMISSION_GRANTED) {
-            requiredPermissions.add(Manifest.permission.INTERNET);
-        }
-
-        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_NETWORK_STATE)
-                != PackageManager.PERMISSION_GRANTED) {
-            requiredPermissions.add(Manifest.permission.ACCESS_NETWORK_STATE);
-        }
-
-        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.RECEIVE_BOOT_COMPLETED)
-                != PackageManager.PERMISSION_GRANTED) {
-            requiredPermissions.add(Manifest.permission.RECEIVE_BOOT_COMPLETED);
-        }
-
-        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.FOREGROUND_SERVICE)
-                != PackageManager.PERMISSION_GRANTED) {
-            requiredPermissions.add(Manifest.permission.FOREGROUND_SERVICE);
-        }
-
-        int permCount = requiredPermissions.size();
-        if (permCount > 0) {
-            String[] permissions = requiredPermissions.toArray(new String[permCount]);
+        int count = absent.size();
+        if (count > 0) {
+            String[] permissions = absent.toArray(new String[count]);
             activity.requestPermissions(permissions, AppConstants.DEFAULT_ID);
         }
 
-        boolean hasNotificationPermission = Settings.Secure.getString(
+        String notificationListeners = Settings.Secure.getString(
                 activity.getContentResolver(),
                 "enabled_notification_listeners"
-        ).contains(activity.getPackageName());
+        );
 
-        if (!hasNotificationPermission) {
-            Intent intent = new Intent(AppConstants.NOTIFICATION_SETTING_ACTIVITY);
-            intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            activity.startActivity(intent);
+        if (!notificationListeners.contains(activity.getPackageName())) {
+            activity.startActivity(new Intent(AppConstants.NOTIFICATION_SETTINGS_ACTIVITY));
         }
     }
 }
