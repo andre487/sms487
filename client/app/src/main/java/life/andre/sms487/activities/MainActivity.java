@@ -1,20 +1,20 @@
 package life.andre.sms487.activities;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.method.ScrollingMovementMethod;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatButton;
-import androidx.appcompat.widget.AppCompatCheckBox;
-import androidx.appcompat.widget.AppCompatEditText;
-import androidx.appcompat.widget.AppCompatTextView;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -31,7 +31,7 @@ import life.andre.sms487.system.AppSettings;
 import life.andre.sms487.system.PermissionsChecker;
 import life.andre.sms487.utils.AsyncTaskUtil;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
     private final static String TAG = MainActivity.class.getSimpleName();
 
     private final PermissionsChecker permissionsChecker = new PermissionsChecker(this);
@@ -43,15 +43,15 @@ public class MainActivity extends AppCompatActivity {
     private ServerApi serverApi;
     private AppSettings appSettings;
 
-    private AppCompatEditText serverKeyInput;
-    private AppCompatEditText serverUrlInput;
-    private AppCompatTextView messagesField;
-    private AppCompatTextView logsField;
+    private EditText serverKeyInput;
+    private EditText serverUrlInput;
+    private TextView messagesField;
+    private TextView logsField;
 
-    private AppCompatButton saveServerKeyButton;
-    private AppCompatButton saveServerUrlButton;
+    private Button saveServerKeyButton;
+    private Button saveServerUrlButton;
 
-    private AppCompatCheckBox sendSmsCheckBox;
+    private CheckBox sendSmsCheckBox;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

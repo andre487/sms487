@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -8,67 +8,67 @@
     android:paddingEnd="8dp"
     tools:context=".activities.MainActivity">
 
-    <androidx.appcompat.widget.LinearLayoutCompat
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp">
 
-        <androidx.appcompat.widget.AppCompatEditText
+        <EditText
             android:id="@+id/serverUrlInput"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="48dp"
             android:hint="@string/server_placeholder"
             android:inputType="textUri" />
 
-        <androidx.appcompat.widget.AppCompatButton
+        <Button
             android:id="@+id/serverUrlSave"
             android:layout_height="48dp"
             android:layout_width="80dp"
             android:text="@string/save_label" />
-    </androidx.appcompat.widget.LinearLayoutCompat>
+    </LinearLayout>
 
-    <androidx.appcompat.widget.LinearLayoutCompat
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp">
 
-        <androidx.appcompat.widget.AppCompatEditText
+        <EditText
             android:id="@+id/serverKeyInput"
             android:layout_weight="2"
             android:layout_height="48dp"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:hint="@string/server_key"
             android:inputType="textPassword" />
 
-        <androidx.appcompat.widget.AppCompatButton
+        <Button
             android:id="@+id/serverKeySave"
             android:layout_height="48dp"
             android:layout_width="80dp"
             android:text="@string/save_label" />
-    </androidx.appcompat.widget.LinearLayoutCompat>
+    </LinearLayout>
 
-    <androidx.appcompat.widget.LinearLayoutCompat
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp">
 
-        <androidx.appcompat.widget.AppCompatCheckBox
+        <CheckBox
             android:id="@+id/sendSmsCheckBox"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/send_sms_label" />
-    </androidx.appcompat.widget.LinearLayoutCompat>
+    </LinearLayout>
 
-    <androidx.appcompat.widget.LinearLayoutCompat
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp">
 
-        <androidx.appcompat.widget.AppCompatTextView
+        <TextView
             android:id="@+id/messagesField"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -79,7 +79,7 @@
             android:scrollbars="vertical"
             android:background="@drawable/text_view_border" />
 
-        <androidx.appcompat.widget.AppCompatTextView
+        <TextView
             android:id="@+id/logsField"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -90,5 +90,5 @@
             android:hint="@string/logs_label"
             android:scrollbars="vertical"
             android:background="@drawable/text_view_border" />
-    </androidx.appcompat.widget.LinearLayoutCompat>
-</androidx.appcompat.widget.LinearLayoutCompat>
+    </LinearLayout>
+</LinearLayout>
