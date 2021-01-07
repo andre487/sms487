@@ -26,7 +26,7 @@ public class MessageStorage {
     }
 
     public MessageStorage(@NonNull Context context) {
-        messageDao = Room.databaseBuilder(context, AppDatabase.class, "messages-db").build().messageDao();
+        messageDao = Room.databaseBuilder(context, AppDatabase.class, "messages").build().messageDao();
     }
 
     public long addMessage(@NonNull MessageContainer message) {
