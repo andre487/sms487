@@ -14,6 +14,7 @@ import android.service.notification.StatusBarNotification;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import life.andre.sms487.R;
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.network.ServerApi;
@@ -114,6 +115,7 @@ public class NotificationListener extends NotificationListenerService {
         Notification notification = new Notification.Builder(this, CHANNEL_ID)
                 .setContentTitle("SMS 487")
                 .setContentText("Service is running for listening notifications")
+                .setSmallIcon(R.drawable.ic_notification)
                 .build();
 
         startForeground(AppConstants.DEFAULT_ID, notification);
