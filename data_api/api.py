@@ -56,6 +56,7 @@ def index():
     device_id = request.args.get('device-id', '').strip()
     limit = request.args.get('limit', '5')
     refresh = request.args.get('refresh') == '1'
+    apply_filters = request.args.get('no-filters') != '1'
 
     if device_id == 'All':
         device_id = None
@@ -67,7 +68,7 @@ def index():
             return create_html_response('error.html', {'code': 400, 'message': 'Incorrect limit'}, status=400)
 
     try:
-        result = data_handler.get_sms(device_id, limit, apply_filters=True)
+        result = data_handler.get_sms(device_id, limit, apply_filters=apply_filters)
     except data_handler.FormDataError as e:
         logging.info('Client error: %s', e)
         return create_html_response('error.html', {'code': 400, 'message': str(e)}, status=400)
@@ -80,7 +81,7 @@ def index():
         'title': 'SMS 487 – Messages',
         'messages': result, 'limit': limit,
         'device_id': device_id, 'device_ids': device_ids,
-        'refresh': refresh,
+        'refresh': refresh, 'apply_filters': apply_filters,
     })
 
 
