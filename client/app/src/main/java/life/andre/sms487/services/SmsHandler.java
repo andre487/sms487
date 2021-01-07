@@ -15,7 +15,7 @@ import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.network.ServerApi;
 import life.andre.sms487.system.AppConstants;
-import life.andre.sms487.system.AppSettings;
+import life.andre.sms487.settings.AppSettings;
 import life.andre.sms487.utils.AsyncTaskUtil;
 
 public class SmsHandler extends Service {
@@ -27,7 +27,7 @@ public class SmsHandler extends Service {
     @Override
     public void onCreate() {
         appSettings = new AppSettings(this);
-        serverApi = new ServerApi(this, appSettings);
+        serverApi = new ServerApi(this);
     }
 
     public int onStartCommand(Intent intent, int flags, int startId) {

@@ -27,7 +27,7 @@ import life.andre.sms487.messages.MessageResendWorker;
 import life.andre.sms487.messages.MessageStorage;
 import life.andre.sms487.network.ServerApi;
 import life.andre.sms487.services.NotificationListener;
-import life.andre.sms487.system.AppSettings;
+import life.andre.sms487.settings.AppSettings;
 import life.andre.sms487.system.PermissionsChecker;
 import life.andre.sms487.utils.AsyncTaskUtil;
 
@@ -111,7 +111,7 @@ public class MainActivity extends Activity {
     private void createFieldValues() {
         messageStorage = new MessageStorage(this);
         appSettings = new AppSettings(this);
-        serverApi = new ServerApi(this, appSettings);
+        serverApi = new ServerApi(this);
     }
 
     private void startServiceTasks() {

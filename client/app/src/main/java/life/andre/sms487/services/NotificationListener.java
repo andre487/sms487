@@ -18,7 +18,7 @@ import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.network.ServerApi;
 import life.andre.sms487.system.AppConstants;
-import life.andre.sms487.system.AppSettings;
+import life.andre.sms487.settings.AppSettings;
 import life.andre.sms487.utils.AsyncTaskUtil;
 import life.andre.sms487.utils.DateUtil;
 
@@ -33,7 +33,7 @@ public class NotificationListener extends NotificationListenerService {
     public void onCreate() {
         super.onCreate();
         appSettings = new AppSettings(this);
-        serverApi = new ServerApi(this, appSettings);
+        serverApi = new ServerApi(this);
 
         createServiceMessage();
     }

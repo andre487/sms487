@@ -23,7 +23,7 @@ import java.util.Map;
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.messages.MessageStorage;
-import life.andre.sms487.system.AppSettings;
+import life.andre.sms487.settings.AppSettings;
 import life.andre.sms487.utils.AsyncTaskUtil;
 
 public class ServerApi {
@@ -45,9 +45,9 @@ public class ServerApi {
         void onError(String errorMessage);
     }
 
-    public ServerApi(@NonNull Context ctx, AppSettings appSettings) {
-        this.appSettings = appSettings;
-        this.requestQueue = Volley.newRequestQueue(ctx);
+    public ServerApi(@NonNull Context ctx) {
+        requestQueue = Volley.newRequestQueue(ctx);
+        appSettings = new AppSettings(ctx);
         messageStorage = new MessageStorage(ctx);
     }
 
@@ -96,7 +96,7 @@ public class ServerApi {
         String serverUrl = appSettings.getServerUrl();
         String serverKey = appSettings.getServerKey();
 
-        if (serverUrl == null || serverUrl.length() == 0 || serverKey == null || serverKey.length() == 0) {
+        if (serverUrl.length() == 0 || serverKey.length() == 0) {
             Logger.w(TAG, "Server params are empty, skip sending");
             return;
         }

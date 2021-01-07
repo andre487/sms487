@@ -44,7 +44,7 @@ public class MessageCleanupWorker extends Worker {
     @Override
     public Result doWork() {
         try {
-            int oldCount = messageStorage.deleteOldMessages();
+            int oldCount = messageStorage.deleteOld();
             Logger.i(TAG, "Old messages deleted: " + oldCount);
             return Result.success();
         } catch (Exception e) {

@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.network.ServerApi;
-import life.andre.sms487.system.AppSettings;
 
 public class MessageResendWorker extends Worker {
     public static final String TAG = "MessageResendWorker";
@@ -45,7 +44,7 @@ public class MessageResendWorker extends Worker {
 
     public MessageResendWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
-        serverApi = new ServerApi(context, new AppSettings(context));
+        serverApi = new ServerApi(context);
     }
 
     @NonNull
