@@ -2,7 +2,7 @@
     setupAutoRefresh();
 
     function setupAutoRefresh() {
-        if (location.toString().indexOf('refresh=1') == -1) {
+        if (!window.needAutoRefresh) {
             return;
         }
 

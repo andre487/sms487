@@ -55,7 +55,7 @@ def before_request():
 def index():
     device_id = request.args.get('device-id', '').strip()
     limit = request.args.get('limit', '5')
-    refresh = request.args.get('refresh')
+    refresh = request.args.get('refresh') == '1'
 
     if device_id == 'All':
         device_id = None

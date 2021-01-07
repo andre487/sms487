@@ -22,7 +22,7 @@
                value="{{ limit }}">
 
         {% if refresh %}
-            <input type="hidden" name="refresh" value="{{ refresh }}">
+            <input type="hidden" name="refresh" value="1">
         {% endif %}
 
         <button type="submit"
@@ -48,5 +48,8 @@
 
 {% block scripts %}
     {{ super() }}
+    {% if refresh %}
+        <script nonce="{{ nonce }}">window.needAutoRefresh = true</script>
+    {% endif %}
     <script async src="{{ url_for('static', filename='index.js') | static_version }}"></script>
 {% endblock %}
