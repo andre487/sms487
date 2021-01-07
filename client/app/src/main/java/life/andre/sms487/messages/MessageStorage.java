@@ -100,9 +100,11 @@ public class MessageStorage {
 
     @Dao
     public interface MessageDao {
+        @NonNull
         @Query("SELECT * FROM message ORDER BY id DESC LIMIT 5")
         List<Message> getTail();
 
+        @NonNull
         @Query("SELECT * FROM message WHERE isSent == 0 ORDER BY id DESC")
         List<Message> getNotSent();
 

@@ -19,6 +19,7 @@
             android:layout_weight="1"
             android:layout_height="48dp"
             android:hint="@string/server_placeholder"
+            android:autofillHints="@android:string/no"
             android:inputType="textUri" />
 
         <Button
@@ -39,6 +40,7 @@
             android:layout_height="48dp"
             android:layout_width="0dp"
             android:hint="@string/server_key"
+            android:autofillHints="@android:string/no"
             android:inputType="textPassword" />
 
         <Button

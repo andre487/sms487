@@ -7,8 +7,9 @@ import androidx.annotation.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings({"unused", "RedundantSuppression"})
 public class Logger {
-    public static final int MAX_SIZE = 64;
+    public static final int MAX_SIZE = 128;
 
     private static final ArrayList<String> messages = new ArrayList<>();
 

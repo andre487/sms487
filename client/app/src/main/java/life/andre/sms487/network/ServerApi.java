@@ -33,6 +33,7 @@ public class ServerApi {
 
     private static final List<RequestHandledListener> requestHandledListeners = new ArrayList<>();
 
+    @NonNull
     private final AppSettings appSettings;
     @NonNull
     private final MessageStorage messageStorage;
@@ -132,7 +133,7 @@ public class ServerApi {
                     Request.Method.POST,
                     serverUrl + "/add-sms",
                     new ApiResponseListener(dbId, messageStorage),
-                    new ApiErrorListener(dbId)
+                    new ApiErrorListener()
             );
 
             this.requestParams = requestParams;
@@ -177,12 +178,6 @@ public class ServerApi {
     }
 
     static class ApiErrorListener implements Response.ErrorListener {
-        private final long dbId;
-
-        ApiErrorListener(long dbId) {
-            this.dbId = dbId;
-        }
-
         @Override
         public void onErrorResponse(@NonNull VolleyError error) {
             String errorMessage = error.toString();
@@ -194,7 +189,7 @@ public class ServerApi {
 
             Logger.e(TAG, errorMessage);
 
-            RequestErrorParams params = new RequestErrorParams(dbId, errorMessage);
+            RequestErrorParams params = new RequestErrorParams(errorMessage);
             new RunRequestErrorHandlers().execute(params);
         }
     }
@@ -229,11 +224,9 @@ public class ServerApi {
     }
 
     static class RequestErrorParams {
-        final long dbId;
         final String errorMessage;
 
-        RequestErrorParams(long dbId, String errorMessage) {
-            this.dbId = dbId;
+        RequestErrorParams(String errorMessage) {
             this.errorMessage = errorMessage;
         }
     }

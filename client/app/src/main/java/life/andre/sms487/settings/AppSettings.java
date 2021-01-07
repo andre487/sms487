@@ -108,7 +108,7 @@ public class AppSettings {
     }
 
     @NonNull
-    private String _saveValue(SaveSettingsParams params) {
+    private String _saveValue(@NonNull SaveSettingsParams params) {
         if (!Looper.getMainLooper().isCurrentThread()) {
             return saveSettingsItemToStorage(params);
         }
@@ -118,7 +118,7 @@ public class AppSettings {
 
         try {
             return action.get();
-        } catch (ExecutionException | InterruptedException e) {
+        } catch (@NonNull ExecutionException | InterruptedException e) {
             e.printStackTrace();
             return e.toString();
         }
@@ -129,7 +129,8 @@ public class AppSettings {
         return storage.get(name);
     }
 
-    private String saveSettingsItemToStorage(SaveSettingsParams params) {
+    @NonNull
+    private String saveSettingsItemToStorage(@NonNull SaveSettingsParams params) {
         if (params.name.equals(SERVER_URL)) {
             return saveServerUrlToStorage(params);
         }
@@ -187,8 +188,8 @@ public class AppSettings {
     }
 
     static class GetSettingsParams {
-        AppSettings settings;
-        String name;
+        final AppSettings settings;
+        final String name;
 
         GetSettingsParams(AppSettings settings, String name) {
             this.settings = settings;
@@ -199,7 +200,7 @@ public class AppSettings {
     static class GetSettingsAction extends AsyncTask<GetSettingsParams, Void, AppSettingStorage.SettingsItem> {
         @Override
         @NonNull
-        protected AppSettingStorage.SettingsItem doInBackground(GetSettingsParams... params) {
+        protected AppSettingStorage.SettingsItem doInBackground(@NonNull GetSettingsParams... params) {
             GetSettingsParams mainParams = AsyncTaskUtil.getParams(params, TAG);
             if (mainParams == null) {
                 return new AppSettingStorage.SettingsItem();
@@ -212,7 +213,7 @@ public class AppSettings {
         static final int TYPE_STRING = 1;
         static final int TYPE_BOOL = 2;
 
-        int type;
+        final int type;
 
         @NonNull
         final AppSettings settings;
