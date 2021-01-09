@@ -2,7 +2,6 @@ package life.andre.sms487.services;
 
 import android.app.Service;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.IBinder;
 
 import androidx.annotation.NonNull;
@@ -14,9 +13,9 @@ import java.util.List;
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.network.ServerApi;
-import life.andre.sms487.system.AppConstants;
 import life.andre.sms487.settings.AppSettings;
-import life.andre.sms487.utils.AsyncTaskUtil;
+import life.andre.sms487.system.AppConstants;
+import life.andre.sms487.utils.BgTask;
 
 public class SmsHandler extends Service {
     public static final String TAG = "SmsHandler";
@@ -30,14 +29,11 @@ public class SmsHandler extends Service {
         serverApi = new ServerApi(this);
     }
 
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        if (!appSettings.getNeedSendSms()) {
-            return Service.START_STICKY;
-        }
-
-        SendSmsParams params = new SendSmsParams(intent, serverApi);
-        new SendSmsAction().execute(params);
-
+    public int onStartCommand(@NonNull Intent intent, int flags, int startId) {
+        BgTask.run(() -> {
+            handleIntent(intent);
+            return null;
+        });
         return Service.START_STICKY;
     }
 
@@ -47,62 +43,34 @@ public class SmsHandler extends Service {
         return null;
     }
 
-    static class SendSmsParams {
-        final Intent intent;
-        final ServerApi serverApi;
+    private void handleIntent(@NonNull Intent intent) {
+        boolean needSend = appSettings.getNeedSendSms();
+        if (!needSend) {
+            return;
+        }
 
-        SendSmsParams(Intent intent, ServerApi serverApi) {
-            this.intent = intent;
-            this.serverApi = serverApi;
+        List<String> intentData = intent.getStringArrayListExtra(AppConstants.EXTRA_GOT_SMS);
+        if (intentData == null) {
+            Logger.w(TAG, "Intent data is null");
+            return;
+        }
+
+        for (MessageContainer message : extractMessages(intentData)) {
+            serverApi.addMessage(message);
         }
     }
 
-    static class SendSmsAction extends AsyncTask<SendSmsParams, Void, Void> {
-        @Nullable
-        @Override
-        protected Void doInBackground(@NonNull SendSmsParams... params) {
-            SendSmsParams mainParams = AsyncTaskUtil.getParams(params, TAG);
-            if (mainParams == null) {
-                return null;
-            }
+    @NonNull
+    private List<MessageContainer> extractMessages(@NonNull List<String> intentData) {
+        List<MessageContainer> data = new ArrayList<>();
 
-            Intent intent = mainParams.intent;
-            if (intent == null) {
-                Logger.w(TAG, "Intent is null");
-                return null;
-            }
-
-            List<String> intentData = intent.getStringArrayListExtra(AppConstants.EXTRA_GOT_SMS);
-            if (intentData == null) {
-                Logger.w(TAG, "Intent data is null");
-                return null;
-            }
-
-            handleIntentData(mainParams, intentData);
-
-            return null;
-        }
-
-        private void handleIntentData(@NonNull SendSmsParams params, @NonNull List<String> intentData) {
-            List<MessageContainer> extractedMessages = extractMessages(intentData);
-
-            for (MessageContainer message : extractedMessages) {
-                params.serverApi.addMessage(message);
+        for (String messageJson : intentData) {
+            MessageContainer message = MessageContainer.createFromJson(messageJson);
+            if (message != null) {
+                data.add(message);
             }
         }
 
-        @NonNull
-        private List<MessageContainer> extractMessages(@NonNull List<String> intentData) {
-            List<MessageContainer> data = new ArrayList<>();
-
-            for (String messageJson : intentData) {
-                MessageContainer message = MessageContainer.createFromJson(messageJson);
-                if (message != null) {
-                    data.add(message);
-                }
-            }
-
-            return data;
-        }
+        return data;
     }
 }

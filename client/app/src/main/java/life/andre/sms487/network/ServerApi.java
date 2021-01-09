@@ -1,7 +1,6 @@
 package life.andre.sms487.network;
 
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
@@ -24,7 +23,7 @@ import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.messages.MessageStorage;
 import life.andre.sms487.settings.AppSettings;
-import life.andre.sms487.utils.AsyncTaskUtil;
+import life.andre.sms487.utils.BgTask;
 
 public class ServerApi {
     public static final String TAG = "ServerApi";
@@ -61,6 +60,31 @@ public class ServerApi {
     }
 
     public void addMessage(@NonNull MessageContainer msg) {
+        BgTask.run(() -> {
+            addMessageSlow(msg);
+            return null;
+        });
+    }
+
+    public void resendMessages() {
+        BgTask.run(() -> {
+            List<MessageContainer> messages = messageStorage.getNotSentMessages();
+            if (messages.size() == 0) {
+                return null;
+            }
+
+            int notSentCount = messages.size();
+            Logger.i(TAG, "Resend: try to resend " + notSentCount + " messages");
+
+            for (MessageContainer message : messages) {
+                addMessageSlow(message);
+            }
+
+            return null;
+        });
+    }
+
+    private void addMessageSlow(@NonNull MessageContainer msg) {
         long dbId = msg.getDbId();
         if (dbId == 0) {
             dbId = messageStorage.addMessage(msg);
@@ -83,11 +107,6 @@ public class ServerApi {
         Logger.i(TAG, logLine);
 
         addRequest(messageType, dateTime, postDateTime, tel, text, dbId);
-    }
-
-    public void resendMessages() {
-        ResendMessagesParams params = new ResendMessagesParams(messageStorage, this);
-        new ResendMessagesAction().execute(params);
     }
 
     private void addRequest(
@@ -120,7 +139,7 @@ public class ServerApi {
         this.requestQueue.add(request);
     }
 
-    static class AddRequest extends StringRequest {
+    private static class AddRequest extends StringRequest {
         private final Map<String, String> requestParams;
         @NonNull
         private final String cookie;
@@ -156,7 +175,7 @@ public class ServerApi {
         }
     }
 
-    static class ApiResponseListener implements Response.Listener<String> {
+    private static class ApiResponseListener implements Response.Listener<String> {
         private final long dbId;
         private final MessageStorage messageStorage;
 
@@ -172,12 +191,19 @@ public class ServerApi {
             }
             Logger.i(TAG, "Response: " + response);
 
-            RequestSuccessParams params = new RequestSuccessParams(dbId, messageStorage);
-            new RunRequestSuccessHandlers().execute(params);
+            BgTask.run(() -> {
+                messageStorage.markSent(dbId);
+
+                for (ServerApi.RequestHandledListener listener : requestHandledListeners) {
+                    listener.onSuccess();
+                }
+
+                return null;
+            });
         }
     }
 
-    static class ApiErrorListener implements Response.ErrorListener {
+    private static class ApiErrorListener implements Response.ErrorListener {
         @Override
         public void onErrorResponse(@NonNull VolleyError error) {
             String errorMessage = error.toString();
@@ -189,97 +215,13 @@ public class ServerApi {
 
             Logger.e(TAG, errorMessage);
 
-            RequestErrorParams params = new RequestErrorParams(errorMessage);
-            new RunRequestErrorHandlers().execute(params);
-        }
-    }
-
-    static class RequestSuccessParams {
-        final long dbId;
-        final MessageStorage messageStorage;
-
-        RequestSuccessParams(long dbId, MessageStorage messageStorage) {
-            this.dbId = dbId;
-            this.messageStorage = messageStorage;
-        }
-    }
-
-    static class RunRequestSuccessHandlers extends AsyncTask<RequestSuccessParams, Void, Void> {
-        @Nullable
-        @Override
-        protected Void doInBackground(@NonNull RequestSuccessParams... params) {
-            RequestSuccessParams mainParams = AsyncTaskUtil.getParams(params, TAG);
-            if (mainParams == null) {
+            String finalErrorMessage = errorMessage;
+            BgTask.run(() -> {
+                for (ServerApi.RequestHandledListener listener : requestHandledListeners) {
+                    listener.onError(finalErrorMessage);
+                }
                 return null;
-            }
-
-            mainParams.messageStorage.markSent(mainParams.dbId);
-
-            for (ServerApi.RequestHandledListener listener : requestHandledListeners) {
-                listener.onSuccess();
-            }
-
-            return null;
-        }
-    }
-
-    static class RequestErrorParams {
-        final String errorMessage;
-
-        RequestErrorParams(String errorMessage) {
-            this.errorMessage = errorMessage;
-        }
-    }
-
-    static class RunRequestErrorHandlers extends AsyncTask<RequestErrorParams, Void, Void> {
-        @Nullable
-        @Override
-        protected Void doInBackground(@NonNull RequestErrorParams... params) {
-            RequestErrorParams mainParams = AsyncTaskUtil.getParams(params, TAG);
-            if (mainParams == null) {
-                return null;
-            }
-
-            for (ServerApi.RequestHandledListener listener : requestHandledListeners) {
-                listener.onError(mainParams.errorMessage);
-            }
-
-            return null;
-        }
-    }
-
-    static class ResendMessagesParams {
-        final MessageStorage messageStorage;
-        final ServerApi serverApi;
-
-        ResendMessagesParams(MessageStorage messageStorage, ServerApi serverApi) {
-            this.messageStorage = messageStorage;
-            this.serverApi = serverApi;
-        }
-    }
-
-    static class ResendMessagesAction extends AsyncTask<ResendMessagesParams, Void, Void> {
-        @Nullable
-        @Override
-        protected Void doInBackground(@NonNull ResendMessagesParams... params) {
-            ResendMessagesParams mainParams = AsyncTaskUtil.getParams(params, TAG);
-            if (mainParams == null) {
-                return null;
-            }
-
-            List<MessageContainer> messages = mainParams.messageStorage.getNotSentMessages();
-            if (messages.size() == 0) {
-                return null;
-            }
-
-            int notSentCount = messages.size();
-            Logger.i(TAG, "Resend: try to resend " + notSentCount + " messages");
-
-            for (MessageContainer message : messages) {
-                mainParams.serverApi.addMessage(message);
-            }
-
-            return null;
+            });
         }
     }
 }

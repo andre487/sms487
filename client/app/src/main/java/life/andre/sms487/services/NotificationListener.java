@@ -6,20 +6,17 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import life.andre.sms487.R;
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.network.ServerApi;
 import life.andre.sms487.system.AppConstants;
-import life.andre.sms487.utils.AsyncTaskUtil;
 import life.andre.sms487.utils.DateUtil;
 
 public class NotificationListener extends NotificationListenerService {
@@ -73,8 +70,13 @@ public class NotificationListener extends NotificationListenerService {
         String appLabel = getAppLabel(sbn.getPackageName());
         long postTime = sbn.getPostTime();
 
-        SendNotificationParams params = new SendNotificationParams(serverApi, appLabel, postTime, fullText);
-        new SendNotificationAction().execute(params);
+        String curTime = DateUtil.nowFormatted();
+        String postTimeString = DateUtil.formatDate(postTime);
+
+        serverApi.addMessage(new MessageContainer(
+                ServerApi.MESSAGE_TYPE_NOTIFICATION,
+                appLabel, curTime, postTimeString, fullText
+        ));
     }
 
     boolean isNotificationSuitable(@NonNull StatusBarNotification sbn) {
@@ -119,44 +121,5 @@ public class NotificationListener extends NotificationListenerService {
                 .build();
 
         startForeground(AppConstants.DEFAULT_ID, notification);
-    }
-
-    static class SendNotificationParams {
-        final ServerApi serverApi;
-        final String appLabel;
-        final long postTime;
-        final String text;
-
-        SendNotificationParams(ServerApi serverApi, String appLabel, long postTime, String text) {
-            this.serverApi = serverApi;
-            this.appLabel = appLabel;
-            this.postTime = postTime;
-            this.text = text;
-        }
-    }
-
-    static class SendNotificationAction extends AsyncTask<SendNotificationParams, Void, Void> {
-        @Nullable
-        @Override
-        protected Void doInBackground(@NonNull SendNotificationParams... params) {
-            SendNotificationParams mainParams = AsyncTaskUtil.getParams(params, TAG);
-            if (mainParams == null) {
-                return null;
-            }
-
-            handleNotification(mainParams);
-
-            return null;
-        }
-
-        void handleNotification(@NonNull SendNotificationParams params) {
-            String curTime = DateUtil.nowFormatted();
-            String postTime = DateUtil.formatDate(params.postTime);
-
-            params.serverApi.addMessage(new MessageContainer(
-                    ServerApi.MESSAGE_TYPE_NOTIFICATION,
-                    params.appLabel, curTime, postTime, params.text
-            ));
-        }
     }
 }

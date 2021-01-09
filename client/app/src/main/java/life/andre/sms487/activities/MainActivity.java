@@ -2,7 +2,6 @@ package life.andre.sms487.activities;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
@@ -17,7 +16,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 import life.andre.sms487.R;
 import life.andre.sms487.logging.Logger;
@@ -29,7 +27,7 @@ import life.andre.sms487.network.ServerApi;
 import life.andre.sms487.services.NotificationListener;
 import life.andre.sms487.settings.AppSettings;
 import life.andre.sms487.system.PermissionsChecker;
-import life.andre.sms487.utils.AsyncTaskUtil;
+import life.andre.sms487.utils.BgTask;
 
 public class MainActivity extends Activity {
     private final static String TAG = "MainActivity";
@@ -69,9 +67,8 @@ public class MainActivity extends Activity {
         super.onStart();
         permissionsChecker.checkPermissions();
 
-        showServerUrl();
-        showServerKey();
-        showNeedSendSms();
+        BgTask.run(this::getSettingsToShow).onSuccess(this::showSettings);
+
         showMessages();
         enableLogAutoRenew();
 
@@ -100,10 +97,7 @@ public class MainActivity extends Activity {
                 showMessages();
                 break;
             case "toastMessage":
-                String message = intent.getStringExtra("message");
-                if (message != null) {
-                    Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-                }
+                toastShowText(intent.getStringExtra("message"));
                 break;
         }
     }
@@ -137,7 +131,9 @@ public class MainActivity extends Activity {
     private void bindEvents() {
         saveServerUrlButton.setOnClickListener(v -> this.saveServerUrl());
         saveServerKeyButton.setOnClickListener(v -> this.saveServerKey());
-        sendSmsCheckBox.setOnCheckedChangeListener((v, c) -> this.saveNeedSendSms());
+        sendSmsCheckBox.setOnCheckedChangeListener((v, c) -> {
+            this.saveNeedSendSms();
+        });
 
         messagesField.setMovementMethod(new ScrollingMovementMethod());
 
@@ -151,12 +147,33 @@ public class MainActivity extends Activity {
         });
     }
 
-    public void showServerUrl() {
+    private void toastShowText(@Nullable String message) {
+        if (message != null) {
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private SettingsToShow getSettingsToShow() {
+        SettingsToShow settings = new SettingsToShow();
+
+        settings.serverUrl = appSettings.getServerUrl();
+        settings.serverKey = appSettings.getServerKey();
+        settings.needSendSms = appSettings.getNeedSendSms();
+
+        return settings;
+    }
+
+    private void showSettings(SettingsToShow v) {
+        showServerUrl(v.serverUrl);
+        showServerKey(v.serverKey);
+        showNeedSendSms(v.needSendSms);
+    }
+
+    public void showServerUrl(@NonNull String serverUrl) {
         if (serverUrlInput == null) {
             return;
         }
-
-        serverUrlInput.setText(appSettings.getServerUrl());
+        serverUrlInput.setText(serverUrl);
     }
 
     void saveServerUrl() {
@@ -164,18 +181,22 @@ public class MainActivity extends Activity {
             return;
         }
 
-        Editable serverUrlText = serverUrlInput.getText();
-        if (serverUrlText != null) {
-            appSettings.saveServerUrl(serverUrlText.toString());
-        }
+        BgTask.run(() -> {
+            Editable serverUrlText = serverUrlInput.getText();
+            if (serverUrlText == null) {
+                Logger.w(TAG, "serverUrlText is null");
+                return null;
+            }
+            return appSettings.saveServerUrl(serverUrlText.toString());
+        }).onSuccess(this::toastShowText);
     }
 
-    public void showServerKey() {
+    public void showServerKey(@NonNull String serverKey) {
         if (serverKeyInput == null) {
             return;
         }
 
-        serverKeyInput.setText(appSettings.getServerKey());
+        serverKeyInput.setText(serverKey);
     }
 
     void saveServerKey() {
@@ -183,15 +204,19 @@ public class MainActivity extends Activity {
             return;
         }
 
-        Editable serverKeyText = serverKeyInput.getText();
-        if (serverKeyText != null) {
-            appSettings.saveServerKey(serverKeyText.toString());
-        }
+        BgTask.run(() -> {
+            Editable serverKeyText = serverKeyInput.getText();
+            if (serverKeyText == null) {
+                Logger.w(TAG, "serverKeyText is null");
+                return null;
+            }
+            return appSettings.saveServerKey(serverKeyText.toString());
+        }).onSuccess(this::toastShowText);
     }
 
-    private void showNeedSendSms() {
+    private void showNeedSendSms(boolean needSendSms) {
         if (sendSmsCheckBox != null) {
-            sendSmsCheckBox.setChecked(appSettings.getNeedSendSms());
+            sendSmsCheckBox.setChecked(needSendSms);
         }
     }
 
@@ -200,21 +225,25 @@ public class MainActivity extends Activity {
             return;
         }
 
-        boolean checked = sendSmsCheckBox.isChecked();
-        appSettings.saveNeedSendSms(checked);
+        BgTask.run(() -> {
+            boolean checked = sendSmsCheckBox.isChecked();
+            return appSettings.saveNeedSendSms(checked);
+        }).onSuccess(this::toastShowText);
     }
 
-    void showMessages() {
+    @NonNull
+    private List<MessageContainer> getMessages() {
+        return messageStorage.getMessagesTail();
+    }
+
+    private void showMessages() {
         if (messagesField == null) {
             return;
         }
+        BgTask.run(this::getMessages).onSuccess(this::setMessagesToField);
+    }
 
-        final List<MessageContainer> messages = getMessages();
-        if (messages == null) {
-            Logger.w(TAG, "Messages are null");
-            return;
-        }
-
+    private void setMessagesToField(@NonNull List<MessageContainer> messages) {
         StringBuilder messagesString = new StringBuilder();
         for (MessageContainer message : messages) {
             messagesString.append(message.getAddressFrom());
@@ -227,26 +256,10 @@ public class MainActivity extends Activity {
             messagesString.append(message.getBody());
             messagesString.append("\n\n");
         }
-
         messagesField.setText(messagesString.toString().trim());
     }
 
-    @Nullable
-    private List<MessageContainer> getMessages() {
-        GetMessagesParams params = new GetMessagesParams(messageStorage);
-        GetMessagesAction action = new GetMessagesAction();
-        action.execute(params);
-
-        try {
-            return action.get();
-        } catch (@NonNull InterruptedException | ExecutionException e) {
-            Logger.w(TAG, "Get messages error: " + e.toString());
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    void showLogsFromLogger() {
+    private void showLogsFromLogger() {
         if (logsField == null) {
             return;
         }
@@ -268,10 +281,10 @@ public class MainActivity extends Activity {
         logUpdateHandler.removeCallbacks(logUpdater);
     }
 
-    static class SmsRequestListener implements ServerApi.RequestHandledListener {
+    private static class SmsRequestListener implements ServerApi.RequestHandledListener {
         private final MainActivity activity;
 
-        public SmsRequestListener(MainActivity activity) {
+        SmsRequestListener(MainActivity activity) {
             this.activity = activity;
         }
 
@@ -300,7 +313,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    static class LogUpdater implements Runnable {
+    private static class LogUpdater implements Runnable {
         private final MainActivity activity;
 
         LogUpdater(MainActivity activity) {
@@ -314,24 +327,11 @@ public class MainActivity extends Activity {
         }
     }
 
-    static class GetMessagesParams {
-        final MessageStorage messageStorage;
-
-        GetMessagesParams(MessageStorage messageStorage) {
-            this.messageStorage = messageStorage;
-        }
-    }
-
-    static class GetMessagesAction extends AsyncTask<GetMessagesParams, Void, List<MessageContainer>> {
-        @Nullable
-        @Override
-        protected List<MessageContainer> doInBackground(@NonNull GetMessagesParams... params) {
-            GetMessagesParams mainParams = AsyncTaskUtil.getParams(params);
-            if (mainParams == null) {
-                return null;
-            }
-
-            return mainParams.messageStorage.getMessagesTail();
-        }
+    private static class SettingsToShow {
+        @NonNull
+        String serverUrl = "";
+        @NonNull
+        String serverKey = "";
+        boolean needSendSms = false;
     }
 }
