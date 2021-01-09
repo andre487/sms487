@@ -52,7 +52,7 @@ public class BgTask<Result> {
             return;
         }
         int cores = Runtime.getRuntime().availableProcessors();
-        int poolSize = Math.min(cores - 2, 2);
+        int poolSize = Math.max(cores - 2, 2);
         executor = Executors.newFixedThreadPool(poolSize);
     }
 
