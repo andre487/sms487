@@ -84,7 +84,7 @@ public class BgTask<Result> {
                     result = res;
                     handleSuccess();
                 }
-            } catch (final Exception err) {
+            } catch (@NonNull final Exception err) {
                 synchronized (this) {
                     error = err;
                     handleError();

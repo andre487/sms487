@@ -153,6 +153,7 @@ public class MainActivity extends Activity {
         }
     }
 
+    @NonNull
     private SettingsToShow getSettingsToShow() {
         SettingsToShow settings = new SettingsToShow();
 
@@ -163,7 +164,7 @@ public class MainActivity extends Activity {
         return settings;
     }
 
-    private void showSettings(SettingsToShow v) {
+    private void showSettings(@NonNull SettingsToShow v) {
         showServerUrl(v.serverUrl);
         showServerKey(v.serverKey);
         showNeedSendSms(v.needSendSms);
