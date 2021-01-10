@@ -23,9 +23,11 @@ public class BgTask<Result> {
     public static final int STATE_SUCCESS = 2;
     public static final int STATE_ERROR = 3;
 
-    private static Executor executor;
-    @Nullable
-    private Handler handler;
+    @NonNull
+    private static final Executor executor;
+
+    @NonNull
+    private static final Handler uiHandler = new Handler(Looper.getMainLooper());
 
     @NonNull
     private final List<Consumer<Result>> successCallbacks = new ArrayList<>();
@@ -34,7 +36,7 @@ public class BgTask<Result> {
 
     @NonNull
     private final Callable<Result> task;
-    private int state = STATE_INITIAL;
+    private volatile int state = STATE_INITIAL;
     private final boolean createdOnUiThread;
 
     @Nullable
@@ -42,28 +44,20 @@ public class BgTask<Result> {
     @Nullable
     private Exception error;
 
-    @NonNull
-    public static <Result> BgTask<Result> run(@NonNull Callable<Result> task) {
-        return new BgTask<>(task).run();
-    }
-
-    private static synchronized void initExecutor() {
-        if (executor != null) {
-            return;
-        }
+    static {
         int cores = Runtime.getRuntime().availableProcessors();
         int poolSize = Math.max(cores - 2, 2);
         executor = Executors.newFixedThreadPool(poolSize);
     }
 
-    BgTask(@NonNull Callable<Result> task) {
-        initExecutor();
-        this.task = task;
+    @NonNull
+    public static <Result> BgTask<Result> run(@NonNull Callable<Result> task) {
+        return new BgTask<>(task).run();
+    }
 
+    BgTask(@NonNull Callable<Result> task) {
+        this.task = task;
         createdOnUiThread = Looper.getMainLooper().isCurrentThread();
-        if (createdOnUiThread) {
-            handler = new Handler(Looper.getMainLooper());
-        }
     }
 
     @NonNull
@@ -79,16 +73,11 @@ public class BgTask<Result> {
 
         executor.execute(() -> {
             try {
-                Result res = task.call();
-                synchronized (this) {
-                    result = res;
-                    handleSuccess();
-                }
+                result = task.call();
+                handleSuccess();
             } catch (@NonNull final Exception err) {
-                synchronized (this) {
-                    error = err;
-                    handleError();
-                }
+                error = err;
+                handleError();
             }
         });
 
@@ -103,10 +92,10 @@ public class BgTask<Result> {
         }
 
         if (state == STATE_SUCCESS) {
-            if (handler == null) {
-                callback.accept(result);
+            if (createdOnUiThread) {
+                uiHandler.post(() -> callback.accept(result));
             } else {
-                handler.post(() -> callback.accept(result));
+                callback.accept(result);
             }
             return this;
         }
@@ -123,10 +112,10 @@ public class BgTask<Result> {
         }
 
         if (state == STATE_ERROR) {
-            if (handler == null) {
-                callback.accept(error);
+            if (createdOnUiThread) {
+                uiHandler.post(() -> callback.accept(error));
             } else {
-                handler.post(() -> callback.accept(error));
+                callback.accept(error);
             }
             return this;
         }
@@ -135,7 +124,7 @@ public class BgTask<Result> {
         return this;
     }
 
-    private void handleSuccess() {
+    private synchronized void handleSuccess() {
         state = STATE_SUCCESS;
 
         if (successCallbacks.size() == 0) {
@@ -143,19 +132,15 @@ public class BgTask<Result> {
             return;
         }
 
-        if (!createdOnUiThread || handler == null) {
+        if (!createdOnUiThread) {
             callSuccessCallbacks();
             return;
         }
 
-        handler.post(() -> {
-            synchronized (this) {
-                callSuccessCallbacks();
-            }
-        });
+        uiHandler.post(this::callSuccessCallbacks);
     }
 
-    private void handleError() {
+    private synchronized void handleError() {
         state = STATE_ERROR;
 
         if (error == null) {
@@ -168,26 +153,22 @@ public class BgTask<Result> {
             return;
         }
 
-        if (!createdOnUiThread || handler == null) {
+        if (!createdOnUiThread) {
             callErrorCallbacks();
             return;
         }
 
-        handler.post(() -> {
-            synchronized (this) {
-                callErrorCallbacks();
-            }
-        });
+        uiHandler.post(this::callErrorCallbacks);
     }
 
-    private void callSuccessCallbacks() {
+    private synchronized void callSuccessCallbacks() {
         for (Consumer<Result> callback : successCallbacks) {
             callback.accept(result);
         }
         clearCallbacks();
     }
 
-    private void callErrorCallbacks() {
+    private synchronized void callErrorCallbacks() {
         for (Consumer<Exception> callback : errorCallbacks) {
             callback.accept(error);
         }
@@ -201,16 +182,12 @@ public class BgTask<Result> {
         }
 
         StringBuilder report = new StringBuilder();
-        report.append(error.toString());
-        report.append("\n");
+        report.append(error.toString()).append("\n");
 
         for (StackTraceElement trace : error.getStackTrace()) {
-            if (trace == null) {
-                continue;
+            if (trace != null) {
+                report.append("\tat ").append(trace.toString()).append("\n");
             }
-            report.append("\tat ");
-            report.append(trace.toString());
-            report.append("\n");
         }
 
         Logger.e(TAG, report.toString());
