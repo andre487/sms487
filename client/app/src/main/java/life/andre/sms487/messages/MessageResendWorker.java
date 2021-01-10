@@ -42,9 +42,9 @@ public class MessageResendWorker extends Worker {
         workManager.enqueueUniquePeriodicWork(TAG, ExistingPeriodicWorkPolicy.KEEP, task);
     }
 
-    public MessageResendWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
-        super(context, workerParams);
-        serverApi = new ServerApi(context);
+    public MessageResendWorker(@NonNull Context ctx, @NonNull WorkerParameters workerParams) {
+        super(ctx, workerParams);
+        serverApi = new ServerApi(ctx);
     }
 
     @NonNull
@@ -52,7 +52,7 @@ public class MessageResendWorker extends Worker {
     public Result doWork() {
         try {
             serverApi.resendMessages();
-            Logger.i(TAG, "Try to resend messages");
+            Logger.i(TAG, "Resend messages if needed");
             return Result.success();
         } catch (Exception e) {
             Logger.i(TAG, e.toString());

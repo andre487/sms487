@@ -3,7 +3,6 @@ package life.andre.sms487.messages;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
-import androidx.work.Constraints;
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
@@ -23,29 +22,23 @@ public class MessageCleanupWorker extends Worker {
     public static void schedule() {
         PeriodicWorkRequest task = new PeriodicWorkRequest.Builder(
                 MessageCleanupWorker.class,
-                1, TimeUnit.DAYS
-        ).setConstraints(
-                new Constraints.Builder()
-                        .setRequiresDeviceIdle(true)
-                        .setRequiresCharging(true)
-                        .build()
+                3, TimeUnit.HOURS
         ).build();
 
         WorkManager workManager = WorkManager.getInstance();
         workManager.enqueueUniquePeriodicWork(TAG, ExistingPeriodicWorkPolicy.KEEP, task);
     }
 
-    public MessageCleanupWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
-        super(context, workerParams);
-        messageStorage = new MessageStorage(context);
+    public MessageCleanupWorker(@NonNull Context ctx, @NonNull WorkerParameters workerParams) {
+        super(ctx, workerParams);
+        messageStorage = new MessageStorage(ctx);
     }
 
     @NonNull
     @Override
     public Result doWork() {
         try {
-            int oldCount = messageStorage.deleteOld();
-            Logger.i(TAG, "Old messages deleted: " + oldCount);
+            messageStorage.deleteOld();
             return Result.success();
         } catch (Exception e) {
             Logger.i(TAG, e.toString());

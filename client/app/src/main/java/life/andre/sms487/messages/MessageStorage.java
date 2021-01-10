@@ -17,7 +17,11 @@ import androidx.room.RoomDatabase;
 import java.util.ArrayList;
 import java.util.List;
 
+import life.andre.sms487.logging.Logger;
+
 public class MessageStorage {
+    public static final String TAG = "MessageStorage";
+
     private final MessageDao dao;
 
     public MessageStorage(@NonNull Context ctx) {
@@ -56,8 +60,9 @@ public class MessageStorage {
         dao.markSent(insertId);
     }
 
-    public int deleteOld() {
-        return dao.deleteOld();
+    public void deleteOld() {
+        int oldCount = dao.deleteOld();
+        Logger.i(TAG, "Old messages deleted: " + oldCount);
     }
 
     @Entity
@@ -114,7 +119,7 @@ public class MessageStorage {
         @Query("UPDATE message SET isSent=1 WHERE id=:insertId")
         void markSent(long insertId);
 
-        @Query("DELETE FROM message WHERE dateTime < strftime('%Y-%m-%d 00:00', 'now', 'utc', '-2 days')")
+        @Query("DELETE FROM message WHERE id IN (SELECT id FROM message WHERE (isSent == 1 OR dateTime < strftime('%Y-%m-%d 00:00', 'now', 'utc', '-2 days')) ORDER BY id DESC LIMIT 5,100000)")
         int deleteOld();
     }
 
