@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.method.ScrollingMovementMethod;
 import android.widget.Button;
@@ -33,8 +34,7 @@ public class MainActivity extends Activity {
     private final static String TAG = "MainActivity";
 
     private final PermissionsChecker permissionsChecker = new PermissionsChecker(this);
-    private final Handler logUpdateHandler = new Handler();
-    private final LogUpdater logUpdater = new LogUpdater(this);
+    private final LogUpdater logUpdater = new LogUpdater(this::showLogsFromLogger);
     private final ServerApi.RequestHandledListener smsRequestListener = new SmsRequestListener(this);
 
     private MessageStorage messageStorage;
@@ -50,6 +50,8 @@ public class MainActivity extends Activity {
     private Button saveServerUrlButton;
 
     private CheckBox sendSmsCheckBox;
+
+    private boolean lockSettingsSave = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +72,7 @@ public class MainActivity extends Activity {
         BgTask.run(this::getSettingsToShow).onSuccess(this::showSettings);
 
         showMessages();
-        enableLogAutoRenew();
+        logUpdater.run();
 
         serverApi.addRequestHandledListener(smsRequestListener);
         serverApi.resendMessages();
@@ -79,7 +81,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onStop() {
         serverApi.removeRequestHandledListener(smsRequestListener);
-        disableLogAutoRenew();
+        logUpdater.disable();
         super.onStop();
     }
 
@@ -136,15 +138,7 @@ public class MainActivity extends Activity {
         });
 
         messagesField.setMovementMethod(new ScrollingMovementMethod());
-
         logsField.setMovementMethod(new ScrollingMovementMethod());
-        logsField.setOnFocusChangeListener((v, f) -> {
-            if (f) {
-                disableLogAutoRenew();
-            } else {
-                enableLogAutoRenew();
-            }
-        });
     }
 
     private void toastShowText(@Nullable String message) {
@@ -165,9 +159,13 @@ public class MainActivity extends Activity {
     }
 
     private void showSettings(@NonNull SettingsToShow v) {
+        lockSettingsSave = true;
+
         showServerUrl(v.serverUrl);
         showServerKey(v.serverKey);
         showNeedSendSms(v.needSendSms);
+
+        lockSettingsSave = false;
     }
 
     public void showServerUrl(@NonNull String serverUrl) {
@@ -178,7 +176,7 @@ public class MainActivity extends Activity {
     }
 
     void saveServerUrl() {
-        if (serverUrlInput == null) {
+        if (serverUrlInput == null || lockSettingsSave) {
             return;
         }
 
@@ -196,12 +194,11 @@ public class MainActivity extends Activity {
         if (serverKeyInput == null) {
             return;
         }
-
         serverKeyInput.setText(serverKey);
     }
 
     void saveServerKey() {
-        if (serverKeyInput == null) {
+        if (serverKeyInput == null || lockSettingsSave) {
             return;
         }
 
@@ -222,7 +219,7 @@ public class MainActivity extends Activity {
     }
 
     void saveNeedSendSms() {
-        if (sendSmsCheckBox == null) {
+        if (sendSmsCheckBox == null || lockSettingsSave) {
             return;
         }
 
@@ -274,14 +271,6 @@ public class MainActivity extends Activity {
         logsField.setText(logsString.toString().trim());
     }
 
-    private void enableLogAutoRenew() {
-        logUpdateHandler.post(logUpdater);
-    }
-
-    private void disableLogAutoRenew() {
-        logUpdateHandler.removeCallbacks(logUpdater);
-    }
-
     private static class SmsRequestListener implements ServerApi.RequestHandledListener {
         private final MainActivity activity;
 
@@ -315,16 +304,23 @@ public class MainActivity extends Activity {
     }
 
     private static class LogUpdater implements Runnable {
-        private final MainActivity activity;
+        public static final int DELAY = 2500;
 
-        LogUpdater(MainActivity activity) {
-            this.activity = activity;
+        private final Handler handler = new Handler(Looper.getMainLooper());
+        private final Runnable action;
+
+        public LogUpdater(Runnable action) {
+            this.action = action;
         }
 
         @Override
         public synchronized void run() {
-            activity.showLogsFromLogger();
-            activity.logUpdateHandler.postDelayed(this, 2500);
+            action.run();
+            handler.postDelayed(this, DELAY);
+        }
+
+        public synchronized void disable() {
+            handler.removeCallbacks(this);
         }
     }
 
