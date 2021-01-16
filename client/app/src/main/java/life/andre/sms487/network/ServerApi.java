@@ -13,12 +13,14 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import life.andre.sms487.events.MessagesStateChanged;
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.messages.MessageResendWorker;
@@ -35,8 +37,6 @@ public class ServerApi {
     public static final String MESSAGE_TYPE_NOTIFICATION = "notification";
     public static final long THROTTLE_DELAY = 500;
 
-    private static final List<RequestHandledListener> requestHandledListeners = new ArrayList<>();
-
     @NonNull
     private final AppSettings appSettings;
     @NonNull
@@ -46,24 +46,10 @@ public class ServerApi {
     @NonNull
     private final ValueThrottler<MessageContainer> throttler = new ValueThrottler<>(this::handleMessages, THROTTLE_DELAY);
 
-    public interface RequestHandledListener {
-        void onSuccess();
-
-        void onError(String errorMessage);
-    }
-
     public ServerApi(@NonNull Context ctx) {
         requestQueue = Volley.newRequestQueue(ctx);
         appSettings = new AppSettings(ctx);
         messageStorage = new MessageStorage(ctx);
-    }
-
-    public void addRequestHandledListener(RequestHandledListener listener) {
-        requestHandledListeners.add(listener);
-    }
-
-    public void removeRequestHandledListener(RequestHandledListener listener) {
-        requestHandledListeners.remove(listener);
     }
 
     public void addMessage(@NonNull MessageContainer msg) {
@@ -162,19 +148,15 @@ public class ServerApi {
         @NonNull
         private final String cookie;
 
-        AddRequest(
-                String serverUrl, String serverKey,
-                Map<String, String> requestParams, long dbId, MessageStorage messageStorage
-        ) {
+        AddRequest(String url, String key, Map<String, String> params, long dbId, MessageStorage msgStorage) {
             super(
                     Request.Method.POST,
-                    serverUrl + "/add-sms",
-                    new ApiResponseListener(dbId, messageStorage),
+                    url + "/add-sms",
+                    new ApiResponseListener(dbId, msgStorage),
                     new ApiErrorListener()
             );
-
-            this.requestParams = requestParams;
-            this.cookie = "__Secure-Auth-Token=" + serverKey;
+            this.requestParams = params;
+            this.cookie = "__Secure-Auth-Token=" + key;
         }
 
         @NonNull
@@ -211,11 +193,7 @@ public class ServerApi {
 
             BgTask.run(() -> {
                 messageStorage.markSent(dbId);
-
-                for (ServerApi.RequestHandledListener listener : requestHandledListeners) {
-                    listener.onSuccess();
-                }
-
+                EventBus.getDefault().post(new MessagesStateChanged());
                 return null;
             });
         }
@@ -223,7 +201,7 @@ public class ServerApi {
 
     private static class ApiErrorListener implements Response.ErrorListener {
         public static final long MESSAGE_DELAY = 250;
-
+        // TODO: move to Toaster
         private final ValueThrottler<String> msgThrottler = new ValueThrottler<>(this::showErrorMessage, MESSAGE_DELAY);
 
         @Override
@@ -234,23 +212,18 @@ public class ServerApi {
             Logger.e(TAG, finalErrorMessage);
             msgThrottler.handle(finalErrorMessage);
 
-            BgTask.run(() -> {
-                for (ServerApi.RequestHandledListener listener : requestHandledListeners) {
-                    listener.onError(finalErrorMessage);
-                }
-                return null;
-            });
+            EventBus.getDefault().post(new MessagesStateChanged());
         }
 
         @NonNull
         private String getFinalErrorMessage(@NonNull VolleyError error) {
-            String errorMessage = error.toString();
+            StringBuilder err = new StringBuilder(error.toString());
             if (error.networkResponse != null) {
-                errorMessage = error.toString() + ": " +
-                        error.networkResponse.statusCode + ": " +
-                        new String(error.networkResponse.data, StandardCharsets.UTF_8);
+                err.append(": ")
+                        .append(error.networkResponse.statusCode).append(": ")
+                        .append(new String(error.networkResponse.data, StandardCharsets.UTF_8));
             }
-            return errorMessage;
+            return err.toString();
         }
 
         private void showErrorMessage(@NonNull List<String> messages) {

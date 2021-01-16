@@ -14,29 +14,29 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.List;
 
 import life.andre.sms487.R;
+import life.andre.sms487.events.MessagesStateChanged;
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageCleanupWorker;
 import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.messages.MessageResendWorker;
 import life.andre.sms487.messages.MessageStorage;
-import life.andre.sms487.network.ServerApi;
 import life.andre.sms487.services.NotificationListener;
 import life.andre.sms487.settings.AppSettings;
 import life.andre.sms487.system.PermissionsChecker;
 import life.andre.sms487.utils.BgTask;
 
 public class MainActivity extends Activity {
-    private final static String TAG = "MainActivity";
-
     private final LogUpdater logUpdater = new LogUpdater(this::showLogsFromLogger);
-    // TODO: replace with events
-    private final ServerApi.RequestHandledListener smsRequestListener = new SmsRequestListener(this);
+    private final EventBus eventBus = EventBus.getDefault();
 
     private MessageStorage messageStorage;
-    private ServerApi serverApi;
     private AppSettings appSettings;
 
     private EditText serverKeyInput;
@@ -70,36 +70,25 @@ public class MainActivity extends Activity {
         showSettings();
         showMessages();
         logUpdater.run();
-
-        serverApi.addRequestHandledListener(smsRequestListener);
-        serverApi.resendMessages();
+        eventBus.register(this);
     }
 
     @Override
     protected void onStop() {
-        serverApi.removeRequestHandledListener(smsRequestListener);
         logUpdater.disable();
+        eventBus.unregister(this);
         super.onStop();
     }
 
-    @Override
-    protected void onNewIntent(@NonNull Intent intent) {
-        super.onNewIntent(intent);
-
-        String action = intent.getStringExtra("action");
-        if (action == null) {
-            return;
-        }
-
-        if ("renewMessages".equals(action)) {
-            showMessages();
-        }
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMessagesStateChanged(MessagesStateChanged event) {
+        // TODO: throttle
+        showMessages();
     }
 
     private void initObjects() {
         messageStorage = new MessageStorage(getApplicationContext());
         appSettings = new AppSettings(getApplicationContext());
-        serverApi = new ServerApi(getApplicationContext());
     }
 
     private void startServiceTasks() {
@@ -252,32 +241,6 @@ public class MainActivity extends Activity {
             logs.append(logLine).append('\n');
         }
         logsField.setText(logs.toString().trim());
-    }
-
-    private static class SmsRequestListener implements ServerApi.RequestHandledListener {
-        private final MainActivity activity;
-
-        SmsRequestListener(MainActivity activity) {
-            this.activity = activity;
-        }
-
-        @Override
-        public void onSuccess() {
-            activity.startActivity(
-                    new Intent(activity, MainActivity.class)
-                            .putExtra("action", "renewMessages")
-                            .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            );
-        }
-
-        @Override
-        public void onError(String errorMessage) {
-            activity.startActivity(
-                    new Intent(activity, MainActivity.class)
-                            .putExtra("action", "renewMessages")
-                            .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            );
-        }
     }
 
     private static class LogUpdater implements Runnable {
