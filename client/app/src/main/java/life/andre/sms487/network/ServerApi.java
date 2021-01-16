@@ -25,7 +25,9 @@ import life.andre.sms487.messages.MessageResendWorker;
 import life.andre.sms487.messages.MessageStorage;
 import life.andre.sms487.settings.AppSettings;
 import life.andre.sms487.utils.BgTask;
+import life.andre.sms487.utils.StringUtil;
 import life.andre.sms487.utils.ValueThrottler;
+import life.andre.sms487.views.Toaster;
 
 public class ServerApi {
     public static final String TAG = "ServerApi";
@@ -220,26 +222,40 @@ public class ServerApi {
     }
 
     private static class ApiErrorListener implements Response.ErrorListener {
+        public static final long MESSAGE_DELAY = 250;
+
+        private final ValueThrottler<String> msgThrottler = new ValueThrottler<>(this::showErrorMessage, MESSAGE_DELAY);
+
         @Override
         public void onErrorResponse(@NonNull VolleyError error) {
             MessageResendWorker.scheduleOneTime();
 
-            String errorMessage = error.toString();
-            if (error.networkResponse != null) {
-                errorMessage = error.toString() + ": " +
-                        error.networkResponse.statusCode + ": " +
-                        new String(error.networkResponse.data, StandardCharsets.UTF_8);
-            }
+            String finalErrorMessage = getFinalErrorMessage(error);
+            Logger.e(TAG, finalErrorMessage);
+            msgThrottler.handle(finalErrorMessage);
 
-            Logger.e(TAG, errorMessage);
-
-            String finalErrorMessage = errorMessage;
             BgTask.run(() -> {
                 for (ServerApi.RequestHandledListener listener : requestHandledListeners) {
                     listener.onError(finalErrorMessage);
                 }
                 return null;
             });
+        }
+
+        @NonNull
+        private String getFinalErrorMessage(@NonNull VolleyError error) {
+            String errorMessage = error.toString();
+            if (error.networkResponse != null) {
+                errorMessage = error.toString() + ": " +
+                        error.networkResponse.statusCode + ": " +
+                        new String(error.networkResponse.data, StandardCharsets.UTF_8);
+            }
+            return errorMessage;
+        }
+
+        private void showErrorMessage(@NonNull List<String> messages) {
+            String msg = StringUtil.joinUnique(messages, "\n");
+            Toaster.showMessage(msg);
         }
     }
 }

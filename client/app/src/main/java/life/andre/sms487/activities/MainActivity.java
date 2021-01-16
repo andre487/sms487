@@ -27,7 +27,6 @@ import life.andre.sms487.services.NotificationListener;
 import life.andre.sms487.settings.AppSettings;
 import life.andre.sms487.system.PermissionsChecker;
 import life.andre.sms487.utils.BgTask;
-import life.andre.sms487.views.Toaster;
 
 public class MainActivity extends Activity {
     private final static String TAG = "MainActivity";
@@ -57,7 +56,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        createFieldValues();
+        initObjects();
         startServiceTasks();
         findViewComponents();
         bindEvents();
@@ -68,8 +67,7 @@ public class MainActivity extends Activity {
         super.onStart();
         PermissionsChecker.check(this);
 
-        BgTask.run(this::getSettingsToShow).onSuccess(this::showSettings);
-
+        showSettings();
         showMessages();
         logUpdater.run();
 
@@ -98,7 +96,7 @@ public class MainActivity extends Activity {
         }
     }
 
-    private void createFieldValues() {
+    private void initObjects() {
         messageStorage = new MessageStorage(getApplicationContext());
         appSettings = new AppSettings(getApplicationContext());
         serverApi = new ServerApi(getApplicationContext());
@@ -133,6 +131,10 @@ public class MainActivity extends Activity {
         logsField.setMovementMethod(new ScrollingMovementMethod());
     }
 
+    private void showSettings() {
+        BgTask.run(this::getSettingsToShow).onSuccess(this::fillSettingFields);
+    }
+
     @NonNull
     private SettingsToShow getSettingsToShow() {
         SettingsToShow settings = new SettingsToShow();
@@ -144,7 +146,7 @@ public class MainActivity extends Activity {
         return settings;
     }
 
-    private void showSettings(@NonNull SettingsToShow v) {
+    private void fillSettingFields(@NonNull SettingsToShow v) {
         lockSettingsSave = true;
 
         showServerUrl(v.serverUrl);
@@ -161,6 +163,19 @@ public class MainActivity extends Activity {
         serverUrlInput.setText(serverUrl);
     }
 
+    public void showServerKey(@NonNull String serverKey) {
+        if (serverKeyInput == null) {
+            return;
+        }
+        serverKeyInput.setText(serverKey);
+    }
+
+    private void showNeedSendSms(boolean needSendSms) {
+        if (sendSmsCheckBox != null) {
+            sendSmsCheckBox.setChecked(needSendSms);
+        }
+    }
+
     void saveServerUrl() {
         if (serverUrlInput == null || lockSettingsSave) {
             return;
@@ -168,20 +183,11 @@ public class MainActivity extends Activity {
 
         BgTask.run(() -> {
             Editable serverUrlText = serverUrlInput.getText();
-            if (serverUrlText == null) {
-                Logger.w(TAG, "serverUrlText is null");
-                return null;
+            if (serverUrlText != null) {
+                appSettings.saveServerUrl(serverUrlText.toString());
             }
-            appSettings.saveServerUrl(serverUrlText.toString());
             return null;
         });
-    }
-
-    public void showServerKey(@NonNull String serverKey) {
-        if (serverKeyInput == null) {
-            return;
-        }
-        serverKeyInput.setText(serverKey);
     }
 
     void saveServerKey() {
@@ -191,19 +197,11 @@ public class MainActivity extends Activity {
 
         BgTask.run(() -> {
             Editable serverKeyText = serverKeyInput.getText();
-            if (serverKeyText == null) {
-                Logger.w(TAG, "serverKeyText is null");
-                return null;
+            if (serverKeyText != null) {
+                appSettings.saveServerKey(serverKeyText.toString());
             }
-            appSettings.saveServerKey(serverKeyText.toString());
             return null;
         });
-    }
-
-    private void showNeedSendSms(boolean needSendSms) {
-        if (sendSmsCheckBox != null) {
-            sendSmsCheckBox.setChecked(needSendSms);
-        }
     }
 
     void saveNeedSendSms() {
@@ -212,15 +210,9 @@ public class MainActivity extends Activity {
         }
 
         BgTask.run(() -> {
-            boolean checked = sendSmsCheckBox.isChecked();
-            appSettings.saveNeedSendSms(checked);
+            appSettings.saveNeedSendSms(sendSmsCheckBox.isChecked());
             return null;
         });
-    }
-
-    @NonNull
-    private List<MessageContainer> getMessages() {
-        return messageStorage.getMessagesTail();
     }
 
     private void showMessages() {
@@ -228,6 +220,11 @@ public class MainActivity extends Activity {
             return;
         }
         BgTask.run(this::getMessages).onSuccess(this::setMessagesToField);
+    }
+
+    @NonNull
+    private List<MessageContainer> getMessages() {
+        return messageStorage.getMessagesTail();
     }
 
     private void setMessagesToField(@NonNull List<MessageContainer> messages) {
@@ -275,8 +272,6 @@ public class MainActivity extends Activity {
 
         @Override
         public void onError(String errorMessage) {
-            Toaster.showMessage(errorMessage);
-
             activity.startActivity(
                     new Intent(activity, MainActivity.class)
                             .putExtra("action", "renewMessages")
