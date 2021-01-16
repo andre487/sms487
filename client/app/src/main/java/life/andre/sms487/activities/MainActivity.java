@@ -82,7 +82,6 @@ public class MainActivity extends Activity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessagesStateChanged(MessagesStateChanged event) {
-        // TODO: throttle
         showMessages();
     }
 
