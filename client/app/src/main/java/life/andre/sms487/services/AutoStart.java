@@ -22,8 +22,8 @@ public class AutoStart extends BroadcastReceiver {
         Intent intent = new Intent(context, NotificationListener.class);
         context.startService(intent);
 
-        MessageCleanupWorker.schedule();
-        MessageResendWorker.schedule();
+        MessageCleanupWorker.schedulePeriodic();
+        MessageResendWorker.scheduleOneTime();
 
         Logger.i(TAG, "Started");
     }

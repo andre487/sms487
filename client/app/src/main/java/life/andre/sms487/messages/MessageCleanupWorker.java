@@ -3,6 +3,7 @@ package life.andre.sms487.messages;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
+import androidx.work.Constraints;
 import androidx.work.ExistingPeriodicWorkPolicy;
 import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
@@ -19,10 +20,15 @@ public class MessageCleanupWorker extends Worker {
     @NonNull
     private final MessageStorage messageStorage;
 
-    public static void schedule() {
+    public static void schedulePeriodic() {
         PeriodicWorkRequest task = new PeriodicWorkRequest.Builder(
                 MessageCleanupWorker.class,
-                3, TimeUnit.HOURS
+                1, TimeUnit.DAYS
+        ).setConstraints(
+                new Constraints.Builder()
+                        .setRequiresCharging(true)
+                        .setRequiresDeviceIdle(true)
+                        .build()
         ).build();
 
         WorkManager workManager = WorkManager.getInstance();

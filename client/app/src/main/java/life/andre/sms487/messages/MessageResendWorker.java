@@ -3,16 +3,13 @@ package life.andre.sms487.messages;
 import android.content.Context;
 
 import androidx.annotation.NonNull;
-import androidx.work.BackoffPolicy;
 import androidx.work.Constraints;
-import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.ExistingWorkPolicy;
 import androidx.work.NetworkType;
-import androidx.work.PeriodicWorkRequest;
+import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
-
-import java.util.concurrent.TimeUnit;
 
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.network.ServerApi;
@@ -23,23 +20,19 @@ public class MessageResendWorker extends Worker {
     @NonNull
     private final ServerApi serverApi;
 
-    public static void schedule() {
-        PeriodicWorkRequest task = new PeriodicWorkRequest.Builder(
-                MessageResendWorker.class,
-                15, TimeUnit.MINUTES
+    public static void scheduleOneTime() {
+        OneTimeWorkRequest task = new OneTimeWorkRequest.Builder(
+                MessageResendWorker.class
         ).setConstraints(
                 new Constraints.Builder()
-                        .setRequiresBatteryNotLow(true)
                         .setRequiredNetworkType(NetworkType.CONNECTED)
                         .build()
-        ).setBackoffCriteria(
-                BackoffPolicy.LINEAR,
-                PeriodicWorkRequest.MIN_BACKOFF_MILLIS,
-                TimeUnit.MILLISECONDS
         ).build();
 
         WorkManager workManager = WorkManager.getInstance();
-        workManager.enqueueUniquePeriodicWork(TAG, ExistingPeriodicWorkPolicy.KEEP, task);
+        workManager.enqueueUniqueWork(TAG, ExistingWorkPolicy.KEEP, task);
+
+        Logger.i(TAG, "Schedule messages resend");
     }
 
     public MessageResendWorker(@NonNull Context ctx, @NonNull WorkerParameters workerParams) {
@@ -51,8 +44,8 @@ public class MessageResendWorker extends Worker {
     @Override
     public Result doWork() {
         try {
-            serverApi.resendMessages();
             Logger.i(TAG, "Resend messages if needed");
+            serverApi.resendMessages();
             return Result.success();
         } catch (Exception e) {
             Logger.i(TAG, e.toString());

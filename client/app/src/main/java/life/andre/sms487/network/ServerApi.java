@@ -21,6 +21,7 @@ import java.util.Map;
 
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
+import life.andre.sms487.messages.MessageResendWorker;
 import life.andre.sms487.messages.MessageStorage;
 import life.andre.sms487.settings.AppSettings;
 import life.andre.sms487.utils.BgTask;
@@ -206,6 +207,8 @@ public class ServerApi {
     private static class ApiErrorListener implements Response.ErrorListener {
         @Override
         public void onErrorResponse(@NonNull VolleyError error) {
+            MessageResendWorker.scheduleOneTime();
+
             String errorMessage = error.toString();
             if (error.networkResponse != null) {
                 errorMessage = error.toString() + ": " +

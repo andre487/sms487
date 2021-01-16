@@ -112,8 +112,8 @@ public class MainActivity extends Activity {
         Intent intent = new Intent(this, NotificationListener.class);
         startService(intent);
 
-        MessageCleanupWorker.schedule();
-        MessageResendWorker.schedule();
+        MessageCleanupWorker.schedulePeriodic();
+        MessageResendWorker.scheduleOneTime();
     }
 
     private void findViewComponents() {
