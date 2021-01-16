@@ -9,6 +9,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
+import life.andre.sms487.views.Toaster;
+
 
 @SuppressWarnings("SameParameterValue")
 public class AppSettings {
@@ -32,27 +34,24 @@ public class AppSettings {
     }
 
     @NonNull
-    public String saveServerUrl(@NonNull String serverUrl) {
-        return saveValue(SERVER_URL, serverUrl);
-    }
-
-    @NonNull
     public String getServerKey() {
         return getString(SERVER_KEY);
-    }
-
-    @NonNull
-    public String saveServerKey(@NonNull String serverKey) {
-        return saveValue(SERVER_KEY, serverKey);
     }
 
     public boolean getNeedSendSms() {
         return getBool(NEED_SEND_SMS);
     }
 
-    @NonNull
-    public String saveNeedSendSms(boolean needSendSms) {
-        return saveValue(NEED_SEND_SMS, needSendSms);
+    public void saveServerUrl(@NonNull String serverUrl) {
+        saveValue(SERVER_URL, serverUrl);
+    }
+
+    public void saveServerKey(@NonNull String serverKey) {
+        saveValue(SERVER_KEY, serverKey);
+    }
+
+    public void saveNeedSendSms(boolean needSendSms) {
+        saveValue(NEED_SEND_SMS, needSendSms);
     }
 
     @NonNull
@@ -66,14 +65,14 @@ public class AppSettings {
     }
 
 
-    @NonNull
-    private String saveValue(@NonNull String name, @NonNull String val) {
-        return saveSettingsItemToStorage(name, TYPE_STRING, val, false);
+    private void saveValue(@NonNull String name, @NonNull String val) {
+        String msg = saveSettingsItemToStorage(name, TYPE_STRING, val, false);
+        Toaster.showMessage(msg);
     }
 
-    @NonNull
-    private String saveValue(@NonNull String name, boolean val) {
-        return saveSettingsItemToStorage(name, TYPE_BOOL, "", val);
+    private void saveValue(@NonNull String name, boolean val) {
+        String msg = saveSettingsItemToStorage(name, TYPE_BOOL, "", val);
+        Toaster.showMessage(msg);
     }
 
     @NonNull

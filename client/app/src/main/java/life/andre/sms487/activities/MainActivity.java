@@ -11,10 +11,8 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import java.util.List;
 
@@ -29,6 +27,7 @@ import life.andre.sms487.services.NotificationListener;
 import life.andre.sms487.settings.AppSettings;
 import life.andre.sms487.system.PermissionsChecker;
 import life.andre.sms487.utils.BgTask;
+import life.andre.sms487.views.Toaster;
 
 public class MainActivity extends Activity {
     private final static String TAG = "MainActivity";
@@ -94,20 +93,15 @@ public class MainActivity extends Activity {
             return;
         }
 
-        switch (action) {
-            case "renewMessages":
-                showMessages();
-                break;
-            case "toastMessage":
-                toastShowText(intent.getStringExtra("message"));
-                break;
+        if ("renewMessages".equals(action)) {
+            showMessages();
         }
     }
 
     private void createFieldValues() {
-        messageStorage = new MessageStorage(this.getApplicationContext());
-        appSettings = new AppSettings(this.getApplicationContext());
-        serverApi = new ServerApi(this.getApplicationContext());
+        messageStorage = new MessageStorage(getApplicationContext());
+        appSettings = new AppSettings(getApplicationContext());
+        serverApi = new ServerApi(getApplicationContext());
     }
 
     private void startServiceTasks() {
@@ -131,18 +125,12 @@ public class MainActivity extends Activity {
     }
 
     private void bindEvents() {
-        saveServerUrlButton.setOnClickListener(v -> this.saveServerUrl());
-        saveServerKeyButton.setOnClickListener(v -> this.saveServerKey());
-        sendSmsCheckBox.setOnCheckedChangeListener((v, c) -> this.saveNeedSendSms());
+        saveServerUrlButton.setOnClickListener(v -> saveServerUrl());
+        saveServerKeyButton.setOnClickListener(v -> saveServerKey());
+        sendSmsCheckBox.setOnCheckedChangeListener((v, c) -> saveNeedSendSms());
 
         messagesField.setMovementMethod(new ScrollingMovementMethod());
         logsField.setMovementMethod(new ScrollingMovementMethod());
-    }
-
-    private void toastShowText(@Nullable String message) {
-        if (message != null) {
-            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
-        }
     }
 
     @NonNull
@@ -184,8 +172,9 @@ public class MainActivity extends Activity {
                 Logger.w(TAG, "serverUrlText is null");
                 return null;
             }
-            return appSettings.saveServerUrl(serverUrlText.toString());
-        }).onSuccess(this::toastShowText);
+            appSettings.saveServerUrl(serverUrlText.toString());
+            return null;
+        });
     }
 
     public void showServerKey(@NonNull String serverKey) {
@@ -206,8 +195,9 @@ public class MainActivity extends Activity {
                 Logger.w(TAG, "serverKeyText is null");
                 return null;
             }
-            return appSettings.saveServerKey(serverKeyText.toString());
-        }).onSuccess(this::toastShowText);
+            appSettings.saveServerKey(serverKeyText.toString());
+            return null;
+        });
     }
 
     private void showNeedSendSms(boolean needSendSms) {
@@ -223,8 +213,9 @@ public class MainActivity extends Activity {
 
         BgTask.run(() -> {
             boolean checked = sendSmsCheckBox.isChecked();
-            return appSettings.saveNeedSendSms(checked);
-        }).onSuccess(this::toastShowText);
+            appSettings.saveNeedSendSms(checked);
+            return null;
+        });
     }
 
     @NonNull
@@ -284,12 +275,7 @@ public class MainActivity extends Activity {
 
         @Override
         public void onError(String errorMessage) {
-            activity.startActivity(
-                    new Intent(activity, MainActivity.class)
-                            .putExtra("action", "toastMessage")
-                            .putExtra("message", errorMessage)
-                            .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-            );
+            Toaster.showMessage(errorMessage);
 
             activity.startActivity(
                     new Intent(activity, MainActivity.class)
