@@ -15,7 +15,7 @@ import life.andre.sms487.utils.StringUtil;
 import life.andre.sms487.utils.ValueThrottler;
 
 public class Toaster {
-    public static int MESSAGE_DELAY = 250;
+    public static final int MESSAGE_DELAY = 250;
 
     @SuppressLint("StaticFieldLeak")
     private static Context ctx;

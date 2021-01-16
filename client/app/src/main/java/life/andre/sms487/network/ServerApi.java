@@ -124,7 +124,7 @@ public class ServerApi {
     }
 
     @Nullable
-    private JSONObject createJsonRequestItem(MessageContainer msg) {
+    private JSONObject createJsonRequestItem(@NonNull MessageContainer msg) {
         JSONObject item = new JSONObject();
 
         String text = msg.getBody();

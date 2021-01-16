@@ -11,9 +11,6 @@ import java.util.function.Consumer;
 
 public class ValueThrottler<ValType> {
     @NonNull
-    public static final String TAG = "ValueThrottler";
-
-    @NonNull
     private final List<ValType> values = new ArrayList<>();
     @NonNull
     private final Consumer<List<ValType>> callback;
