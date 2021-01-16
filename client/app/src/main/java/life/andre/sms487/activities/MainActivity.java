@@ -322,7 +322,7 @@ public class MainActivity extends Activity {
         }
 
         @Override
-        public void run() {
+        public synchronized void run() {
             activity.showLogsFromLogger();
             activity.logUpdateHandler.postDelayed(this, 2500);
         }

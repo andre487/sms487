@@ -17,7 +17,7 @@ public class MessageContainer {
     private final String smsCenterDateTime;
     private final String body;
     private final boolean isSent;
-    private final long dbId;
+    private long dbId;
 
     @Nullable
     public static MessageContainer createFromJson(@NonNull String messageJson) {
@@ -114,6 +114,10 @@ public class MessageContainer {
     @Nullable
     public String getBody() {
         return body;
+    }
+
+    public void setDbId(long dbId) {
+        this.dbId = dbId;
     }
 
     public long getDbId() {

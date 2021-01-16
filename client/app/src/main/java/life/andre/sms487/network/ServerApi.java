@@ -25,11 +25,13 @@ import life.andre.sms487.messages.MessageResendWorker;
 import life.andre.sms487.messages.MessageStorage;
 import life.andre.sms487.settings.AppSettings;
 import life.andre.sms487.utils.BgTask;
+import life.andre.sms487.utils.ValueThrottler;
 
 public class ServerApi {
     public static final String TAG = "ServerApi";
     public static final String MESSAGE_TYPE_SMS = "sms";
     public static final String MESSAGE_TYPE_NOTIFICATION = "notification";
+    public static final long THROTTLE_DELAY = 500;
 
     private static final List<RequestHandledListener> requestHandledListeners = new ArrayList<>();
 
@@ -39,6 +41,8 @@ public class ServerApi {
     private final MessageStorage messageStorage;
     @NonNull
     private final RequestQueue requestQueue;
+    @NonNull
+    private final ValueThrottler<MessageContainer> throttler = new ValueThrottler<>(this::handleMessages, THROTTLE_DELAY);
 
     public interface RequestHandledListener {
         void onSuccess();
@@ -61,10 +65,7 @@ public class ServerApi {
     }
 
     public void addMessage(@NonNull MessageContainer msg) {
-        BgTask.run(() -> {
-            addMessageSlow(msg);
-            return null;
-        });
+        throttler.handle(msg);
     }
 
     public void resendMessages() {
@@ -78,9 +79,19 @@ public class ServerApi {
             Logger.i(TAG, "Resend: try to resend " + notSentCount + " messages");
 
             for (MessageContainer message : messages) {
-                addMessageSlow(message);
+                throttler.handle(message);
             }
 
+            return null;
+        });
+    }
+
+    private void handleMessages(@NonNull List<MessageContainer> messages) {
+        BgTask.run(() -> {
+            // TODO: make batch request
+            for (MessageContainer msg : messages) {
+                addMessageSlow(msg);
+            }
             return null;
         });
     }
@@ -99,13 +110,7 @@ public class ServerApi {
 
         String logText = text != null ? text.replace('\n', ' ') : "null";
 
-        int maxLogTextSize = 32;
-        if (logText.length() > maxLogTextSize) {
-            logText = logText.substring(0, maxLogTextSize) + "…";
-        }
-
-        String logLine = "Sending " + messageType + ": " + logText;
-        Logger.i(TAG, logLine);
+        logMessageSend(messageType, logText);
 
         addRequest(messageType, dateTime, postDateTime, tel, text, dbId);
     }
@@ -138,6 +143,16 @@ public class ServerApi {
         AddRequest request = new AddRequest(serverUrl, serverKey, requestParams, dbId, messageStorage);
 
         this.requestQueue.add(request);
+    }
+
+    private void logMessageSend(String messageType, String logText) {
+        int maxLogTextSize = 32;
+        if (logText.length() > maxLogTextSize) {
+            logText = logText.substring(0, maxLogTextSize) + "…";
+        }
+
+        String logLine = "Sending " + messageType + ": " + logText;
+        Logger.i(TAG, logLine);
     }
 
     private static class AddRequest extends StringRequest {
