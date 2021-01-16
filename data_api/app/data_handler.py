@@ -148,6 +148,7 @@ def add_sms(data):
         'date_time': date_time,
         'sms_date_time': sms_date_time,
         'text': text,
+        'created': datetime.utcnow(),
     })
 
 
@@ -443,7 +444,7 @@ def _get_sms_collection():
     collection = client[MONGO_DB_NAME]['sms_items']
 
     collection.create_index([
-        ('date_time', pymongo.ASCENDING),
+        ('created', pymongo.ASCENDING),
     ], background=True, expireAfterSeconds=172800)
 
     collection.create_index([
