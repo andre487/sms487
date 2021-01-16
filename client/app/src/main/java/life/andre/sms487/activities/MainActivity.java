@@ -33,8 +33,8 @@ import life.andre.sms487.utils.BgTask;
 public class MainActivity extends Activity {
     private final static String TAG = "MainActivity";
 
-    private final PermissionsChecker permissionsChecker = new PermissionsChecker(this);
     private final LogUpdater logUpdater = new LogUpdater(this::showLogsFromLogger);
+    // TODO: replace with events
     private final ServerApi.RequestHandledListener smsRequestListener = new SmsRequestListener(this);
 
     private MessageStorage messageStorage;
@@ -67,7 +67,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-        permissionsChecker.checkPermissions();
+        PermissionsChecker.check(this);
 
         BgTask.run(this::getSettingsToShow).onSuccess(this::showSettings);
 
@@ -105,9 +105,9 @@ public class MainActivity extends Activity {
     }
 
     private void createFieldValues() {
-        messageStorage = new MessageStorage(this);
-        appSettings = new AppSettings(this);
-        serverApi = new ServerApi(this);
+        messageStorage = new MessageStorage(this.getApplicationContext());
+        appSettings = new AppSettings(this.getApplicationContext());
+        serverApi = new ServerApi(this.getApplicationContext());
     }
 
     private void startServiceTasks() {
@@ -133,9 +133,7 @@ public class MainActivity extends Activity {
     private void bindEvents() {
         saveServerUrlButton.setOnClickListener(v -> this.saveServerUrl());
         saveServerKeyButton.setOnClickListener(v -> this.saveServerKey());
-        sendSmsCheckBox.setOnCheckedChangeListener((v, c) -> {
-            this.saveNeedSendSms();
-        });
+        sendSmsCheckBox.setOnCheckedChangeListener((v, c) -> this.saveNeedSendSms());
 
         messagesField.setMovementMethod(new ScrollingMovementMethod());
         logsField.setMovementMethod(new ScrollingMovementMethod());
@@ -242,19 +240,18 @@ public class MainActivity extends Activity {
     }
 
     private void setMessagesToField(@NonNull List<MessageContainer> messages) {
-        StringBuilder messagesString = new StringBuilder();
+        StringBuilder msgVal = new StringBuilder();
         for (MessageContainer message : messages) {
-            messagesString.append(message.getAddressFrom());
-            messagesString.append('\t');
-            messagesString.append(message.getDateTime());
-            messagesString.append("\nSent: ");
-            messagesString.append(message.isSent() ? "yes" : "no");
-            messagesString.append('\n');
-
-            messagesString.append(message.getBody());
-            messagesString.append("\n\n");
+            msgVal.append(message.getAddressFrom())
+                    .append('\t')
+                    .append(message.getDateTime())
+                    .append("\nSent: ")
+                    .append(message.isSent() ? "yes" : "no")
+                    .append('\n')
+                    .append(message.getBody())
+                    .append("\n\n");
         }
-        messagesField.setText(messagesString.toString().trim());
+        messagesField.setText(msgVal.toString().trim());
     }
 
     private void showLogsFromLogger() {
@@ -262,13 +259,11 @@ public class MainActivity extends Activity {
             return;
         }
 
-        StringBuilder logsString = new StringBuilder();
+        StringBuilder logs = new StringBuilder();
         for (String logLine : Logger.getMessages()) {
-            logsString.append(logLine);
-            logsString.append('\n');
+            logs.append(logLine).append('\n');
         }
-
-        logsField.setText(logsString.toString().trim());
+        logsField.setText(logs.toString().trim());
     }
 
     private static class SmsRequestListener implements ServerApi.RequestHandledListener {
@@ -280,26 +275,27 @@ public class MainActivity extends Activity {
 
         @Override
         public void onSuccess() {
-            Intent intent = new Intent(activity, MainActivity.class);
-
-            intent.putExtra("action", "renewMessages");
-            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
-            activity.startActivity(intent);
+            activity.startActivity(
+                    new Intent(activity, MainActivity.class)
+                            .putExtra("action", "renewMessages")
+                            .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            );
         }
 
         @Override
         public void onError(String errorMessage) {
-            Intent errorIntent = new Intent(activity, MainActivity.class);
-            errorIntent.putExtra("action", "toastMessage");
-            errorIntent.putExtra("message", errorMessage);
-            errorIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            activity.startActivity(errorIntent);
+            activity.startActivity(
+                    new Intent(activity, MainActivity.class)
+                            .putExtra("action", "toastMessage")
+                            .putExtra("message", errorMessage)
+                            .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            );
 
-            Intent renewIntent = new Intent(activity, MainActivity.class);
-            renewIntent.putExtra("action", "renewMessages");
-            renewIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            activity.startActivity(renewIntent);
+            activity.startActivity(
+                    new Intent(activity, MainActivity.class)
+                            .putExtra("action", "renewMessages")
+                            .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+            );
         }
     }
 

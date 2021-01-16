@@ -6,17 +6,13 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.provider.Settings;
 
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class PermissionsChecker {
-    private final Activity activity;
-
-    public PermissionsChecker(Activity activity) {
-        this.activity = activity;
-    }
-
-    public void checkPermissions() {
+    public static void check(@NonNull Activity activity) {
         String[] required = {
                 Manifest.permission.RECEIVE_SMS,
                 Manifest.permission.INTERNET,
