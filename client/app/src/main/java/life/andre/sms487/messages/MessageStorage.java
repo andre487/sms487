@@ -33,14 +33,27 @@ public class MessageStorage {
     }
 
     @NonNull
-    public List<MessageContainer> getMessagesTail() {
-        List<Message> messageEntries = dao.getTail();
-        List<MessageContainer> messages = new ArrayList<>();
+    public List<Long> addMessages(@NonNull List<MessageContainer> messages) {
+        List<Long> ids = new ArrayList<>();
 
-        for (Message messageEntry : messageEntries) {
-            messages.add(MessageContainer.createFromMessageEntry(messageEntry));
+        for (MessageContainer msg : messages) {
+            long dbId = msg.getDbId();
+            if (dbId == 0) {
+                dbId = addMessage(msg);
+                msg.setDbId(dbId);
+            }
+            ids.add(dbId);
         }
 
+        return ids;
+    }
+
+    @NonNull
+    public List<MessageContainer> getMessagesTail() {
+        List<MessageContainer> messages = new ArrayList<>();
+        for (Message messageEntry : dao.getTail()) {
+            messages.add(MessageContainer.createFromMessageEntry(messageEntry));
+        }
         return messages;
     }
 
@@ -58,6 +71,12 @@ public class MessageStorage {
 
     public void markSent(long insertId) {
         dao.markSent(insertId);
+    }
+
+    public void markSent(@NonNull List<Long> insertIds) {
+        for (long insertId : insertIds) {
+            markSent(insertId);
+        }
     }
 
     public void deleteOld() {

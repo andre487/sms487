@@ -14,8 +14,12 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.greenrobot.eventbus.EventBus;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +39,7 @@ public class ServerApi {
     public static final String MESSAGE_TYPE_SMS = "sms";
     public static final String MESSAGE_TYPE_NOTIFICATION = "notification";
     public static final long THROTTLE_DELAY = 500;
+    public static final int MESSAGES_TO_SEND = 42;
 
     @NonNull
     private final AppSettings appSettings;
@@ -75,64 +80,76 @@ public class ServerApi {
 
     private void handleMessages(@NonNull List<MessageContainer> messages) {
         BgTask.run(() -> {
-            // TODO: make batch request
-            for (MessageContainer msg : messages) {
-                addMessageSlow(msg);
-            }
+            handleMessageBatches(messages);
             return null;
         });
     }
 
-    private void addMessageSlow(@NonNull MessageContainer msg) {
-        long dbId = msg.getDbId();
-        if (dbId == 0) {
-            dbId = messageStorage.addMessage(msg);
+    private void handleMessageBatches(@NonNull List<MessageContainer> messages) {
+        List<MessageContainer> toSend = new ArrayList<>();
+        for (MessageContainer msg : messages) {
+            toSend.add(msg);
+            if (toSend.size() >= MESSAGES_TO_SEND) {
+                addMessagesList(toSend);
+                toSend.clear();
+            }
         }
 
-        String messageType = msg.getMessageType();
-        String dateTime = msg.getDateTime();
-        String postDateTime = msg.getSmsCenterDateTime();
-        String tel = msg.getAddressFrom();
-        String text = msg.getBody();
-
-        String logText = text != null ? text.replace('\n', ' ') : "null";
-
-        logMessageSend(messageType, logText);
-
-        addRequest(messageType, dateTime, postDateTime, tel, text, dbId);
+        if (toSend.size() > 0) {
+            addMessagesList(toSend);
+        }
     }
 
-    private void addRequest(
-            String messageType, String dateTime, @Nullable String smsCenterDateTime,
-            String tel, String text, long dbId
-    ) {
-        String serverUrl = appSettings.getServerUrl();
-        String serverKey = appSettings.getServerKey();
+    private void addMessagesList(@NonNull List<MessageContainer> messages) {
+        List<Long> dbIds = messageStorage.addMessages(messages);
 
-        if (serverUrl.length() == 0 || serverKey.length() == 0) {
+        JSONArray reqData = new JSONArray();
+        for (MessageContainer msg : messages) {
+            JSONObject item = createJsonRequestItem(msg);
+            if (item == null) {
+                continue;
+            }
+            reqData.put(item);
+        }
+
+        String url = appSettings.getServerUrl();
+        String key = appSettings.getServerKey();
+
+        if (url.length() == 0 || key.length() == 0) {
             Logger.w(TAG, "Server params are empty, skip sending");
             return;
         }
 
-        if (smsCenterDateTime == null) {
-            smsCenterDateTime = dateTime;
-        }
-
-        Map<String, String> requestParams = new HashMap<>();
-
-        requestParams.put("device_id", Build.MODEL);
-        requestParams.put("message_type", messageType);
-        requestParams.put("date_time", dateTime);
-        requestParams.put("sms_date_time", smsCenterDateTime);
-        requestParams.put("tel", tel);
-        requestParams.put("text", text);
-
-        AddRequest request = new AddRequest(serverUrl, serverKey, requestParams, dbId, messageStorage);
-
-        this.requestQueue.add(request);
+        this.requestQueue.add(new ApiAddMessageRequest(url, key, reqData.toString(), dbIds, messageStorage));
     }
 
-    private void logMessageSend(String messageType, String logText) {
+    @Nullable
+    private JSONObject createJsonRequestItem(MessageContainer msg) {
+        JSONObject item = new JSONObject();
+
+        String text = msg.getBody();
+        String messageType = msg.getMessageType();
+
+        try {
+            item.put("device_id", Build.MODEL)
+                .put("message_type", messageType)
+                .put("date_time", msg.getDateTime())
+                .put("sms_date_time", msg.getSmsCenterDateTime())
+                .put("tel", msg.getAddressFrom())
+                .put("text", text);
+        } catch (JSONException e) {
+            Logger.e(TAG, e.toString());
+            e.printStackTrace();
+            return null;
+        }
+
+        logMessageSend(messageType, text);
+        return item;
+    }
+
+    private void logMessageSend(@NonNull String messageType, @Nullable String text) {
+        String logText = text != null ? text.replace('\n', ' ') : "null";
+
         int maxLogTextSize = 32;
         if (logText.length() > maxLogTextSize) {
             logText = logText.substring(0, maxLogTextSize) + "…";
@@ -142,59 +159,87 @@ public class ServerApi {
         Logger.i(TAG, logLine);
     }
 
-    private static class AddRequest extends StringRequest {
-        private final Map<String, String> requestParams;
+    private static class ApiAddMessageRequest extends StringRequest {
         @NonNull
         private final String cookie;
+        @NonNull
+        private final String requestBody;
 
-        AddRequest(String url, String key, Map<String, String> params, long dbId, MessageStorage msgStorage) {
+        ApiAddMessageRequest(@NonNull String url, @NonNull String key, @NonNull String requestBody, @NonNull List<Long> dbIds, @NonNull MessageStorage msgStorage) {
             super(
                     Request.Method.POST,
                     url + "/add-sms",
-                    new ApiResponseListener(dbId, msgStorage),
+                    new ApiResponseListener(dbIds, msgStorage),
                     new ApiErrorListener()
             );
-            this.requestParams = params;
             this.cookie = "__Secure-Auth-Token=" + key;
+            this.requestBody = requestBody;
         }
 
         @NonNull
         @Override
         public Map<String, String> getHeaders() {
             Map<String, String> headers = new HashMap<>();
-
             headers.put("Cookie", cookie);
-
             return headers;
         }
 
+        @NonNull
         @Override
-        protected Map<String, String> getParams() {
-            return requestParams;
+        public String getBodyContentType() {
+            return "application/json; charset=utf-8";
+        }
+
+        @NonNull
+        @Override
+        public byte[] getBody() {
+            return requestBody.getBytes(StandardCharsets.UTF_8);
         }
     }
 
     private static class ApiResponseListener implements Response.Listener<String> {
-        private final long dbId;
+        @NonNull
+        private final List<Long> dbIds;
+        @NonNull
         private final MessageStorage messageStorage;
 
-        ApiResponseListener(long dbId, MessageStorage messageStorage) {
-            this.dbId = dbId;
+        ApiResponseListener(@NonNull List<Long> dbIds, @NonNull MessageStorage messageStorage) {
+            this.dbIds = dbIds;
             this.messageStorage = messageStorage;
         }
 
         @Override
         public void onResponse(@Nullable String response) {
-            if (response == null) {
-                response = "Unknown response";
-            }
-            Logger.i(TAG, "Response: " + response);
+            markMessagesSent();
 
+            if (response == null) {
+                Logger.i(TAG, "Unknown request success");
+                return;
+            }
+
+            logResponseDetails(response);
+        }
+
+        private void markMessagesSent() {
             BgTask.run(() -> {
-                messageStorage.markSent(dbId);
+                messageStorage.markSent(dbIds);
                 EventBus.getDefault().post(new MessagesStateChanged());
                 return null;
             });
+        }
+
+        private void logResponseDetails(@NonNull String response) {
+            try {
+                JSONObject resp = new JSONObject(response);
+
+                String status = resp.optString("status", "UNK");
+                int added = resp.optInt("added", -1);
+
+                Logger.i(TAG, "Added: " + added + ": " + status);
+            } catch (JSONException e) {
+                Logger.w(TAG, e.toString());
+                e.printStackTrace();
+            }
         }
     }
 
