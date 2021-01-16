@@ -113,8 +113,9 @@ def get_sms():
 @ath.require_auth(no_redirect=True, access=['sms'])
 def add_sms():
     try:
-        data_handler.add_sms(request.form)
-        return create_json_response({'status': 'OK'})
+        data = request.json or request.form
+        count = data_handler.add_sms(data)
+        return create_json_response({'status': 'OK', 'added': count})
     except data_handler.FormDataError as e:
         logging.info('Client error: %s', e)
         return create_json_response({'error': str(e)}, status=400)

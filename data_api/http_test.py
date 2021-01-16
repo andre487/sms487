@@ -15,7 +15,10 @@ with open(os.path.join(TEST_DATA_PATH, 'fixture.json')) as fp:
     FIXTURE = json.load(fp)
 
 
-def make_app_request(handler, method='GET', data=None, files=None, headers=None, cookies=None, set_token=True):
+def make_app_request(
+        handler, method='GET', data=None, files=None, headers=None, cookies=None, set_token=True,
+        data_type_json=False,
+):
     if cookies is None:
         cookies = {}
 
@@ -25,12 +28,18 @@ def make_app_request(handler, method='GET', data=None, files=None, headers=None,
     if set_token:
         cookies[acm.AUTH_COOKIE_NAME] = auth_token
 
-    return requests.request(
-        method, url,
+    params = dict(
         cookies=cookies, headers=headers,
         allow_redirects=False,
-        data=data, files=files,
+        files=files,
     )
+
+    if data_type_json:
+        params['json'] = data
+    else:
+        params['data'] = data
+
+    return requests.request(method, url, **params)
 
 
 class BaseTest:
@@ -174,7 +183,9 @@ class TestAddSms(BaseTest):
         assert res.headers['content-type'] == 'application/json; charset=utf-8'
         assert res.status_code == 200
 
-        assert res.json().get('status') == 'OK'
+        ans = res.json()
+        assert ans.get('status') == 'OK'
+        assert ans.get('added') == 1
 
         res = make_app_request('/get-sms?limit=1')
         ans = res.json()
@@ -186,6 +197,76 @@ class TestAddSms(BaseTest):
         assert ans[0].get('tel') == '03'
         assert ans[0].get('device_id') == 'TestTest'
         assert ans[0].get('text') == 'Quux'
+        assert ans[0].get('message_type') == 'sms'
+        assert ans[0].get('printable_message_type') == 'SMS'
+
+    def test_main_json_list(self):
+        res = make_app_request('/add-sms', method='POST', data=[
+            {
+                'message_type': 'sms',
+                'date_time': '2018-01-01 00:04:00 +0000',
+                'sms_date_time': '2017-12-31 23:04:00 +0000',
+                'tel': '03',
+                'device_id': 'TestTest',
+                'text': 'Quux 1',
+            },
+            {
+                'message_type': 'sms',
+                'date_time': '2018-01-01 00:04:00 +0000',
+                'sms_date_time': '2017-12-31 23:04:00 +0000',
+                'tel': '03',
+                'device_id': 'TestTest',
+                'text': 'Quux 2',
+            }
+        ], data_type_json=True)
+
+        assert res.headers['content-type'] == 'application/json; charset=utf-8'
+        assert res.status_code == 200
+
+        ans = res.json()
+        assert ans.get('status') == 'OK'
+        assert ans.get('added') == 2
+
+        res = make_app_request('/get-sms?limit=1')
+        ans = res.json()
+        assert len(ans) == 1
+
+        assert ans[0].get('date_time') == '01 Jan 2018 03:04'
+        assert ans[0].get('sms_date_time') == '01 Jan 2018 02:04'
+        assert ans[0].get('printable_date_time') == '01 Jan 2018 03:04 (01 Jan 2018 02:04)'
+        assert ans[0].get('tel') == '03'
+        assert ans[0].get('device_id') == 'TestTest'
+        assert ans[0].get('text') == 'Quux 2'
+        assert ans[0].get('message_type') == 'sms'
+        assert ans[0].get('printable_message_type') == 'SMS'
+
+    def test_main_json_dict(self):
+        res = make_app_request('/add-sms', method='POST', data={
+            'message_type': 'sms',
+            'date_time': '2018-01-01 00:04:00 +0000',
+            'sms_date_time': '2017-12-31 23:04:00 +0000',
+            'tel': '03',
+            'device_id': 'TestTest',
+            'text': 'Quux 1',
+        }, data_type_json=True)
+
+        assert res.headers['content-type'] == 'application/json; charset=utf-8'
+        assert res.status_code == 200
+
+        ans = res.json()
+        assert ans.get('status') == 'OK'
+        assert ans.get('added') == 1
+
+        res = make_app_request('/get-sms?limit=1')
+        ans = res.json()
+        assert len(ans) == 1
+
+        assert ans[0].get('date_time') == '01 Jan 2018 03:04'
+        assert ans[0].get('sms_date_time') == '01 Jan 2018 02:04'
+        assert ans[0].get('printable_date_time') == '01 Jan 2018 03:04 (01 Jan 2018 02:04)'
+        assert ans[0].get('tel') == '03'
+        assert ans[0].get('device_id') == 'TestTest'
+        assert ans[0].get('text') == 'Quux 1'
         assert ans[0].get('message_type') == 'sms'
         assert ans[0].get('printable_message_type') == 'SMS'
 
@@ -333,6 +414,14 @@ class TestAddSms(BaseTest):
         assert res.headers['content-type'] == 'application/json; charset=utf-8'
 
         assert res.json().get('error') == 'Text is too long'
+
+    def test_wrong_json(self):
+        res = make_app_request('/add-sms', method='POST', data=["wrong"], data_type_json=True)
+
+        assert res.headers['content-type'] == 'application/json; charset=utf-8'
+        assert res.status_code == 400
+
+        assert res.json().get('error') == 'Message data should be an Object'
 
 
 class TestFiltersPage(BaseTest):

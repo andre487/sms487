@@ -4,6 +4,7 @@ import os
 import re
 import time
 from collections import defaultdict
+from collections.abc import Mapping
 from datetime import datetime, timedelta
 
 import pymongo
@@ -101,7 +102,20 @@ def get_sms(device_id, limit=None, apply_filters=True):
 
 
 def add_sms(data):
+    if not isinstance(data, list) and not isinstance(data, tuple):
+        data = (data,)
+
     login = get_login()
+    docs = [create_add_sms_doc(login, x) for x in data]
+
+    res = _get_sms_collection().insert_many(docs)
+
+    return len(res.inserted_ids)
+
+
+def create_add_sms_doc(login, data):
+    if not isinstance(data, Mapping):
+        raise FormDataError('Message data should be an Object')
 
     message_type = data.get('message_type', '').strip()
     device_id = data.get('device_id', '').strip()
@@ -140,7 +154,7 @@ def add_sms(data):
     if len(text) > 2048:
         raise FormDataError('Text is too long')
 
-    _get_sms_collection().insert({
+    return {
         'login': login,
         'message_type': message_type,
         'device_id': device_id,
@@ -149,7 +163,7 @@ def add_sms(data):
         'sms_date_time': sms_date_time,
         'text': text,
         'created': datetime.utcnow(),
-    })
+    }
 
 
 def dress_sms_doc(doc):
