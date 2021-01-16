@@ -67,12 +67,12 @@ public class AppSettings {
 
     private void saveValue(@NonNull String name, @NonNull String val) {
         String msg = saveSettingsItemToStorage(name, TYPE_STRING, val, false);
-        Toaster.showMessage(msg);
+        Toaster.show(msg);
     }
 
     private void saveValue(@NonNull String name, boolean val) {
         String msg = saveSettingsItemToStorage(name, TYPE_BOOL, "", val);
-        Toaster.showMessage(msg);
+        Toaster.show(msg);
     }
 
     @NonNull

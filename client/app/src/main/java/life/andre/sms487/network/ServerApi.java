@@ -27,7 +27,6 @@ import life.andre.sms487.messages.MessageResendWorker;
 import life.andre.sms487.messages.MessageStorage;
 import life.andre.sms487.settings.AppSettings;
 import life.andre.sms487.utils.BgTask;
-import life.andre.sms487.utils.StringUtil;
 import life.andre.sms487.utils.ValueThrottler;
 import life.andre.sms487.views.Toaster;
 
@@ -200,17 +199,13 @@ public class ServerApi {
     }
 
     private static class ApiErrorListener implements Response.ErrorListener {
-        public static final long MESSAGE_DELAY = 250;
-        // TODO: move to Toaster
-        private final ValueThrottler<String> msgThrottler = new ValueThrottler<>(this::showErrorMessage, MESSAGE_DELAY);
-
         @Override
         public void onErrorResponse(@NonNull VolleyError error) {
             MessageResendWorker.scheduleOneTime();
 
             String finalErrorMessage = getFinalErrorMessage(error);
             Logger.e(TAG, finalErrorMessage);
-            msgThrottler.handle(finalErrorMessage);
+            Toaster.showThrottled(finalErrorMessage);
 
             EventBus.getDefault().post(new MessagesStateChanged());
         }
@@ -224,11 +219,6 @@ public class ServerApi {
                         .append(new String(error.networkResponse.data, StandardCharsets.UTF_8));
             }
             return err.toString();
-        }
-
-        private void showErrorMessage(@NonNull List<String> messages) {
-            String msg = StringUtil.joinUnique(messages, "\n");
-            Toaster.showMessage(msg);
         }
     }
 }
