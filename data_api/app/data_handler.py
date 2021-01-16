@@ -69,9 +69,15 @@ def get_sms(device_id, limit=None, apply_filters=True):
     if apply_filters:
         query.update(get_filters_match_query())
 
+    sort_key = {
+        'date_time': pymongo.DESCENDING,
+        'device_id': pymongo.ASCENDING,
+        '_id': pymongo.DESCENDING,
+    }
+
     aggregation = [
         {'$match': query},
-        {'$sort': {'date_time': pymongo.DESCENDING, 'device_id': pymongo.ASCENDING}},
+        {'$sort': sort_key},
         {'$limit': limit * 10},
         {'$group': {
             '_id': {'device_id': '$device_id', 'tel': '$tel', 'text_prefix': {'$substrCP': ['$text', 0, 128]}},
@@ -82,7 +88,7 @@ def get_sms(device_id, limit=None, apply_filters=True):
             'sms_date_time': {'$last': '$sms_date_time'},
             'text': {'$last': '$text'},
         }},
-        {'$sort': {'date_time': pymongo.DESCENDING, 'device_id': pymongo.ASCENDING}},
+        {'$sort': sort_key},
         {'$limit': limit},
     ]
 
