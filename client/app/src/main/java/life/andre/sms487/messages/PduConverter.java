@@ -15,14 +15,14 @@ import life.andre.sms487.utils.DateUtil;
 
 public class PduConverter {
     @NonNull
-    public List<MessageContainer> convert(@NonNull Object[] pdus, String format) {
+    public static List<MessageContainer> convert(@NonNull Object[] pdus, String format) {
         Map<Pair<String, String>, List<SmsMessage>> messageTable = getMessageTable(pdus, format);
 
         return getMessageContainers(messageTable);
     }
 
     @NonNull
-    private Map<Pair<String, String>, List<SmsMessage>> getMessageTable(
+    private static Map<Pair<String, String>, List<SmsMessage>> getMessageTable(
             @NonNull Object[] pdus, String format
     ) {
         Map<Pair<String, String>, List<SmsMessage>> messageTable = new HashMap<>();
@@ -49,7 +49,7 @@ public class PduConverter {
     }
 
     @NonNull
-    private List<MessageContainer> getMessageContainers(
+    private static List<MessageContainer> getMessageContainers(
             @NonNull Map<Pair<String, String>, List<SmsMessage>> messageTable
     ) {
         List<MessageContainer> messageContainers = new ArrayList<>();
