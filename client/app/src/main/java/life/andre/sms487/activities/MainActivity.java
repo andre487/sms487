@@ -6,7 +6,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
 import android.text.method.ScrollingMovementMethod;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -36,10 +35,6 @@ public class MainActivity extends Activity {
     private EditText serverUrlInput;
     private TextView messagesField;
     private TextView logsField;
-
-    private Button saveServerKeyButton;
-    private Button saveServerUrlButton;
-
     private CheckBox sendSmsCheckBox;
 
     private boolean lockSettingsSave = false;
@@ -81,16 +76,18 @@ public class MainActivity extends Activity {
         serverUrlInput = findViewById(R.id.serverUrlInput);
         messagesField = findViewById(R.id.messagesField);
         logsField = findViewById(R.id.logsField);
-
-        saveServerUrlButton = findViewById(R.id.serverUrlSave);
-        saveServerKeyButton = findViewById(R.id.serverKeySave);
-
         sendSmsCheckBox = findViewById(R.id.sendSmsCheckBox);
     }
 
     private void bindEvents() {
-        saveServerUrlButton.setOnClickListener(v -> saveServerUrl());
-        saveServerKeyButton.setOnClickListener(v -> saveServerKey());
+        serverUrlInput.setOnEditorActionListener((v, actionId, event) -> {
+            saveServerUrl();
+            return false;
+        });
+        serverKeyInput.setOnEditorActionListener((v, actionId, event) -> {
+            saveServerKey();
+            return false;
+        });
         sendSmsCheckBox.setOnCheckedChangeListener((v, c) -> saveNeedSendSms());
 
         messagesField.setMovementMethod(new ScrollingMovementMethod());

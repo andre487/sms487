@@ -15,18 +15,11 @@
 
         <EditText
             android:id="@+id/serverUrlInput"
-            android:layout_width="0dp"
-            android:layout_weight="1"
+            android:layout_width="match_parent"
             android:layout_height="48dp"
             android:hint="@string/server_placeholder"
             android:autofillHints="@android:string/no"
             android:inputType="textUri" />
-
-        <Button
-            android:id="@+id/serverUrlSave"
-            android:layout_height="48dp"
-            android:layout_width="80dp"
-            android:text="@string/save_label" />
     </LinearLayout>
 
     <LinearLayout
@@ -36,18 +29,11 @@
 
         <EditText
             android:id="@+id/serverKeyInput"
-            android:layout_weight="2"
             android:layout_height="48dp"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:hint="@string/server_key"
             android:autofillHints="@android:string/no"
             android:inputType="textPassword" />
-
-        <Button
-            android:id="@+id/serverKeySave"
-            android:layout_height="48dp"
-            android:layout_width="80dp"
-            android:text="@string/save_label" />
     </LinearLayout>
 
     <LinearLayout
@@ -85,7 +71,7 @@
             android:id="@+id/logsField"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="2"
+            android:layout_weight="1"
             android:layout_marginTop="8dp"
             android:padding="8dp"
             android:fontFamily="monospace"

@@ -4,10 +4,6 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.Objects;
 
 import life.andre.sms487.views.Toaster;
@@ -94,10 +90,6 @@ public class AppSettings {
 
     @NonNull
     private String saveSettingsItemToStorage(@NonNull String name, int type, @NonNull String strVal, boolean boolVal) {
-        if (name.equals(SERVER_URL)) {
-            return saveServerUrlToStorage(strVal);
-        }
-
         switch (type) {
             case TYPE_STRING:
                 return saveStringToStorage(name, strVal);
@@ -106,23 +98,6 @@ public class AppSettings {
         }
 
         return "Error: unknown setting";
-    }
-
-    @NonNull
-    private String saveServerUrlToStorage(@NonNull String serverUrl) {
-        try {
-            URL url = new URL(serverUrl);
-            URLConnection conn = url.openConnection();
-            conn.connect();
-        } catch (MalformedURLException e) {
-            return "Incorrect URL format";
-        } catch (IOException e) {
-            return "Could not connect to URL";
-        }
-
-        storage.set(SERVER_URL, serverUrl);
-
-        return "Server URL saved";
     }
 
     @NonNull
