@@ -29,32 +29,39 @@
         android:id="@+id/sendSmsCheckBox"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:textSize="12sp"
+        android:textSize="14sp"
         android:text="@string/send_sms_label" />
 
-    <TextView
-        android:id="@+id/messagesField"
-        android:layout_width="match_parent"
+    <ScrollView
         android:layout_height="match_parent"
-        android:textSize="12sp"
-        android:padding="8dp"
+        android:layout_width="match_parent"
         android:layout_weight="1.8"
-        android:fontFamily="sans-serif"
-        android:hint="@string/messages_label"
-        android:scrollbars="vertical"
-        android:background="@drawable/ic_text_view_border" />
-
-    <TextView
-        android:id="@+id/logsField"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:textSize="12sp"
-        android:layout_weight="1"
-        android:minHeight="48dp"
-        android:layout_marginTop="4dp"
         android:padding="8dp"
-        android:fontFamily="monospace"
-        android:hint="@string/logs_label"
-        android:scrollbars="vertical"
-        android:background="@drawable/ic_text_view_border" />
+        android:background="@drawable/ic_text_view_border">
+
+        <TextView
+            android:id="@+id/messagesField"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:fontFamily="sans-serif"
+            android:hint="@string/messages_label" />
+    </ScrollView>
+
+    <ScrollView
+        android:layout_height="match_parent"
+        android:layout_width="match_parent"
+        android:layout_weight="1"
+        android:layout_marginTop="8dp"
+        android:padding="8dp"
+        android:background="@drawable/ic_text_view_border">
+
+        <TextView
+            android:id="@+id/logsField"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:fontFamily="monospace"
+            android:hint="@string/logs_label" />
+    </ScrollView>
 </LinearLayout>

@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
-import android.text.method.ScrollingMovementMethod;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -30,20 +29,18 @@ import life.andre.sms487.utils.BgTask;
 public class MainActivity extends Activity {
     private final LogUpdater logUpdater = new LogUpdater(this::showLogsFromLogger);
     private final EventBus eventBus = EventBus.getDefault();
+    private boolean lockSettingsSave = false;
 
     private EditText serverKeyInput;
     private EditText serverUrlInput;
+    private CheckBox sendSmsCheckBox;
     private TextView messagesField;
     private TextView logsField;
-    private CheckBox sendSmsCheckBox;
-
-    private boolean lockSettingsSave = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         PermissionsChecker.check(this);
 
         findViewComponents();
@@ -74,9 +71,9 @@ public class MainActivity extends Activity {
     private void findViewComponents() {
         serverKeyInput = findViewById(R.id.serverKeyInput);
         serverUrlInput = findViewById(R.id.serverUrlInput);
+        sendSmsCheckBox = findViewById(R.id.sendSmsCheckBox);
         messagesField = findViewById(R.id.messagesField);
         logsField = findViewById(R.id.logsField);
-        sendSmsCheckBox = findViewById(R.id.sendSmsCheckBox);
     }
 
     private void bindEvents() {
@@ -89,9 +86,6 @@ public class MainActivity extends Activity {
             return false;
         });
         sendSmsCheckBox.setOnCheckedChangeListener((v, c) -> saveNeedSendSms());
-
-        messagesField.setMovementMethod(new ScrollingMovementMethod());
-        logsField.setMovementMethod(new ScrollingMovementMethod());
     }
 
     private void showSettings() {
@@ -100,38 +94,30 @@ public class MainActivity extends Activity {
 
     @NonNull
     private SettingsToShow getSettingsToShow() {
-        AppSettings appSettings = AppSettings.getInstance();
-        SettingsToShow settings = new SettingsToShow();
-
-        settings.serverUrl = appSettings.getServerUrl();
-        settings.serverKey = appSettings.getServerKey();
-        settings.needSendSms = appSettings.getNeedSendSms();
-
-        return settings;
+        AppSettings st = AppSettings.getInstance();
+        return new SettingsToShow(st.getServerUrl(), st.getServerKey(), st.getNeedSendSms());
     }
 
-    private void fillSettingFields(@NonNull SettingsToShow v) {
+    private void fillSettingFields(@NonNull SettingsToShow st) {
         lockSettingsSave = true;
 
-        showServerUrl(v.serverUrl);
-        showServerKey(v.serverKey);
-        showNeedSendSms(v.needSendSms);
+        showServerUrl(st.serverUrl);
+        showServerKey(st.serverKey);
+        showNeedSendSms(st.needSendSms);
 
         lockSettingsSave = false;
     }
 
     public void showServerUrl(@NonNull String serverUrl) {
-        if (serverUrlInput == null) {
-            return;
+        if (serverUrlInput != null) {
+            serverUrlInput.setText(serverUrl);
         }
-        serverUrlInput.setText(serverUrl);
     }
 
     public void showServerKey(@NonNull String serverKey) {
-        if (serverKeyInput == null) {
-            return;
+        if (serverKeyInput != null) {
+            serverKeyInput.setText(serverKey);
         }
-        serverKeyInput.setText(serverKey);
     }
 
     private void showNeedSendSms(boolean needSendSms) {
@@ -193,16 +179,15 @@ public class MainActivity extends Activity {
 
     private void setMessagesToField(@NonNull List<MessageContainer> messages) {
         StringBuilder msgVal = new StringBuilder();
+
         for (MessageContainer message : messages) {
             msgVal.append(message.getAddressFrom())
-                    .append('\t')
-                    .append(message.getDateTime())
-                    .append("\nSent: ")
-                    .append(message.isSent() ? "yes" : "no")
+                    .append('\t').append(message.getDateTime())
+                    .append("\nSent: ").append(message.isSent() ? "yes" : "no")
                     .append('\n')
-                    .append(message.getBody())
-                    .append("\n\n");
+                    .append(message.getBody()).append("\n\n");
         }
+
         messagesField.setText(msgVal.toString().trim());
     }
 
@@ -219,7 +204,7 @@ public class MainActivity extends Activity {
     }
 
     private static class LogUpdater implements Runnable {
-        public static final int DELAY = 2500;
+        public static final int DELAY = 1000;
 
         private final Handler handler = new Handler(Looper.getMainLooper());
         private final Runnable action;
@@ -241,9 +226,15 @@ public class MainActivity extends Activity {
 
     private static class SettingsToShow {
         @NonNull
-        String serverUrl = "";
+        final String serverUrl;
         @NonNull
-        String serverKey = "";
-        boolean needSendSms = false;
+        final String serverKey;
+        final boolean needSendSms;
+
+        SettingsToShow(@NonNull String serverUrl, @NonNull String serverKey, boolean needSendSms) {
+            this.serverUrl = serverUrl;
+            this.serverKey = serverKey;
+            this.needSendSms = needSendSms;
+        }
     }
 }
