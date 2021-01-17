@@ -104,7 +104,7 @@ public class NotificationListener extends NotificationListenerService {
     private void createServiceMessage() {
         NotificationChannel channel = new NotificationChannel(
                 CHANNEL_ID, "SMS 487 Notification Listener",
-                NotificationManager.IMPORTANCE_MIN
+                NotificationManager.IMPORTANCE_LOW
         );
 
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
