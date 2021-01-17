@@ -1,7 +1,6 @@
 package life.andre.sms487.activities;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -23,11 +22,8 @@ import java.util.List;
 import life.andre.sms487.R;
 import life.andre.sms487.events.MessagesStateChanged;
 import life.andre.sms487.logging.Logger;
-import life.andre.sms487.messages.MessageCleanupWorker;
 import life.andre.sms487.messages.MessageContainer;
-import life.andre.sms487.messages.MessageResendWorker;
 import life.andre.sms487.messages.MessageStorage;
-import life.andre.sms487.services.NotificationListener;
 import life.andre.sms487.settings.AppSettings;
 import life.andre.sms487.system.PermissionsChecker;
 import life.andre.sms487.utils.BgTask;
@@ -35,9 +31,6 @@ import life.andre.sms487.utils.BgTask;
 public class MainActivity extends Activity {
     private final LogUpdater logUpdater = new LogUpdater(this::showLogsFromLogger);
     private final EventBus eventBus = EventBus.getDefault();
-
-    private MessageStorage messageStorage;
-    private AppSettings appSettings;
 
     private EditText serverKeyInput;
     private EditText serverUrlInput;
@@ -56,8 +49,8 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        initObjects();
-        startServiceTasks();
+        PermissionsChecker.check(this);
+
         findViewComponents();
         bindEvents();
     }
@@ -65,8 +58,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-        PermissionsChecker.check(this);
-
         showSettings();
         showMessages();
         logUpdater.run();
@@ -83,19 +74,6 @@ public class MainActivity extends Activity {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessagesStateChanged(MessagesStateChanged event) {
         showMessages();
-    }
-
-    private void initObjects() {
-        messageStorage = new MessageStorage(getApplicationContext());
-        appSettings = new AppSettings(getApplicationContext());
-    }
-
-    private void startServiceTasks() {
-        Intent intent = new Intent(this, NotificationListener.class);
-        startService(intent);
-
-        MessageCleanupWorker.schedulePeriodic();
-        MessageResendWorker.scheduleOneTime();
     }
 
     private void findViewComponents() {
@@ -125,6 +103,7 @@ public class MainActivity extends Activity {
 
     @NonNull
     private SettingsToShow getSettingsToShow() {
+        AppSettings appSettings = AppSettings.getInstance();
         SettingsToShow settings = new SettingsToShow();
 
         settings.serverUrl = appSettings.getServerUrl();
@@ -172,7 +151,7 @@ public class MainActivity extends Activity {
         BgTask.run(() -> {
             Editable serverUrlText = serverUrlInput.getText();
             if (serverUrlText != null) {
-                appSettings.saveServerUrl(serverUrlText.toString());
+                AppSettings.getInstance().saveServerUrl(serverUrlText.toString());
             }
             return null;
         });
@@ -186,7 +165,7 @@ public class MainActivity extends Activity {
         BgTask.run(() -> {
             Editable serverKeyText = serverKeyInput.getText();
             if (serverKeyText != null) {
-                appSettings.saveServerKey(serverKeyText.toString());
+                AppSettings.getInstance().saveServerKey(serverKeyText.toString());
             }
             return null;
         });
@@ -198,7 +177,7 @@ public class MainActivity extends Activity {
         }
 
         BgTask.run(() -> {
-            appSettings.saveNeedSendSms(sendSmsCheckBox.isChecked());
+            AppSettings.getInstance().saveNeedSendSms(sendSmsCheckBox.isChecked());
             return null;
         });
     }
@@ -212,7 +191,7 @@ public class MainActivity extends Activity {
 
     @NonNull
     private List<MessageContainer> getMessages() {
-        return messageStorage.getMessagesTail();
+        return MessageStorage.getInstance().getMessagesTail();
     }
 
     private void setMessagesToField(@NonNull List<MessageContainer> messages) {

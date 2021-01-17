@@ -17,9 +17,6 @@ import life.andre.sms487.logging.Logger;
 public class MessageCleanupWorker extends Worker {
     public static final String TAG = "MessageCleanupWorker";
 
-    @NonNull
-    private final MessageStorage messageStorage;
-
     public static void schedulePeriodic() {
         PeriodicWorkRequest task = new PeriodicWorkRequest.Builder(
                 MessageCleanupWorker.class,
@@ -35,14 +32,14 @@ public class MessageCleanupWorker extends Worker {
         workManager.enqueueUniquePeriodicWork(TAG, ExistingPeriodicWorkPolicy.KEEP, task);
     }
 
-    public MessageCleanupWorker(@NonNull Context ctx, @NonNull WorkerParameters workerParams) {
-        super(ctx, workerParams);
-        messageStorage = new MessageStorage(ctx);
+    public MessageCleanupWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
+        super(context, workerParams);
     }
 
     @NonNull
     @Override
     public Result doWork() {
+        MessageStorage messageStorage = MessageStorage.getInstance();
         try {
             messageStorage.deleteOld();
             return Result.success();

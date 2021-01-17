@@ -37,7 +37,7 @@ public class MessageResendWorker extends Worker {
 
     public MessageResendWorker(@NonNull Context ctx, @NonNull WorkerParameters workerParams) {
         super(ctx, workerParams);
-        serverApi = new ServerApi(ctx);
+        serverApi = ServerApi.getInstance();
     }
 
     @NonNull

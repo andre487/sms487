@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import life.andre.sms487.events.MessagesStateChanged;
 import life.andre.sms487.logging.Logger;
@@ -41,19 +42,24 @@ public class ServerApi {
     public static final long THROTTLE_DELAY = 500;
     public static final int MESSAGES_TO_SEND = 42;
 
-    @NonNull
-    private final AppSettings appSettings;
-    @NonNull
-    private final MessageStorage messageStorage;
+    private static ServerApi instance;
+
     @NonNull
     private final RequestQueue requestQueue;
     @NonNull
     private final ValueThrottler<MessageContainer> throttler = new ValueThrottler<>(this::handleMessages, THROTTLE_DELAY);
 
-    public ServerApi(@NonNull Context ctx) {
+    public static void init(@NonNull Context ctx) {
+        instance = new ServerApi(ctx);
+    }
+
+    @NonNull
+    public static ServerApi getInstance() {
+        return Objects.requireNonNull(instance, "Not initialized");
+
+    }
+    private ServerApi(@NonNull Context ctx) {
         requestQueue = Volley.newRequestQueue(ctx);
-        appSettings = new AppSettings(ctx);
-        messageStorage = new MessageStorage(ctx);
     }
 
     public void addMessage(@NonNull MessageContainer msg) {
@@ -62,7 +68,7 @@ public class ServerApi {
 
     public void resendMessages() {
         BgTask.run(() -> {
-            List<MessageContainer> messages = messageStorage.getNotSentMessages();
+            List<MessageContainer> messages = MessageStorage.getInstance().getNotSentMessages();
             if (messages.size() == 0) {
                 return null;
             }
@@ -101,7 +107,7 @@ public class ServerApi {
     }
 
     private void addMessagesList(@NonNull List<MessageContainer> messages) {
-        List<Long> dbIds = messageStorage.addMessages(messages);
+        List<Long> dbIds = MessageStorage.getInstance().addMessages(messages);
 
         JSONArray reqData = new JSONArray();
         for (MessageContainer msg : messages) {
@@ -112,6 +118,7 @@ public class ServerApi {
             reqData.put(item);
         }
 
+        AppSettings appSettings = AppSettings.getInstance();
         String url = appSettings.getServerUrl();
         String key = appSettings.getServerKey();
 
@@ -120,7 +127,7 @@ public class ServerApi {
             return;
         }
 
-        this.requestQueue.add(new ApiAddMessageRequest(url, key, reqData.toString(), dbIds, messageStorage));
+        this.requestQueue.add(new ApiAddMessageRequest(url, key, reqData.toString(), dbIds));
     }
 
     @Nullable
@@ -165,13 +172,8 @@ public class ServerApi {
         @NonNull
         private final String requestBody;
 
-        ApiAddMessageRequest(@NonNull String url, @NonNull String key, @NonNull String requestBody, @NonNull List<Long> dbIds, @NonNull MessageStorage msgStorage) {
-            super(
-                    Request.Method.POST,
-                    url + "/add-sms",
-                    new ApiResponseListener(dbIds, msgStorage),
-                    new ApiErrorListener()
-            );
+        ApiAddMessageRequest(@NonNull String url, @NonNull String key, @NonNull String requestBody, @NonNull List<Long> dbIds) {
+            super(Request.Method.POST, url + "/add-sms", new ApiResponseListener(dbIds), new ApiErrorListener());
             this.cookie = "__Secure-Auth-Token=" + key;
             this.requestBody = requestBody;
         }
@@ -200,12 +202,9 @@ public class ServerApi {
     private static class ApiResponseListener implements Response.Listener<String> {
         @NonNull
         private final List<Long> dbIds;
-        @NonNull
-        private final MessageStorage messageStorage;
 
-        ApiResponseListener(@NonNull List<Long> dbIds, @NonNull MessageStorage messageStorage) {
+        ApiResponseListener(@NonNull List<Long> dbIds) {
             this.dbIds = dbIds;
-            this.messageStorage = messageStorage;
         }
 
         @Override
@@ -222,7 +221,7 @@ public class ServerApi {
 
         private void markMessagesSent() {
             BgTask.run(() -> {
-                messageStorage.markSent(dbIds);
+                MessageStorage.getInstance().markSent(dbIds);
                 EventBus.getDefault().post(new MessagesStateChanged());
                 return null;
             });
@@ -250,7 +249,7 @@ public class ServerApi {
 
             String finalErrorMessage = getFinalErrorMessage(error);
             Logger.e(TAG, finalErrorMessage);
-            Toaster.showThrottled(finalErrorMessage);
+            Toaster.getInstance().showThrottled(finalErrorMessage);
 
             EventBus.getDefault().post(new MessagesStateChanged());
         }

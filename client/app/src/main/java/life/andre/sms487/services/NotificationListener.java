@@ -28,7 +28,7 @@ public class NotificationListener extends NotificationListenerService {
     @Override
     public void onCreate() {
         super.onCreate();
-        serverApi = new ServerApi(this);
+        serverApi = ServerApi.getInstance();
 
         createServiceMessage();
     }

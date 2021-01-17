@@ -16,15 +16,26 @@ import androidx.room.RoomDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import life.andre.sms487.logging.Logger;
 
 public class MessageStorage {
     public static final String TAG = "MessageStorage";
 
+    private static MessageStorage instance;
     private final MessageDao dao;
 
-    public MessageStorage(@NonNull Context ctx) {
+    public static void init(@NonNull Context ctx) {
+        instance = new MessageStorage(ctx);
+    }
+
+    @NonNull
+    public static MessageStorage getInstance() {
+        return Objects.requireNonNull(instance, "Not initialized");
+    }
+
+    private MessageStorage(@NonNull Context ctx) {
         dao = Room.databaseBuilder(ctx, MessageDatabase.class, "messages").build().messageDao();
     }
 
@@ -122,6 +133,7 @@ public class MessageStorage {
         }
     }
 
+    @SuppressWarnings("NullableProblems")
     @Dao
     public interface MessageDao {
         @NonNull

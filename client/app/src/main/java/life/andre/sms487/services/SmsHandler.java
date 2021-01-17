@@ -20,13 +20,11 @@ import life.andre.sms487.utils.BgTask;
 public class SmsHandler extends Service {
     public static final String TAG = "SmsHandler";
 
-    protected AppSettings appSettings;
     protected ServerApi serverApi;
 
     @Override
     public void onCreate() {
-        appSettings = new AppSettings(this);
-        serverApi = new ServerApi(this);
+        serverApi = ServerApi.getInstance();
     }
 
     public int onStartCommand(@NonNull Intent intent, int flags, int startId) {
@@ -44,7 +42,7 @@ public class SmsHandler extends Service {
     }
 
     private void handleIntent(@NonNull Intent intent) {
-        boolean needSend = appSettings.getNeedSendSms();
+        boolean needSend = AppSettings.getInstance().getNeedSendSms();
         if (!needSend) {
             return;
         }

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Objects;
 
 import life.andre.sms487.views.Toaster;
 
@@ -21,10 +22,21 @@ public class AppSettings {
     private static final int TYPE_STRING = 0;
     private static final int TYPE_BOOL = 1;
 
+    private static AppSettings instance;
+
     @NonNull
     private final AppSettingStorage storage;
 
-    public AppSettings(@NonNull Context ctx) {
+    public static void init(@NonNull Context ctx) {
+        instance = new AppSettings(ctx);
+    }
+
+    @NonNull
+    public static AppSettings getInstance() {
+        return Objects.requireNonNull(instance, "Not initialized");
+    }
+
+    private AppSettings(@NonNull Context ctx) {
         storage = new AppSettingStorage(ctx);
     }
 
@@ -67,12 +79,12 @@ public class AppSettings {
 
     private void saveValue(@NonNull String name, @NonNull String val) {
         String msg = saveSettingsItemToStorage(name, TYPE_STRING, val, false);
-        Toaster.show(msg);
+        Toaster.getInstance().show(msg);
     }
 
     private void saveValue(@NonNull String name, boolean val) {
         String msg = saveSettingsItemToStorage(name, TYPE_BOOL, "", val);
-        Toaster.show(msg);
+        Toaster.getInstance().show(msg);
     }
 
     @NonNull
