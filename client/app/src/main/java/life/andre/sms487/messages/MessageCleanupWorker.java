@@ -31,6 +31,8 @@ public class MessageCleanupWorker extends Worker {
 
         WorkManager workManager = WorkManager.getInstance();
         workManager.enqueueUniquePeriodicWork(TASK_ID, ExistingPeriodicWorkPolicy.KEEP, task);
+
+        Logger.i(TAG, "Schedule old messages cleanup");
     }
 
     public MessageCleanupWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
@@ -45,7 +47,7 @@ public class MessageCleanupWorker extends Worker {
             messageStorage.deleteOld();
             return Result.success();
         } catch (Exception e) {
-            Logger.i(TAG, e.toString());
+            Logger.e(TAG, e.toString());
             e.printStackTrace();
             return Result.failure();
         }

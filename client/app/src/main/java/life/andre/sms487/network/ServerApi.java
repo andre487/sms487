@@ -236,7 +236,7 @@ public class ServerApi {
 
                 Logger.i(TAG, "Added: " + added + ": " + status);
             } catch (JSONException e) {
-                Logger.w(TAG, e.toString());
+                Logger.e(TAG, e.toString());
                 e.printStackTrace();
             }
         }

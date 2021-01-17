@@ -18,9 +18,6 @@ public class MessageResendWorker extends Worker {
     public static final String TAG = "MRW";
     public static final String TASK_ID = "MessageResendWorker";
 
-    @NonNull
-    private final ServerApi serverApi;
-
     public static void scheduleOneTime() {
         OneTimeWorkRequest task = new OneTimeWorkRequest.Builder(
                 MessageResendWorker.class
@@ -38,18 +35,16 @@ public class MessageResendWorker extends Worker {
 
     public MessageResendWorker(@NonNull Context ctx, @NonNull WorkerParameters workerParams) {
         super(ctx, workerParams);
-        serverApi = ServerApi.getInstance();
     }
 
     @NonNull
     @Override
     public Result doWork() {
         try {
-            Logger.i(TAG, "Resend messages if needed");
-            serverApi.resendMessages();
+            ServerApi.getInstance().resendMessages();
             return Result.success();
         } catch (Exception e) {
-            Logger.i(TAG, e.toString());
+            Logger.e(TAG, e.toString());
             e.printStackTrace();
             return Result.failure();
         }

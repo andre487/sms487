@@ -11,9 +11,11 @@ import life.andre.sms487.messages.MessageCleanupWorker;
 import life.andre.sms487.messages.MessageResendWorker;
 
 public class AutoStart extends BroadcastReceiver {
-    public static final String TAG = "ADB";
+    public static final String TAG = "ASR";
 
     public void onReceive(@NonNull Context context, @NonNull Intent parentIntent) {
+        Logger.i(TAG, "AutoStart received");
+
         String action = parentIntent.getAction();
         if (action == null || !action.equals(Intent.ACTION_BOOT_COMPLETED)) {
             return;
@@ -24,7 +26,5 @@ public class AutoStart extends BroadcastReceiver {
 
         MessageCleanupWorker.schedulePeriodic();
         MessageResendWorker.scheduleOneTime();
-
-        Logger.i(TAG, "Started");
     }
 }
