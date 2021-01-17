@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PermissionsChecker {
+    public static final String NOTIFICATION_SETTINGS_ACTIVITY = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS";
+    public static final int REQUEST_ID = 0;
+
     public static void check(@NonNull Activity activity) {
         String[] required = {
                 Manifest.permission.RECEIVE_SMS,
@@ -32,7 +35,7 @@ public class PermissionsChecker {
         int count = absent.size();
         if (count > 0) {
             String[] permissions = absent.toArray(new String[count]);
-            activity.requestPermissions(permissions, AppConstants.DEFAULT_ID);
+            activity.requestPermissions(permissions, REQUEST_ID);
         }
 
         String notificationListeners = Settings.Secure.getString(
@@ -41,7 +44,8 @@ public class PermissionsChecker {
         );
 
         if (!notificationListeners.contains(activity.getPackageName())) {
-            activity.startActivity(new Intent(AppConstants.NOTIFICATION_SETTINGS_ACTIVITY));
+            Intent intent = new Intent(NOTIFICATION_SETTINGS_ACTIVITY).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            activity.startActivity(intent);
         }
     }
 }

@@ -16,12 +16,12 @@ import life.andre.sms487.R;
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageContainer;
 import life.andre.sms487.network.ServerApi;
-import life.andre.sms487.system.AppConstants;
 import life.andre.sms487.utils.DateUtil;
 
 public class NotificationListener extends NotificationListenerService {
     public static final String TAG = "NTF";
     public static final String CHANNEL_ID = "NotificationListener::ServiceMessage";
+    public static final int RUN_ID = 1;
 
     protected ServerApi serverApi;
 
@@ -104,7 +104,7 @@ public class NotificationListener extends NotificationListenerService {
     private void createServiceMessage() {
         NotificationChannel channel = new NotificationChannel(
                 CHANNEL_ID, "SMS 487 Notification Listener",
-                NotificationManager.IMPORTANCE_DEFAULT
+                NotificationManager.IMPORTANCE_MIN
         );
 
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -120,6 +120,6 @@ public class NotificationListener extends NotificationListenerService {
                 .setSmallIcon(R.drawable.ic_notification)
                 .build();
 
-        startForeground(AppConstants.DEFAULT_ID, notification);
+        startForeground(RUN_ID, notification);
     }
 }
