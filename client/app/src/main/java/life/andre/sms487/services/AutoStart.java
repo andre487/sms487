@@ -7,24 +7,17 @@ import android.content.Intent;
 import androidx.annotation.NonNull;
 
 import life.andre.sms487.logging.Logger;
-import life.andre.sms487.messages.MessageCleanupWorker;
-import life.andre.sms487.messages.MessageResendWorker;
 
 public class AutoStart extends BroadcastReceiver {
     public static final String TAG = "ASR";
 
     public void onReceive(@NonNull Context context, @NonNull Intent parentIntent) {
-        Logger.i(TAG, "AutoStart received");
-
         String action = parentIntent.getAction();
         if (action == null || !action.equals(Intent.ACTION_BOOT_COMPLETED)) {
             return;
         }
 
-        Intent intent = new Intent(context, NotificationListener.class);
-        context.startService(intent);
-
-        MessageCleanupWorker.schedulePeriodic();
-        MessageResendWorker.scheduleOneTime();
+        Logger.i(TAG, "AutoStart received");
+        // In ApplicationEntryPoint.startServiceTasks important tasks will be launched
     }
 }
