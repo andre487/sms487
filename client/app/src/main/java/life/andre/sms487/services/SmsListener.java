@@ -19,7 +19,7 @@ import life.andre.sms487.settings.AppSettings;
 import life.andre.sms487.utils.BgTask;
 
 public class SmsListener extends BroadcastReceiver {
-    public static final String TAG = "SmsListener";
+    public static final String TAG = "SMS";
 
     @Override
     public void onReceive(@NonNull Context ctx, @NonNull Intent intent) {

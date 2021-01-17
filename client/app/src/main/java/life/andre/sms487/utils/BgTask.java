@@ -16,7 +16,7 @@ import java.util.function.Consumer;
 import life.andre.sms487.logging.Logger;
 
 public class BgTask<Result> {
-    public static final String TAG = "BgTask";
+    public static final String TAG = "BGT";
 
     public static final int STATE_INITIAL = 0;
     public static final int STATE_RUNNING = 1;

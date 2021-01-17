@@ -21,7 +21,7 @@ import java.util.Objects;
 import life.andre.sms487.logging.Logger;
 
 public class MessageStorage {
-    public static final String TAG = "MessageStorage";
+    public static final String TAG = "MDB";
 
     private static MessageStorage instance;
     private final MessageDao dao;

@@ -14,14 +14,14 @@ import life.andre.sms487.settings.AppSettings;
 import life.andre.sms487.views.Toaster;
 
 public class ApplicationEntryPoint extends Application {
-    public static final String TAG = "ApplicationEntryPoint";
+    public static final String TAG = "APP";
 
     @Override
     public void onCreate() {
         super.onCreate();
         initGlobalServiceObjects();
         startServiceTasks();
-        Logger.d(TAG, "Application started");
+        Logger.i(TAG, "Application started");
     }
 
     private void initGlobalServiceObjects() {

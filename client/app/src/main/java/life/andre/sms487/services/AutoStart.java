@@ -11,7 +11,7 @@ import life.andre.sms487.messages.MessageCleanupWorker;
 import life.andre.sms487.messages.MessageResendWorker;
 
 public class AutoStart extends BroadcastReceiver {
-    public static final String TAG = "AutoStart";
+    public static final String TAG = "ADB";
 
     public void onReceive(@NonNull Context context, @NonNull Intent parentIntent) {
         String action = parentIntent.getAction();

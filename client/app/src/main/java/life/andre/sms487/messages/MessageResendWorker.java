@@ -15,7 +15,8 @@ import life.andre.sms487.logging.Logger;
 import life.andre.sms487.network.ServerApi;
 
 public class MessageResendWorker extends Worker {
-    public static final String TAG = "MessageResendWorker";
+    public static final String TAG = "MRW";
+    public static final String TASK_ID = "MessageResendWorker";
 
     @NonNull
     private final ServerApi serverApi;
@@ -30,7 +31,7 @@ public class MessageResendWorker extends Worker {
         ).build();
 
         WorkManager workManager = WorkManager.getInstance();
-        workManager.enqueueUniqueWork(TAG, ExistingWorkPolicy.KEEP, task);
+        workManager.enqueueUniqueWork(TASK_ID, ExistingWorkPolicy.KEEP, task);
 
         Logger.i(TAG, "Schedule messages resend");
     }

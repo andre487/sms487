@@ -15,7 +15,8 @@ import java.util.concurrent.TimeUnit;
 import life.andre.sms487.logging.Logger;
 
 public class MessageCleanupWorker extends Worker {
-    public static final String TAG = "MessageCleanupWorker";
+    public static final String TAG = "MCW";
+    public static final String TASK_ID = "MessageCleanupWorker";
 
     public static void schedulePeriodic() {
         PeriodicWorkRequest task = new PeriodicWorkRequest.Builder(
@@ -29,7 +30,7 @@ public class MessageCleanupWorker extends Worker {
         ).build();
 
         WorkManager workManager = WorkManager.getInstance();
-        workManager.enqueueUniquePeriodicWork(TAG, ExistingPeriodicWorkPolicy.KEEP, task);
+        workManager.enqueueUniquePeriodicWork(TASK_ID, ExistingPeriodicWorkPolicy.KEEP, task);
     }
 
     public MessageCleanupWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {

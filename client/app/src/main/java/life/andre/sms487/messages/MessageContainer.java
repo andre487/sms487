@@ -3,14 +3,7 @@ package life.andre.sms487.messages;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import life.andre.sms487.logging.Logger;
-
 public class MessageContainer {
-    public static final String TAG = "MessageContainer";
-
     private final String messageType;
     private final String addressFrom;
     private final String dateTime;
@@ -18,28 +11,6 @@ public class MessageContainer {
     private final String body;
     private final boolean isSent;
     private long dbId;
-
-    @Nullable
-    public static MessageContainer createFromJson(@NonNull String messageJson) {
-        try {
-            JSONObject obj = new JSONObject(messageJson);
-
-            String messageType = obj.getString("message_type");
-            String addressFrom = obj.getString("address_from");
-            String dateTime = obj.getString("date_time");
-            String smsCenterDateTime = obj.getString("sms_date_time");
-            String body = obj.getString("body");
-            boolean isSent = obj.getBoolean("is_sent");
-            long dbId = obj.getLong("db_id");
-
-            return new MessageContainer(messageType, addressFrom, dateTime, smsCenterDateTime, body, isSent, dbId);
-        } catch (JSONException e) {
-            Logger.w(TAG, e.toString());
-            e.printStackTrace();
-        }
-
-        return null;
-    }
 
     @NonNull
     public static MessageContainer createFromMessageEntry(@NonNull MessageStorage.Message messageEntry) {
@@ -72,28 +43,6 @@ public class MessageContainer {
         this.body = body;
         this.isSent = false;
         this.dbId = 0;
-    }
-
-    @Nullable
-    public String getAsJson() {
-        try {
-            JSONObject obj = new JSONObject();
-
-            obj.put("message_type", messageType);
-            obj.put("address_from", addressFrom);
-            obj.put("date_time", dateTime);
-            obj.put("sms_date_time", smsCenterDateTime);
-            obj.put("body", body);
-            obj.put("is_sent", isSent);
-            obj.put("db_id", dbId);
-
-            return obj.toString();
-        } catch (JSONException e) {
-            Logger.w(TAG, e.toString());
-            e.printStackTrace();
-        }
-
-        return null;
     }
 
     @Nullable

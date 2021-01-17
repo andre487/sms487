@@ -20,7 +20,7 @@ import life.andre.sms487.system.AppConstants;
 import life.andre.sms487.utils.DateUtil;
 
 public class NotificationListener extends NotificationListenerService {
-    public static final String TAG = "NotificationListener";
+    public static final String TAG = "NTF";
     public static final String CHANNEL_ID = "NotificationListener::ServiceMessage";
 
     protected ServerApi serverApi;

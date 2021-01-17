@@ -36,7 +36,7 @@ import life.andre.sms487.utils.ValueThrottler;
 import life.andre.sms487.views.Toaster;
 
 public class ServerApi {
-    public static final String TAG = "ServerApi";
+    public static final String TAG = "API";
     public static final String MESSAGE_TYPE_SMS = "sms";
     public static final String MESSAGE_TYPE_NOTIFICATION = "notification";
     public static final long THROTTLE_DELAY = 500;
