@@ -46,7 +46,7 @@ six==1.15.0
 toml==0.10.2
 ua-parser==0.10.0
 uritemplate==3.0.1
-urllib3==1.26.2
+urllib3==1.26.3
 user-agents==2.2.0
 uWSGI==2.0.19.1
 Werkzeug==1.0.1
