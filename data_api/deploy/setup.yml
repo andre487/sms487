@@ -102,7 +102,7 @@
 
     - name: Update image
       community.general.docker_image:
-        name: 'andre487/{{ container_name }}'
+        name: '{{ container_name }}'
         source: pull
         force_source: yes
       register: docker_image
@@ -117,7 +117,7 @@
     - name: Start container
       community.general.docker_container:
         name: '{{ container_name }}'
-        image: 'andre487/{{ container_name }}'
+        image: '{{ container_name }}'
         state: started
         container_default_behavior: no_defaults
         detach: yes

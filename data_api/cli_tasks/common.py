@@ -15,7 +15,7 @@ PYTHON = os.path.join(VENV_DIR, 'bin', 'python')
 TEST_DATA_DIR = os.path.join(PROJECT_DIR, 'test_data')
 SECRET_DIR = os.path.join(PROJECT_DIR, '.secret')
 
-DOCKER_IMAGE_NAME = 'andre487/sms487-api:latest'
+DOCKER_IMAGE_NAME = 'cr.yandex/crp998oqenr95rs4gf9a/sms487-api:latest'
 DOCKER_MONGO_NAME = 'sms487-mongo'
 DOCKER_APP_NAME = 'sms487-server-test'
 DEV_DB_NAME = 'sms487'
