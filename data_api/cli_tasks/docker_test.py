@@ -4,8 +4,8 @@ import time
 from . import common
 
 
-def run(c, recreate_venv):
-    common.prepare_virtual_env(c, recreate_venv)
+def run(c, rebuild_venv):
+    common.prepare_virtual_env(c, rebuild_venv)
 
     port = common.get_free_port()
     logging.info('Using port %s', port)

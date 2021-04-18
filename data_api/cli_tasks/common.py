@@ -34,11 +34,11 @@ DEFAULT_APP_ENV = {
 }
 
 
-def prepare_virtual_env(c, recreate_venv):
+def prepare_virtual_env(c, rebuild_venv):
     os.chdir(PROJECT_DIR)
 
     if os.path.exists(VENV_DIR):
-        if recreate_venv:
+        if rebuild_venv:
             shutil.rmtree(VENV_DIR)
         else:
             return
