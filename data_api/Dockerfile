@@ -1,4 +1,4 @@
-FROM ubuntu:bionic
+FROM ubuntu:focal
 
 ADD ./requirements.txt /usr/local/bin/app/requirements.txt
 

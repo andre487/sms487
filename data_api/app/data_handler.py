@@ -11,31 +11,13 @@ import pymongo
 from auth487 import common as acm, flask as ath
 from bson import ObjectId
 
-
-def get_env_param(name, def_val=None, try_file=False):
-    val = os.getenv(name, def_val)
-
-    if try_file and val and os.path.isfile(val):
-        with open(val) as fp:
-            return fp.read().strip()
-
-    return val
+from app.secret_provider import SecretProvider
 
 
 CONNECT_TIMEOUT = 500
 TZ_OFFSET = int(os.getenv('TZ_OFFSET', 3))
 
-MONGO_HOST = get_env_param('MONGO_HOST', 'localhost', try_file=True)
-MONGO_PORT = int(get_env_param('MONGO_PORT', '27017', try_file=True))
-
-MONGO_REPLICA_SET = get_env_param('MONGO_REPLICA_SET', try_file=True)
-MONGO_SSL_CERT = get_env_param('MONGO_SSL_CERT', try_file=True)
-
-MONGO_USER = get_env_param('MONGO_USER', try_file=True)
-MONGO_PASSWORD = get_env_param('MONGO_PASSWORD', try_file=True)
-MONGO_AUTH_SOURCE = get_env_param('MONGO_AUTH_SOURCE', try_file=True)
-
-MONGO_DB_NAME = get_env_param('MONGO_DB_NAME', 'sms487')
+mongo_secrets = SecretProvider.get_instance().mongo_secrets
 
 date_time_pattern = re.compile(r'^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}(?::\d{2})?)(?:\s[+-]\d+)?$')
 short_date_time_pattern = re.compile(r'^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}).*')
@@ -426,23 +408,23 @@ def get_mongo_client():
     if _mongo_client:
         return _mongo_client
 
-    logging.info('Connecting to MongoDB: %s:%s', MONGO_HOST, MONGO_PORT)
+    logging.info('Connecting to MongoDB: %s:%s', mongo_secrets.host, mongo_secrets.port)
 
     mongo_options = dict(
         connectTimeoutMS=CONNECT_TIMEOUT,
-        authSource=MONGO_DB_NAME,
+        authSource=mongo_secrets.db_name,
     )
 
-    if MONGO_REPLICA_SET:
-        mongo_options['replicaSet'] = MONGO_REPLICA_SET
+    if mongo_secrets.replica_set:
+        mongo_options['replicaSet'] = mongo_secrets.replica_set
 
     _mongo_client = pymongo.MongoClient(
-        MONGO_HOST, MONGO_PORT,
+        mongo_secrets.host, mongo_secrets.port,
         connect=True,
-        username=MONGO_USER,
-        password=MONGO_PASSWORD,
-        tlsCAFile=MONGO_SSL_CERT,
-        tlsAllowInvalidCertificates=not bool(MONGO_SSL_CERT),
+        username=mongo_secrets.user,
+        password=mongo_secrets.password,
+        tlsCAFile=mongo_secrets.ssl_cert,
+        tlsAllowInvalidCertificates=not bool(mongo_secrets.ssl_cert),
         **mongo_options
     )
 
@@ -450,12 +432,12 @@ def get_mongo_client():
 
 
 def get_mongo_db():
-    return get_mongo_client()[MONGO_DB_NAME]
+    return get_mongo_client()[mongo_secrets.db_name]
 
 
 def _get_sms_collection():
     client = get_mongo_client()
-    collection = client[MONGO_DB_NAME]['sms_items']
+    collection = client[mongo_secrets.db_name]['sms_items']
 
     collection.create_index([
         ('created', pymongo.ASCENDING),
@@ -487,7 +469,7 @@ def _get_sms_collection():
 
 def _get_filters_collection():
     client = get_mongo_client()
-    collection = client[MONGO_DB_NAME]['filters']
+    collection = client[mongo_secrets.db_name]['filters']
 
     collection.create_index([
         ('login', pymongo.ASCENDING),

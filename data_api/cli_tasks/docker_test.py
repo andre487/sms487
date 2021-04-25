@@ -18,6 +18,7 @@ def run(c, rebuild_venv):
         'APP_PORT': str(port),
         'AUTH_DEV_MODE': '1',
         'AUTH_MONGO_DB_NAME': common.TEST_DB_NAME,
+        'DEPLOY_TYPE': 'dev',
         'MONGO_DB_NAME': common.TEST_DB_NAME,
         'MONGO_PORT': mongo_port,
     }, cwd=common.PROJECT_DIR)

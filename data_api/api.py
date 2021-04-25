@@ -25,7 +25,7 @@ app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024
 
 # noinspection SpellCheckingInspection
 LOG_FORMAT = '%(asctime)s %(levelname)s\t%(message)s\t%(pathname)s:%(lineno)d %(funcName)s %(process)d %(threadName)s'
-LOG_LEVEL = os.environ.get('LOG_LEVEL', logging.INFO)
+LOG_LEVEL = os.getenv('LOG_LEVEL', logging.INFO)
 
 logging.basicConfig(format=LOG_FORMAT, level=LOG_LEVEL)
 templating.setup_filters(app)

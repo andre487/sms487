@@ -52,6 +52,7 @@ def start_dev_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
     mongo_port = run_mongo(force_db_cleaning=force_db_cleaning, db_name=db_name)
 
     env = DEFAULT_APP_ENV.copy()
+    env['DEPLOY_TYPE'] = 'dev'
     env['AUTH_MONGO_DB_NAME'] = env['MONGO_DB_NAME'] = db_name
     env.update(os.environ)
     env['MONGO_PORT'] = mongo_port
@@ -79,6 +80,7 @@ def start_docker_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
         '--link', mongo_cont_name,
         '-p', f'127.0.0.1:{port}:5000',
         '-v', f'{os.path.join(TEST_DATA_DIR, "auth_keys")}:/opt/auth_keys',
+        '-e', 'DEPLOY_TYPE=dev',
         '-e', 'AUTH_PRIVATE_KEY_FILE=/opt/auth_keys/key',
         '-e', 'AUTH_PUBLIC_KEY_FILE=/opt/auth_keys/key.pub.pem',
         '-e', 'FLASK_APP=app.py',

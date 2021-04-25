@@ -54,7 +54,7 @@ class BaseTest:
             db.get_collection(name).insert_many(data)
 
     def teardown_method(self):
-        data_handler.get_mongo_client().drop_database(data_handler.MONGO_DB_NAME)
+        data_handler.get_mongo_client().drop_database(data_handler.mongo_secrets.db_name)
 
 
 class TestHomePage(BaseTest):

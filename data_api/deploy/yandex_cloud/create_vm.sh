@@ -14,10 +14,11 @@ yc compute instance create-with-container \
     --zone="$zone" \
     --ssh-key "$(get_main_user_public_key)" \
     --service-account-name "$SERVICE_ACCOUNT" \
-    --network-interface "subnet-name=default-$zone,nat-ip-version=ipv4" \
+    --network-interface "subnet-name=default-$zone" \
     --cores 2 \
     --core-fraction 5 \
     --container-name "$CONTAINER_NAME" \
     --container-image "$DOCKER_IMAGE" \
     --container-tty \
+    --container-env-file "$cur_dir/container.env" \
     --container-restart-policy Always
