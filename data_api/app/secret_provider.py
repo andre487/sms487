@@ -79,7 +79,7 @@ class DevSecretProvider(SecretProvider):
 
 
 class YcSecretProvider(SecretProvider):
-    mongo_secret_id = 'e6qeb5qh931hk2nt5d7l'
+    mongo_secret_id = 'e6q502o8uulleoq6jnpg'
     not_exist = object()
 
     @cached_property
@@ -105,19 +105,15 @@ class YcSecretProvider(SecretProvider):
             else:
                 mongo_data[name] = val
 
-        required_fields = ('host', 'port', 'ssl_cert', 'user', 'password', 'auth_source')
+        required_fields = ('host', 'port', 'ssl_cert', 'user', 'password')
         for name in required_fields:
             val = mongo_data.get(name, self.not_exist)
             if val is self.not_exist:
                 raise RuntimeError(f'Required field not found in secret data: {name}')
 
-        result = MongoSecrets(
-            db_name=os.getenv('MONGO_DB_NAME', DEFAULT_DB_NAME),
-            **mongo_data
-        ).validate()
+        result = MongoSecrets(**mongo_data).validate()
 
-        log_data = vars(result)
-        log_data.pop('password')
+        log_data = {k: v for k, v in vars(result).items() if k != 'password'}
         logging.info('MongoDB params: %s', log_data)
 
         return result

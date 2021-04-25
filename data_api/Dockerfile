@@ -8,7 +8,7 @@ RUN set -x && \
     python3 -m pip install --upgrade --no-cache-dir pip && \
     python3 -m pip install --no-cache-dir -r /usr/local/bin/app/requirements.txt && \
     mkdir -p /usr/local/share/ca-certificates/Yandex && \
-    curl "https://storage.yandexcloud.net/cloud-certs/CA.pem" -o /usr/local/share/ca-certificates/Yandex/YandexInternalRootCA.crt && \
+    curl --fail -qs "https://storage.yandexcloud.net/cloud-certs/CA.pem" -o "/usr/local/share/ca-certificates/Yandex/YandexInternalRootCA.crt" && \
     apt-get purge -y python3-pip build-essential git curl && \
     apt-get clean -y && \
     apt-get autoclean -y && \

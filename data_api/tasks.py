@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 from invoke import task
@@ -85,3 +86,8 @@ def make_deploy(c, rebuild_venv=False, no_secret_cache=False):
     cli_tasks.docker_push.run(c, tag=tag)
 
     c.run(f'{common.PROJECT_DIR}/deploy/yandex_cloud/update_container.sh {tag}')
+
+    try:
+        c.run('docker-clean')
+    except Exception as e:
+        logging.warning(e)

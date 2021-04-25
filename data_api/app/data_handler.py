@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import re
+import ssl
 import time
 from collections import defaultdict
 from collections.abc import Mapping
@@ -13,8 +14,7 @@ from bson import ObjectId
 
 from app.secret_provider import SecretProvider
 
-
-CONNECT_TIMEOUT = 500
+CONNECT_TIMEOUT = 5
 TZ_OFFSET = int(os.getenv('TZ_OFFSET', 3))
 
 date_time_pattern = re.compile(r'^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}(?::\d{2})?)(?:\s[+-]\d+)?$')
@@ -407,26 +407,31 @@ def get_mongo_client():
         return _mongo_client
 
     mongo_secrets = SecretProvider.get_instance().mongo_secrets
-    logging.info('Connecting to MongoDB: %s:%s', mongo_secrets.host, mongo_secrets.port)
-
     mongo_options = dict(
+        username=mongo_secrets.user,
+        password=mongo_secrets.password,
         connectTimeoutMS=CONNECT_TIMEOUT,
-        authSource=mongo_secrets.db_name,
+        connect=True,
     )
 
     if mongo_secrets.replica_set:
         mongo_options['replicaSet'] = mongo_secrets.replica_set
 
-    _mongo_client = pymongo.MongoClient(
-        mongo_secrets.host, mongo_secrets.port,
-        connect=True,
-        username=mongo_secrets.user,
-        password=mongo_secrets.password,
-        tlsCAFile=mongo_secrets.ssl_cert,
-        tlsAllowInvalidCertificates=not bool(mongo_secrets.ssl_cert),
-        **mongo_options
-    )
+    if mongo_secrets.auth_source:
+        mongo_options['authSource'] = mongo_secrets.auth_source
 
+    if mongo_secrets.ssl_cert:
+        if not os.path.exists(mongo_secrets.ssl_cert):
+            raise RuntimeError(f'SSL certificate file does not exist: {mongo_secrets.ssl_cert}')
+
+        mongo_options.update({
+            'tlsCAFile': mongo_secrets.ssl_cert,
+            'tlsAllowInvalidCertificates': False,
+            'ssl_cert_reqs': ssl.CERT_REQUIRED,
+        })
+
+    logging.info('Connecting to MongoDB: %s:%s', mongo_secrets.host, mongo_secrets.port)
+    _mongo_client = pymongo.MongoClient(mongo_secrets.host, mongo_secrets.port, **mongo_options)
     return _mongo_client
 
 

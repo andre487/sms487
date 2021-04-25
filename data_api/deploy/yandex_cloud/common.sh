@@ -24,3 +24,15 @@ get_main_user_public_key() {
 
     echo "$secret_file"
 }
+
+get_prod_machine() {
+    zone="$1"
+
+    yc compute instance list --format json | \
+    jq -r "
+        map(select(.labels.machine_type == \"sms487-api\" and .zone_id == \"$zone\")) |
+        first |
+        .network_interfaces | first |
+        .primary_v4_address.one_to_one_nat.address
+    "
+}
