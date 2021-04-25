@@ -7,6 +7,10 @@ cd "$proj_dir"
 cpu_count="$(getconf _NPROCESSORS_ONLN)"
 worker_count="$(($cpu_count * 2))"
 
+echo "========== ENV =========="
+env
+echo "==========     =========="
+
 uwsgi --http '0.0.0.0:5000' \
     --workers "$worker_count" \
     --master \

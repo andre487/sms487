@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import re
+import ssl
 import time
 from collections import defaultdict
 from collections.abc import Mapping
@@ -11,31 +12,10 @@ import pymongo
 from auth487 import common as acm, flask as ath
 from bson import ObjectId
 
+from app.secret_provider import SecretProvider
 
-def get_env_param(name, def_val=None, try_file=False):
-    val = os.getenv(name, def_val)
-
-    if try_file and val and os.path.isfile(val):
-        with open(val) as fp:
-            return fp.read().strip()
-
-    return val
-
-
-CONNECT_TIMEOUT = 500
+CONNECT_TIMEOUT = 5
 TZ_OFFSET = int(os.getenv('TZ_OFFSET', 3))
-
-MONGO_HOST = get_env_param('MONGO_HOST', 'localhost', try_file=True)
-MONGO_PORT = int(get_env_param('MONGO_PORT', '27017', try_file=True))
-
-MONGO_REPLICA_SET = get_env_param('MONGO_REPLICA_SET', try_file=True)
-MONGO_SSL_CERT = get_env_param('MONGO_SSL_CERT', try_file=True)
-
-MONGO_USER = get_env_param('MONGO_USER', try_file=True)
-MONGO_PASSWORD = get_env_param('MONGO_PASSWORD', try_file=True)
-MONGO_AUTH_SOURCE = get_env_param('MONGO_AUTH_SOURCE', try_file=True)
-
-MONGO_DB_NAME = get_env_param('MONGO_DB_NAME', 'sms487')
 
 date_time_pattern = re.compile(r'^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}(?::\d{2})?)(?:\s[+-]\d+)?$')
 short_date_time_pattern = re.compile(r'^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}).*')
@@ -426,36 +406,45 @@ def get_mongo_client():
     if _mongo_client:
         return _mongo_client
 
-    logging.info('Connecting to MongoDB: %s:%s', MONGO_HOST, MONGO_PORT)
-
+    mongo_secrets = SecretProvider.get_instance().mongo_secrets
     mongo_options = dict(
+        username=mongo_secrets.user,
+        password=mongo_secrets.password,
         connectTimeoutMS=CONNECT_TIMEOUT,
-        authSource=MONGO_DB_NAME,
-    )
-
-    if MONGO_REPLICA_SET:
-        mongo_options['replicaSet'] = MONGO_REPLICA_SET
-
-    _mongo_client = pymongo.MongoClient(
-        MONGO_HOST, MONGO_PORT,
         connect=True,
-        username=MONGO_USER,
-        password=MONGO_PASSWORD,
-        tlsCAFile=MONGO_SSL_CERT,
-        tlsAllowInvalidCertificates=not bool(MONGO_SSL_CERT),
-        **mongo_options
     )
 
+    if mongo_secrets.replica_set:
+        mongo_options['replicaSet'] = mongo_secrets.replica_set
+
+    if mongo_secrets.auth_source:
+        mongo_options['authSource'] = mongo_secrets.auth_source
+
+    if mongo_secrets.ssl_cert:
+        if not os.path.exists(mongo_secrets.ssl_cert):
+            raise RuntimeError(f'SSL certificate file does not exist: {mongo_secrets.ssl_cert}')
+
+        mongo_options.update({
+            'tlsCAFile': mongo_secrets.ssl_cert,
+            'tlsAllowInvalidCertificates': False,
+            'ssl_cert_reqs': ssl.CERT_REQUIRED,
+        })
+
+    logging.info('Connecting to MongoDB: %s:%s', mongo_secrets.host, mongo_secrets.port)
+    _mongo_client = pymongo.MongoClient(mongo_secrets.host, mongo_secrets.port, **mongo_options)
     return _mongo_client
 
 
 def get_mongo_db():
-    return get_mongo_client()[MONGO_DB_NAME]
+    mongo_secrets = SecretProvider.get_instance().mongo_secrets
+    return get_mongo_client()[mongo_secrets.db_name]
 
 
 def _get_sms_collection():
+    mongo_secrets = SecretProvider.get_instance().mongo_secrets
+
     client = get_mongo_client()
-    collection = client[MONGO_DB_NAME]['sms_items']
+    collection = client[mongo_secrets.db_name]['sms_items']
 
     collection.create_index([
         ('created', pymongo.ASCENDING),
@@ -486,8 +475,10 @@ def _get_sms_collection():
 
 
 def _get_filters_collection():
+    mongo_secrets = SecretProvider.get_instance().mongo_secrets
+
     client = get_mongo_client()
-    collection = client[MONGO_DB_NAME]['filters']
+    collection = client[mongo_secrets.db_name]['filters']
 
     collection.create_index([
         ('login', pymongo.ASCENDING),

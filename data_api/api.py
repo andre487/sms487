@@ -1,12 +1,14 @@
-import flask
 import json
 import logging
 import os
 import secrets
 import sys
-from app import data_handler, templating
-from auth487 import flask as ath, common as acm
+
+import flask
+from auth487 import common as acm, flask as ath
 from flask import request
+
+from app import data_handler, templating
 
 if sys.version_info[0] < 3 or sys.version_info[1] < 6:
     raise EnvironmentError('Use Python >= 3.6')
@@ -25,7 +27,7 @@ app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024
 
 # noinspection SpellCheckingInspection
 LOG_FORMAT = '%(asctime)s %(levelname)s\t%(message)s\t%(pathname)s:%(lineno)d %(funcName)s %(process)d %(threadName)s'
-LOG_LEVEL = os.environ.get('LOG_LEVEL', logging.INFO)
+LOG_LEVEL = os.getenv('LOG_LEVEL', logging.INFO)
 
 logging.basicConfig(format=LOG_FORMAT, level=LOG_LEVEL)
 templating.setup_filters(app)
@@ -50,7 +52,6 @@ def before_request():
 
 
 @app.route('/')
-@ath.protected_from_brute_force
 @ath.require_auth(access=['sms'])
 def index():
     device_id = request.args.get('device-id', '').strip()
@@ -86,7 +87,6 @@ def index():
 
 
 @app.route('/get-sms')
-@ath.protected_from_brute_force
 @ath.require_auth(access=['sms'])
 def get_sms():
     device_id = request.args.get('device-id', '').strip()
@@ -109,7 +109,6 @@ def get_sms():
 
 
 @app.route('/add-sms', methods=['POST'])
-@ath.protected_from_brute_force
 @ath.require_auth(no_redirect=True, access=['sms'])
 def add_sms():
     try:
@@ -122,7 +121,6 @@ def add_sms():
 
 
 @app.route('/filters')
-@ath.protected_from_brute_force
 @ath.require_auth(access=['sms'])
 def show_filters():
     filters = data_handler.get_filters()
@@ -133,7 +131,6 @@ def show_filters():
 
 
 @app.route('/save-filters', methods=['POST'])
-@ath.protected_from_brute_force
 @ath.require_auth(access=['sms'], no_redirect=True)
 def save_filters():
     try:
@@ -145,7 +142,6 @@ def save_filters():
 
 
 @app.route('/export-filters')
-@ath.protected_from_brute_force
 @ath.require_auth(access=['sms'], no_redirect=True)
 def export_filters():
     filters = data_handler.get_filters()
@@ -155,7 +151,6 @@ def export_filters():
 
 
 @app.route('/import-filters', methods=['POST'])
-@ath.protected_from_brute_force
 @ath.require_auth(access=['sms'], no_redirect=True)
 def import_filters():
     try:

@@ -7,8 +7,8 @@ SECRETS = {
 }
 
 
-def run(c, recreate_venv, no_secret_cache=False):
-    common.prepare_virtual_env(c, recreate_venv)
+def run(c, rebuild_venv, no_secret_cache=False):
+    common.prepare_virtual_env(c, rebuild_venv)
 
     if not no_secret_cache and os.path.exists(common.SECRET_DIR):
         logging.info('Has secret data, use --no-secret-cache to renew')

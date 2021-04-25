@@ -15,7 +15,7 @@ PYTHON = os.path.join(VENV_DIR, 'bin', 'python')
 TEST_DATA_DIR = os.path.join(PROJECT_DIR, 'test_data')
 SECRET_DIR = os.path.join(PROJECT_DIR, '.secret')
 
-DOCKER_IMAGE_NAME = 'andre487/sms487-api:latest'
+DOCKER_IMAGE_NAME = 'cr.yandex/crp998oqenr95rs4gf9a/sms487-api'
 DOCKER_MONGO_NAME = 'sms487-mongo'
 DOCKER_APP_NAME = 'sms487-server-test'
 DEV_DB_NAME = 'sms487'
@@ -34,11 +34,11 @@ DEFAULT_APP_ENV = {
 }
 
 
-def prepare_virtual_env(c, recreate_venv):
+def prepare_virtual_env(c, rebuild_venv):
     os.chdir(PROJECT_DIR)
 
     if os.path.exists(VENV_DIR):
-        if recreate_venv:
+        if rebuild_venv:
             shutil.rmtree(VENV_DIR)
         else:
             return
@@ -52,6 +52,7 @@ def start_dev_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
     mongo_port = run_mongo(force_db_cleaning=force_db_cleaning, db_name=db_name)
 
     env = DEFAULT_APP_ENV.copy()
+    env['DEPLOY_TYPE'] = 'dev'
     env['AUTH_MONGO_DB_NAME'] = env['MONGO_DB_NAME'] = db_name
     env.update(os.environ)
     env['MONGO_PORT'] = mongo_port
@@ -64,7 +65,7 @@ def start_dev_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
     ), mongo_port
 
 
-def start_docker_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
+def start_docker_instance(port, tag='latest', db_name=DEV_DB_NAME, force_db_cleaning=False):
     logging.info('Starting Docker app instance')
     mongo_port = run_mongo(force_db_cleaning=force_db_cleaning, db_name=db_name)
     mongo_cont_name = DOCKER_MONGO_NAME + '-' + db_name
@@ -79,6 +80,7 @@ def start_docker_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
         '--link', mongo_cont_name,
         '-p', f'127.0.0.1:{port}:5000',
         '-v', f'{os.path.join(TEST_DATA_DIR, "auth_keys")}:/opt/auth_keys',
+        '-e', 'DEPLOY_TYPE=dev',
         '-e', 'AUTH_PRIVATE_KEY_FILE=/opt/auth_keys/key',
         '-e', 'AUTH_PUBLIC_KEY_FILE=/opt/auth_keys/key.pub.pem',
         '-e', 'FLASK_APP=app.py',
@@ -88,7 +90,7 @@ def start_docker_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
         '-e', f'MONGO_HOST={mongo_cont_name}',
         '-e', f'MONGO_DB_NAME={db_name}',
         '-e', f'AUTH_MONGO_DB_NAME={db_name}',
-        DOCKER_IMAGE_NAME,
+        DOCKER_IMAGE_NAME + ':' + tag,
     )).strip()
 
     atexit.register(partial(remove_docker_container, cont_id))
@@ -105,7 +107,8 @@ def remove_docker_container(cont_id):
 
 def get_docker_instance_logs(cont_id):
     docker = get_docker()
-    subprocess.check_call((docker, 'logs', cont_id))
+    if os.getenv('SHOW_LOGS') != '0':
+        subprocess.check_call((docker, 'logs', cont_id))
 
 
 def run_mongo(force_db_cleaning=False, db_name=DEV_DB_NAME):
