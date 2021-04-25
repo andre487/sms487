@@ -14,7 +14,7 @@ from bson import ObjectId
 
 from app.secret_provider import SecretProvider
 
-CONNECT_TIMEOUT = 5
+CONNECT_TIMEOUT = 500
 TZ_OFFSET = int(os.getenv('TZ_OFFSET', 3))
 
 date_time_pattern = re.compile(r'^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}(?::\d{2})?)(?:\s[+-]\d+)?$')
