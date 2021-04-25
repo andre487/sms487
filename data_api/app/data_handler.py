@@ -17,8 +17,6 @@ from app.secret_provider import SecretProvider
 CONNECT_TIMEOUT = 500
 TZ_OFFSET = int(os.getenv('TZ_OFFSET', 3))
 
-mongo_secrets = SecretProvider.get_instance().mongo_secrets
-
 date_time_pattern = re.compile(r'^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}(?::\d{2})?)(?:\s[+-]\d+)?$')
 short_date_time_pattern = re.compile(r'^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}).*')
 message_type_pattern = re.compile(r'^\w{3,32}$')
@@ -408,6 +406,7 @@ def get_mongo_client():
     if _mongo_client:
         return _mongo_client
 
+    mongo_secrets = SecretProvider.get_instance().mongo_secrets
     logging.info('Connecting to MongoDB: %s:%s', mongo_secrets.host, mongo_secrets.port)
 
     mongo_options = dict(
@@ -432,10 +431,13 @@ def get_mongo_client():
 
 
 def get_mongo_db():
+    mongo_secrets = SecretProvider.get_instance().mongo_secrets
     return get_mongo_client()[mongo_secrets.db_name]
 
 
 def _get_sms_collection():
+    mongo_secrets = SecretProvider.get_instance().mongo_secrets
+
     client = get_mongo_client()
     collection = client[mongo_secrets.db_name]['sms_items']
 
@@ -468,6 +470,8 @@ def _get_sms_collection():
 
 
 def _get_filters_collection():
+    mongo_secrets = SecretProvider.get_instance().mongo_secrets
+
     client = get_mongo_client()
     collection = client[mongo_secrets.db_name]['filters']
 

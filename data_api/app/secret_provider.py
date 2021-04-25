@@ -1,6 +1,7 @@
 import logging
 import os
 from dataclasses import dataclass
+from functools import cached_property
 
 import requests
 
@@ -15,12 +16,12 @@ meta_service = os.getenv('YC_METADATA_SERVICE', '169.254.169.254')
 class MongoSecrets:
     host: str
     port: int
-    replica_set: str
-    ssl_cert: str
     user: str
     password: str
     auth_source: str
     db_name: str
+    ssl_cert: str = None
+    replica_set: str = None
 
     def validate(self):
         check_fields_non_empty = ('host', 'port', 'db_name')
@@ -47,6 +48,8 @@ class SecretProvider:
 
     @classmethod
     def _create_instance_by_deploy(cls):
+        logging.info('Using secret configuration for %s', deploy_type)
+
         if deploy_type == 'yc':
             return YcSecretProvider()
 
@@ -55,13 +58,13 @@ class SecretProvider:
 
         raise RuntimeError(f'Unknown deploy type: {deploy_type}')
 
-    @property
+    @cached_property
     def mongo_secrets(self):
         raise NotImplementedError()
 
 
 class DevSecretProvider(SecretProvider):
-    @property
+    @cached_property
     def mongo_secrets(self):
         return MongoSecrets(
             host=os.getenv('MONGO_HOST', 'localhost'),
@@ -79,7 +82,7 @@ class YcSecretProvider(SecretProvider):
     mongo_secret_id = 'e6qeb5qh931hk2nt5d7l'
     not_exist = object()
 
-    @property
+    @cached_property
     def mongo_secrets(self):
         url = f'{LOCKBOX_SECRET_URL}/{self.mongo_secret_id}/payload'
         resp = requests.get(url, headers={'Authorization': f'Bearer {self.iam_token}'})
@@ -108,15 +111,21 @@ class YcSecretProvider(SecretProvider):
             if val is self.not_exist:
                 raise RuntimeError(f'Required field not found in secret data: {name}')
 
-        return MongoSecrets(
+        result = MongoSecrets(
             db_name=os.getenv('MONGO_DB_NAME', DEFAULT_DB_NAME),
             **mongo_data
         ).validate()
 
-    @property
+        log_data = vars(result)
+        log_data.pop('password')
+        logging.info('MongoDB params: %s', log_data)
+
+        return result
+
+    @cached_property
     def iam_token(self):
         url = f'http://{meta_service}/computeMetadata/v1/instance/service-accounts/default/token'
-        resp = requests.get(url)
+        resp = requests.get(url, headers={'Metadata-Flavor': 'Google'})
         resp.raise_for_status()
 
         resp_data = resp.json()

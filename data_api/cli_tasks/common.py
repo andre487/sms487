@@ -15,7 +15,7 @@ PYTHON = os.path.join(VENV_DIR, 'bin', 'python')
 TEST_DATA_DIR = os.path.join(PROJECT_DIR, 'test_data')
 SECRET_DIR = os.path.join(PROJECT_DIR, '.secret')
 
-DOCKER_IMAGE_NAME = 'cr.yandex/crp998oqenr95rs4gf9a/sms487-api:latest'
+DOCKER_IMAGE_NAME = 'cr.yandex/crp998oqenr95rs4gf9a/sms487-api'
 DOCKER_MONGO_NAME = 'sms487-mongo'
 DOCKER_APP_NAME = 'sms487-server-test'
 DEV_DB_NAME = 'sms487'
@@ -65,7 +65,7 @@ def start_dev_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
     ), mongo_port
 
 
-def start_docker_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
+def start_docker_instance(port, tag='latest', db_name=DEV_DB_NAME, force_db_cleaning=False):
     logging.info('Starting Docker app instance')
     mongo_port = run_mongo(force_db_cleaning=force_db_cleaning, db_name=db_name)
     mongo_cont_name = DOCKER_MONGO_NAME + '-' + db_name
@@ -90,7 +90,7 @@ def start_docker_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
         '-e', f'MONGO_HOST={mongo_cont_name}',
         '-e', f'MONGO_DB_NAME={db_name}',
         '-e', f'AUTH_MONGO_DB_NAME={db_name}',
-        DOCKER_IMAGE_NAME,
+        DOCKER_IMAGE_NAME + ':' + tag,
     )).strip()
 
     atexit.register(partial(remove_docker_container, cont_id))
@@ -107,7 +107,8 @@ def remove_docker_container(cont_id):
 
 def get_docker_instance_logs(cont_id):
     docker = get_docker()
-    subprocess.check_call((docker, 'logs', cont_id))
+    if os.getenv('SHOW_LOGS') != '0':
+        subprocess.check_call((docker, 'logs', cont_id))
 
 
 def run_mongo(force_db_cleaning=False, db_name=DEV_DB_NAME):

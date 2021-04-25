@@ -5,11 +5,14 @@ from io import StringIO
 import requests
 from auth487 import common as acm
 from app import data_handler
+from app.secret_provider import SecretProvider
 from cli_tasks import common
 
 APP_PORT = int(os.getenv('APP_PORT', 8080))
 PROJECT_DIR = os.path.dirname(__file__)
 TEST_DATA_PATH = os.path.join(PROJECT_DIR, 'test_data')
+
+mongo_secrets = SecretProvider.get_instance().mongo_secrets
 
 with open(os.path.join(TEST_DATA_PATH, 'fixture.json')) as fp:
     FIXTURE = json.load(fp)
@@ -54,7 +57,7 @@ class BaseTest:
             db.get_collection(name).insert_many(data)
 
     def teardown_method(self):
-        data_handler.get_mongo_client().drop_database(data_handler.mongo_secrets.db_name)
+        data_handler.get_mongo_client().drop_database(mongo_secrets.db_name)
 
 
 class TestHomePage(BaseTest):

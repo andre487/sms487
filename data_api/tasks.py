@@ -1,6 +1,9 @@
+from datetime import datetime
+
+from invoke import task
+
 import cli_tasks
 from cli_tasks import common
-from invoke import task
 
 
 @task
@@ -72,15 +75,13 @@ def create_local_venv(c, rebuild_venv=False):
 @task
 def make_deploy(c, rebuild_venv=False, no_secret_cache=False):
     """Deploy current work dir to production"""
-    cli_tasks.run_linters.run(c, rebuild_venv)
+    tag = datetime.utcnow().strftime('t%Y%m%d_%H%M%S')
 
+    cli_tasks.run_linters.run(c, rebuild_venv)
     cli_tasks.prepare_secrets.run(c, rebuild_venv, no_secret_cache)
 
-    cli_tasks.docker_build.run(c)
-    cli_tasks.docker_test.run(c, rebuild_venv)
-    cli_tasks.docker_push.run(c)
+    cli_tasks.docker_build.run(c, tag=tag)
+    cli_tasks.docker_test.run(c, rebuild_venv, tag=tag)
+    cli_tasks.docker_push.run(c, tag=tag)
 
-    c.run(
-        f'ansible-playbook '
-        f'{common.PROJECT_DIR}/deploy/setup.yml'
-    )
+    c.run(f'{common.PROJECT_DIR}/deploy/yandex_cloud/update_container.sh {tag}')

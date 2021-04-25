@@ -7,7 +7,8 @@ export SERVICE_ACCOUNT=robot-service
 export MAIN_USER=andre487
 
 export CONTAINER_NAME=sms487-api
-export DOCKER_IMAGE=cr.yandex/crp998oqenr95rs4gf9a/sms487-api:latest
+export DOCKER_IMAGE=cr.yandex/crp998oqenr95rs4gf9a/sms487-api
+export DOCKER_IMAGE_LATEST="$DOCKER_IMAGE:latest"
 export SSH_KEY_SECRET=e6q6vfo2vo565h0cb0nq
 
 get_main_user_public_key() {

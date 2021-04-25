@@ -4,14 +4,14 @@ import time
 from . import common
 
 
-def run(c, rebuild_venv):
+def run(c, rebuild_venv, tag='latest'):
     common.prepare_virtual_env(c, rebuild_venv)
 
     port = common.get_free_port()
     logging.info('Using port %s', port)
 
     logging.info('Start Docker instance')
-    _, mongo_port = common.start_docker_instance(port, db_name=common.TEST_DB_NAME)
+    _, mongo_port = common.start_docker_instance(port, db_name=common.TEST_DB_NAME, tag=tag)
     time.sleep(2)
 
     test_proc = subprocess.Popen((common.PYTHON, '-m', 'pytest', '-s', 'http_test.py'), env={
