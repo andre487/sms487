@@ -172,7 +172,7 @@ def sw_js():
             'Content-Type': 'application/javascript; charset=utf-8',
             'Cache-Control': 'private, max-age=0, no-transform',
         },
-        response=content,
+        response=[content],
     )
 
 
@@ -190,17 +190,17 @@ def web_manifest():
             'Content-Type': 'application/json; charset=utf-8',
             'Cache-Control': 'private, max-age=600, no-transform',
         },
-        response=flask.render_template('manifest.json', **data),
+        response=[flask.render_template('manifest.json', **data)],
     )
 
 
 @app.route('/robots.txt')
 def robots_txt():
     return flask.Response(
-        response=(
+        response=[(
             'User-Agent: *\n'
             'Disallow: /'
-        ),
+        )],
         headers={'Content-Type': 'text/plain; charset=utf-8'}
     )
 
@@ -264,7 +264,7 @@ def create_html_response(template_name, data, status=200, headers=None):
         csrf_token=ath.set_csrf_token(app, resp=resp),
     )
 
-    resp.response = flask.render_template(template_name, **data)
+    resp.response = [flask.render_template(template_name, **data)]
     resp.headers['content-type'] = 'text/html; charset=utf-8'
 
     for name, val in headers.items():
