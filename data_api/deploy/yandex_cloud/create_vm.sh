@@ -17,7 +17,7 @@ yc compute instance create-with-container \
     --network-interface "subnet-name=default-$zone,nat-ip-version=ipv4" \
     --cores 2 \
     --core-fraction 5 \
-    --memory 1GB \
+    --memory 512MB \
     --container-name "$CONTAINER_NAME" \
     --container-image "$DOCKER_IMAGE_LATEST" \
     --container-tty \
