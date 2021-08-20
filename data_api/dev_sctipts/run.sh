@@ -12,4 +12,8 @@ fi
 
 source ./venv/bin/activate
 
-./entry-point.sh
+export FLASK_APP=api.py
+export ENABLE_TEST_TOKEN_SET=1
+export FLASK_ENV=development
+
+flask run --host 0.0.0.0
