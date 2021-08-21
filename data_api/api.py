@@ -209,7 +209,7 @@ def robots_txt():
 if os.getenv('ENABLE_TEST_TOKEN_SET') == '1':
     @app.route('/set-token')
     def set_token():
-        is_dev_env = os.getenv('FLASK_ENV') == 'development' and app.debug
+        is_dev_env = os.getenv('FLASK_ENV') == 'dev' and app.debug
         if not is_dev_env:
             return create_json_response({'error': 'Not in dev env'}, status=403)
 
