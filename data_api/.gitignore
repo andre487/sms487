@@ -2,3 +2,4 @@
 *.retry
 .secret
 venv
+.venv
