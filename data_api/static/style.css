@@ -279,6 +279,11 @@ input + .checkbox-label
     margin-left: 25px;
 }
 
+.message-params__refresh
+{
+    margin-left: 20px;
+}
+
 .message-list
 {
     margin: 0 20px;

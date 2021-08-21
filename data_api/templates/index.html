@@ -21,9 +21,8 @@
                class="message-params__item message-params__item_limit"
                value="{{ limit }}">
 
-        {% if refresh %}
-            <input type="hidden" name="refresh" value="1">
-        {% endif %}
+        <input type="checkbox" name="refresh" id="message-params__refresh" class="message-params__refresh" value="1" {% if refresh %}checked{%endif%}>
+        <label for="message-params__refresh">Refresh</label>
 
         {% if not apply_filters %}
             <input type="hidden" name="no-filters" value="1">
