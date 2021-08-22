@@ -3,7 +3,7 @@ import os
 from . import common, yandex_cloud
 
 SECRETS = {
-    'mongo': 'e6q0nap2vdn3v6u9r7h8',
+    'mongo': 'e6q502o8uulleoq6jnpg',
 }
 
 

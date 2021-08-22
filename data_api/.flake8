@@ -4,5 +4,6 @@ count = True
 statistics = True
 exclude =
     .pytest_cache,
-    .venv
+    .venv,
+    venv
 import-order-style = pep8
