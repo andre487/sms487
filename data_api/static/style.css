@@ -395,6 +395,7 @@ input + .checkbox-label
 .navigation
 {
     margin: 10px;
+    margin-bottom: 0;
     font-size: 12px;
     padding-top: 10px;
     border-top: 1px solid #ccc;
