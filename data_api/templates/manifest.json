@@ -6,7 +6,7 @@
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#333",
-  "background_color": "#9c1a1c",
+  "background_color": "#333",
   "icons": [
     {
       "src": "{{ url_for('static', filename='icon.svg') | static_version }}",
