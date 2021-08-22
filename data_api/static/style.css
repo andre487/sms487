@@ -18,12 +18,12 @@
     align-items: center;
 
     box-sizing: border-box;
-    height: 60px;
-    line-height: 60px;
+    height: 40px;
+    line-height: 40px;
     padding: 0 20px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 
-    font-size: 20px;
+    font-size: 14px;
     color: white;
     background: #9c1a1c;
     white-space: nowrap;
@@ -158,7 +158,7 @@
 
 .checkbox-label
 {
-    font-size: 14px;
+    font-size: 12px;
 }
 
 input + .checkbox-label
@@ -235,19 +235,25 @@ input + .checkbox-label
 {
     display: flex;
     align-items: center;
-    font-size: 14px;
+    font-size: 12px;
     line-height: normal;
+}
+
+.message-params .button
+{
+    font-size: 12px;
+    padding: 5px 5px;
 }
 
 .message-params__item_label
 {
 
-    margin-right: 10px;
+    margin-right: 5px;
 }
 
 .message-params__item + .message-params__item_label
 {
-    margin-left: 25px;
+    margin-left: 15px;
 }
 
 .message-params__item_device-id
@@ -256,7 +262,7 @@ input + .checkbox-label
     min-width: 110px;
     padding: 2px 0;
 
-    font-size: 14px;
+    font-size: 12px;
     border: 1px solid #666;
     color: #333;
     border-radius: 4px;
@@ -266,7 +272,7 @@ input + .checkbox-label
 {
     box-sizing: border-box;
     width: 55px;
-    font-size: 14px;
+    font-size: 12px;
     padding: 3px;
 
     border: 1px solid #666;
@@ -276,17 +282,17 @@ input + .checkbox-label
 
 .message-params__item_submit
 {
-    margin-left: 25px;
+    margin-left: 15px;
 }
 
 .message-params__refresh
 {
-    margin-left: 20px;
+    margin-left: 15px;
 }
 
 .message-list
 {
-    margin: 0 20px;
+    margin: 0 10px;
     padding: 0;
     list-style: none;
 }
@@ -298,14 +304,14 @@ input + .checkbox-label
 
 .message-list__item + .message-list__item
 {
-    margin-top: 20px;
+    margin-top: 5px;
 }
 
 .message-view
 {
     position: relative;
     max-width: 1024px;
-    padding: 10px;
+    padding: 5px 10px;
     border-radius: 2px;
 
     box-shadow: black 0 0 1px;
@@ -388,9 +394,9 @@ input + .checkbox-label
 
 .navigation
 {
-    margin: 20px;
-    font-size: 14px;
-    padding-top: 20px;
+    margin: 10px;
+    font-size: 12px;
+    padding-top: 10px;
     border-top: 1px solid #ccc;
 }
 
