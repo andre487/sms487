@@ -3,3 +3,4 @@
 .secret
 venv
 .venv
+.pytest_cache

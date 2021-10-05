@@ -50,13 +50,20 @@ def prepare_virtual_env(c, rebuild_venv):
 
 def start_dev_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
     mongo_port = run_mongo(force_db_cleaning=force_db_cleaning, db_name=db_name)
+    _, sqs_test_queue, sqs_access_key, sqs_secret_key = get_sqs_params()
 
     env = DEFAULT_APP_ENV.copy()
-    env['DEPLOY_TYPE'] = 'dev'
-    env['AUTH_MONGO_DB_NAME'] = env['MONGO_DB_NAME'] = db_name
+    env.update({
+        'DEPLOY_TYPE': 'dev',
+        'MONGO_DB_NAME': db_name,
+        'MONGO_PORT': mongo_port,
+        'AUTH_DEV_MODE': '1',
+        'SQS_QUEUE': sqs_test_queue,
+        'SQS_ACCESS_KEY': sqs_access_key,
+        'SQS_SECRET_KEY': sqs_secret_key,
+    })
+    env['AUTH_MONGO_DB_NAME'] = env['MONGO_DB_NAME']
     env.update(os.environ)
-    env['MONGO_PORT'] = mongo_port
-    env['AUTH_DEV_MODE'] = '1'
 
     return subprocess.Popen(
         (PYTHON, '-m', 'flask', 'run', '-p', str(port)),
@@ -69,6 +76,7 @@ def start_docker_instance(port, tag='latest', db_name=DEV_DB_NAME, force_db_clea
     logging.info('Starting Docker app instance')
     mongo_port = run_mongo(force_db_cleaning=force_db_cleaning, db_name=db_name)
     mongo_cont_name = DOCKER_MONGO_NAME + '-' + db_name
+    _, sqs_test_queue, sqs_access_key, sqs_secret_key = get_sqs_params()
 
     docker = get_docker()
     cont_id, _ = get_container_data(docker, DOCKER_APP_NAME)
@@ -90,6 +98,9 @@ def start_docker_instance(port, tag='latest', db_name=DEV_DB_NAME, force_db_clea
         '-e', f'MONGO_HOST={mongo_cont_name}',
         '-e', f'MONGO_DB_NAME={db_name}',
         '-e', f'AUTH_MONGO_DB_NAME={db_name}',
+        '-e', f'SQS_QUEUE={sqs_test_queue}',
+        '-e', f'SQS_ACCESS_KEY={sqs_access_key}',
+        '-e', f'SQS_SECRET_KEY={sqs_secret_key}',
         DOCKER_IMAGE_NAME + ':' + tag,
     )).strip()
 
@@ -119,7 +130,7 @@ def run_mongo(force_db_cleaning=False, db_name=DEV_DB_NAME):
 
     cont_id, is_running = get_container_data(docker, container_name)
     if not cont_id:
-        subprocess.check_output((docker, 'run', '-d', '-P', '--name', container_name, 'mongo'))
+        subprocess.check_output((docker, 'run', '-d', '-p', '127.0.0.1:57017:27017', '--name', container_name, 'mongo'))
         cont_id, is_running = get_container_data(docker, container_name)
 
     if not is_running:
@@ -236,3 +247,15 @@ def get_csrf_token():
     token_file = os.path.join(TEST_DATA_DIR, 'test-csrf-token.txt')
     with open(token_file) as fp:
         return fp.read().strip()
+
+
+def get_sqs_params():
+    with open(os.path.join(SECRET_DIR, 'sqs', 'access-key')) as fp:
+        access_key = fp.read().strip()
+    with open(os.path.join(SECRET_DIR, 'sqs', 'secret-key')) as fp:
+        secret_key = fp.read().strip()
+    with open(os.path.join(SECRET_DIR, 'sqs', 'test-queue')) as fp:
+        test_queue = fp.read().strip()
+    with open(os.path.join(SECRET_DIR, 'sqs', 'prod-queue')) as fp:
+        prod_queue = fp.read().strip()
+    return prod_queue, test_queue, access_key, secret_key

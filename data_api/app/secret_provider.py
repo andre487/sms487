@@ -2,6 +2,7 @@ import logging
 import os
 from dataclasses import dataclass
 from functools import cached_property
+from typing import Dict
 
 import requests
 
@@ -37,6 +38,14 @@ class MongoSecrets:
         return self
 
 
+@dataclass
+class SqsSecrets:
+    queue_url: str
+    access_key: str
+    secret_key: str
+    endpoint_url: str = 'https://message-queue.api.cloud.yandex.net'
+
+
 class SecretProvider:
     _instance = None
 
@@ -62,6 +71,10 @@ class SecretProvider:
     def mongo_secrets(self):
         raise NotImplementedError()
 
+    @cached_property
+    def sqs_secrets(self):
+        raise NotImplementedError()
+
 
 class DevSecretProvider(SecretProvider):
     @cached_property
@@ -77,46 +90,49 @@ class DevSecretProvider(SecretProvider):
             db_name=os.getenv('MONGO_DB_NAME', DEFAULT_DB_NAME),
         ).validate()
 
+    @cached_property
+    def sqs_secrets(self):
+        return SqsSecrets(
+            queue_url=os.getenv('SQS_QUEUE'),
+            access_key=os.getenv('SQS_ACCESS_KEY'),
+            secret_key=os.getenv('SQS_SECRET_KEY'),
+        )
+
 
 class YcSecretProvider(SecretProvider):
     mongo_secret_id = 'e6q502o8uulleoq6jnpg'
+    sqs_secret_id = 'e6qq93te4b88t6qv2ak0'
     not_exist = object()
 
     @cached_property
     def mongo_secrets(self):
-        url = f'{LOCKBOX_SECRET_URL}/{self.mongo_secret_id}/payload'
-        resp = requests.get(url, headers={'Authorization': f'Bearer {self.iam_token}'})
-        resp.raise_for_status()
-
-        resp_data = resp.json()
-        entries = resp_data['entries']
-
-        mongo_data = {}
-        for cur_data in entries:
-            name = cur_data['key']
-            val = cur_data['textValue']
-
-            mongo_data[name] = None
-            if name == 'port':
-                try:
-                    mongo_data[name] = int(val)
-                except (ValueError, TypeError) as e:
-                    logging.error(e)
-            else:
-                mongo_data[name] = val
-
+        sec_data = self._request_lockbox(self.mongo_secret_id)
         required_fields = ('host', 'port', 'ssl_cert', 'user', 'password')
         for name in required_fields:
-            val = mongo_data.get(name, self.not_exist)
+            val = sec_data.get(name, self.not_exist)
             if val is self.not_exist:
                 raise RuntimeError(f'Required field not found in secret data: {name}')
 
-        result = MongoSecrets(**mongo_data).validate()
+        result = MongoSecrets(**sec_data).validate()
 
         log_data = {k: v for k, v in vars(result).items() if k != 'password'}
         logging.info('MongoDB params: %s', log_data)
 
         return result
+
+    @cached_property
+    def sqs_secrets(self):
+        sec_data = self._request_lockbox(self.sqs_secret_id)
+        required_fields = ('access-key', 'secret-key', 'prod-queue')
+        for name in required_fields:
+            val = sec_data.get(name, self.not_exist)
+            if val is self.not_exist:
+                raise RuntimeError(f'Required field not found in secret data: {name}')
+        return SqsSecrets(
+            access_key=sec_data['access-key'],
+            secret_key=sec_data['secret-key'],
+            queue_url=sec_data['prod-queue'],
+        )
 
     @cached_property
     def iam_token(self):
@@ -130,3 +146,27 @@ class YcSecretProvider(SecretProvider):
             raise RuntimeError(f'There is no access token in result: {resp_data}')
 
         return token
+
+    def _request_lockbox(self, sec_id: str) -> Dict:
+        url = f'{LOCKBOX_SECRET_URL}/{sec_id}/payload'
+        resp = requests.get(url, headers={'Authorization': f'Bearer {self.iam_token}'})
+        resp.raise_for_status()
+
+        resp_data = resp.json()
+        entries = resp_data['entries']
+
+        sec_data = {}
+        for cur_data in entries:
+            name = cur_data['key']
+            val = cur_data['textValue']
+
+            sec_data[name] = None
+            if name == 'port':
+                try:
+                    sec_data[name] = int(val)
+                except (ValueError, TypeError) as e:
+                    logging.error(e)
+            else:
+                sec_data[name] = val
+
+        return sec_data

@@ -8,8 +8,10 @@ from collections import defaultdict
 from collections.abc import Mapping
 from datetime import datetime, timedelta
 
+import boto3
 import pymongo
 from auth487 import common as acm, flask as ath
+from botocore.exceptions import ClientError
 from bson import ObjectId
 
 from app.secret_provider import SecretProvider
@@ -22,6 +24,8 @@ short_date_time_pattern = re.compile(r'^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}).*')
 message_type_pattern = re.compile(r'^\w{3,32}$')
 
 _mongo_client = None
+_sqs_client = None
+_sqs_params = None
 
 
 class FormDataError(Exception):
@@ -39,10 +43,13 @@ def get_login():
     return login
 
 
-def get_sms(device_id, limit=None, apply_filters=True):
-    query = {'login': get_login()}
-    if device_id:
-        query['device_id'] = device_id
+def get_sms(device_id=None, limit=None, apply_filters=True, ids=None):
+    if ids:
+        query = {'_id': {'$in': ids}}
+    else:
+        query = {'login': get_login()}
+        if device_id:
+            query['device_id'] = device_id
 
     if not limit:
         limit = 256
@@ -89,8 +96,28 @@ def add_sms(data):
     docs = [create_add_sms_doc(login, x) for x in data]
 
     res = _get_sms_collection().insert_many(docs)
+    inserted_count = len(res.inserted_ids)
 
-    return len(res.inserted_ids)
+    inserted_docs = get_sms(apply_filters=True, ids=res.inserted_ids)
+    if inserted_docs:
+        sqs_client, sqs_params = get_sqs_client()
+        if sqs_params.access_key:
+            try:
+                res = sqs_client.send_message(
+                    QueueUrl=sqs_params.queue_url,
+                    MessageGroupId='0',
+                    MessageBody=json.dumps({
+                        'type': 'new_messages',
+                        'data': inserted_docs,
+                    }),
+                )
+                logging.info(f'Message to SQS sent: {res}')
+            except ClientError as e:
+                logging.error(e)
+        else:
+            logging.warning('SQS Access KEY is empty')
+
+    return inserted_count
 
 
 def create_add_sms_doc(login, data):
@@ -433,6 +460,19 @@ def get_mongo_client():
     logging.info('Connecting to MongoDB: %s:%s', mongo_secrets.host, mongo_secrets.port)
     _mongo_client = pymongo.MongoClient(mongo_secrets.host, mongo_secrets.port, **mongo_options)
     return _mongo_client
+
+
+def get_sqs_client():
+    global _sqs_client, _sqs_params
+    if _sqs_client and _sqs_params:
+        return _sqs_client, _sqs_params
+
+    _sqs_params = SecretProvider.get_instance().sqs_secrets
+    _sqs_client = boto3.client(
+        'sqs', endpoint_url=_sqs_params.endpoint_url, region_name='ru-central1',
+        aws_access_key_id=_sqs_params.access_key, aws_secret_access_key=_sqs_params.secret_key,
+    )
+    return _sqs_client, _sqs_params
 
 
 def get_mongo_db():

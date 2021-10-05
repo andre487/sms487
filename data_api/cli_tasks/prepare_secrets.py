@@ -4,6 +4,7 @@ from . import common, yandex_cloud
 
 SECRETS = {
     'mongo': 'e6q502o8uulleoq6jnpg',
+    'sqs': 'e6qq93te4b88t6qv2ak0',
 }
 
 
