@@ -43,8 +43,7 @@ def prepare_virtual_env(c, rebuild_venv):
         else:
             return
 
-    c.run(f'python3 -m venv --copies {VENV_DIR}')
-    c.run(f'{PYTHON} -m pip install --upgrade pip')
+    c.run(f'python3 -m venv --copies --upgrade-deps {VENV_DIR}')
     c.run(f'{PYTHON} -m pip install -r {PROJECT_DIR}/requirements.txt')
 
 
