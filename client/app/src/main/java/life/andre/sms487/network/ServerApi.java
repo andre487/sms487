@@ -33,7 +33,6 @@ import life.andre.sms487.messages.MessageStorage;
 import life.andre.sms487.settings.AppSettings;
 import life.andre.sms487.utils.BgTask;
 import life.andre.sms487.utils.ValueThrottler;
-import life.andre.sms487.views.Toaster;
 
 public class ServerApi {
     public static final String TAG = "API";
@@ -249,7 +248,6 @@ public class ServerApi {
 
             String finalErrorMessage = getFinalErrorMessage(error);
             Logger.e(TAG, finalErrorMessage);
-            Toaster.getInstance().showThrottled(finalErrorMessage);
 
             EventBus.getDefault().post(new MessagesStateChanged());
         }
