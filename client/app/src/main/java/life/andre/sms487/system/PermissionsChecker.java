@@ -22,6 +22,7 @@ public class PermissionsChecker {
                 Manifest.permission.ACCESS_NETWORK_STATE,
                 Manifest.permission.RECEIVE_BOOT_COMPLETED,
                 Manifest.permission.FOREGROUND_SERVICE,
+                Manifest.permission.POST_NOTIFICATIONS,
         };
 
         List<String> absent = new ArrayList<>();

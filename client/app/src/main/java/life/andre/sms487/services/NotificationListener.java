@@ -116,8 +116,10 @@ public class NotificationListener extends NotificationListenerService {
 
         Notification notification = new Notification.Builder(this, CHANNEL_ID)
                 .setContentTitle("SMS 487")
+                .setOngoing(true)
                 .setContentText("Service is running for listening notifications")
                 .setSmallIcon(R.drawable.ic_notification)
+                .setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
                 .build();
 
         startForeground(RUN_ID, notification);
