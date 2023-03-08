@@ -3,9 +3,8 @@ package life.andre.sms487.services;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.Service;
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
@@ -36,7 +35,7 @@ public class NotificationListener extends NotificationListenerService {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        stopForeground(true);
+        stopForeground(Service.STOP_FOREGROUND_REMOVE);
     }
 
     @Override
@@ -67,7 +66,7 @@ public class NotificationListener extends NotificationListenerService {
             return;
         }
 
-        String appLabel = getAppLabel(sbn.getPackageName());
+        String appLabel = sbn.getPackageName();
         long postTime = sbn.getPostTime();
 
         String curTime = DateUtil.nowFormatted();
@@ -81,24 +80,6 @@ public class NotificationListener extends NotificationListenerService {
 
     boolean isNotificationSuitable(@NonNull StatusBarNotification sbn) {
         return sbn.isClearable();
-    }
-
-    @NonNull
-    public String getAppLabel(@NonNull String packageName) {
-        ApplicationInfo applicationInfo = null;
-
-        PackageManager packageManager = this.getPackageManager();
-        try {
-            applicationInfo = packageManager.getApplicationInfo(packageName, 0);
-        } catch (@NonNull final PackageManager.NameNotFoundException e) {
-            Logger.e(TAG, "Get app name error: " + e.getMessage());
-        }
-
-        if (applicationInfo == null) {
-            return packageName;
-        }
-
-        return (String) packageManager.getApplicationLabel(applicationInfo);
     }
 
     private void createServiceMessage() {
