@@ -7,6 +7,8 @@ for seeng them on PC.
 
 Android client located in `client` dir. Requires Android 13.
 
+[How to pass notification listening restriction](https://vgev.ru/ogranichennye-nastrojki-android-13-dlya-zagruzhennyh-prilozhenij-kak-obojti/)
+
 ## Data API
 
 Flask server located in `data_api` dir. It uses Python 3.
