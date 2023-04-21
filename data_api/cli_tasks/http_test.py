@@ -23,6 +23,7 @@ def run(c, rebuild_venv, test_filter):
         'AUTH_MONGO_DB_NAME': common.TEST_DB_NAME,
         'MONGO_DB_NAME': common.TEST_DB_NAME,
         'MONGO_PORT': mongo_port,
+        'DEPLOY_TYPE': 'dev',
 
     }, cwd=common.PROJECT_DIR)
     test_proc.wait()

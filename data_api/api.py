@@ -8,6 +8,7 @@ import flask
 from auth487 import common as acm
 from auth487 import flask as ath
 from flask import request
+from werkzeug.exceptions import BadRequest
 
 from app import data_handler, templating
 
@@ -113,12 +114,18 @@ def get_sms():
 @ath.require_auth(no_redirect=True, access=['sms'])
 def add_sms():
     try:
-        data = request.json or request.form
+        try:
+            data = request.json
+        except BadRequest:
+            data = request.form
         count = data_handler.add_sms(data)
         return create_json_response({'status': 'OK', 'added': count})
     except data_handler.FormDataError as e:
         logging.info('Client error: %s', e)
         return create_json_response({'error': str(e)}, status=400)
+    except Exception as e:
+        logging.error('General error: %s', e)
+        return create_json_response({'error': str(e)}, status=500)
 
 
 @app.route('/filters')
@@ -140,6 +147,9 @@ def save_filters():
     except data_handler.FormDataError as e:
         logging.info('Client error: %s', e)
         return create_json_response({'error': str(e)}, status=400)
+    except Exception as e:
+        logging.error('General error: %s', e)
+        return create_json_response({'error': str(e)}, status=500)
 
 
 @app.route('/export-filters')
@@ -160,6 +170,9 @@ def import_filters():
     except data_handler.FormDataError as e:
         logging.info('Client error: %s', e)
         return create_json_response({'error': str(e)}, status=400)
+    except Exception as e:
+        logging.error('General error: %s', e)
+        return create_json_response({'error': str(e)}, status=500)
 
 
 @app.route('/sw.js')
