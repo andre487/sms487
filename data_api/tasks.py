@@ -26,12 +26,6 @@ def install(c, rebuild_venv=False, packages=''):
 
 
 @task
-def freeze(c, rebuild_venv=False):
-    """Freeze requirements.txt"""
-    cli_tasks.freeze_requirements.run(c, rebuild_venv)
-
-
-@task
 def http_test(c, rebuild_venv=False, k=None):
     """Run HTTP handlers test on dev instance"""
     cli_tasks.http_test.run(c, rebuild_venv, test_filter=k)
