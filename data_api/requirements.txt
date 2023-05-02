@@ -2,7 +2,7 @@ auth487 @ git+https://github.com/andre487/auth487.git@5c10c86b02423cb861fc54bd2c
 boto3==1.26.117
 click==8.1.3
 flake8==6.0.0
-Flask==2.2.3
+Flask==2.3.2
 invoke==2.0.0
 protobuf==4.22.3
 pymongo==3.12.3
