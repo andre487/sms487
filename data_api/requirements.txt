@@ -13,4 +13,4 @@ PyYAML==6.0
 requests==2.31.0
 ua-parser==0.16.1
 user-agents==2.2.0
-uWSGI==2.0.21
+uWSGI==2.0.22
