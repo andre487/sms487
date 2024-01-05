@@ -5,6 +5,7 @@ import os
 import shutil
 import socket
 import subprocess
+from datetime import datetime
 from functools import partial
 
 logging.basicConfig(level=logging.INFO)
@@ -258,3 +259,18 @@ def get_sqs_params():
     with open(os.path.join(SECRET_DIR, 'sqs', 'prod-queue')) as fp:
         prod_queue = fp.read().strip()
     return prod_queue, test_queue, access_key, secret_key
+
+
+def create_yandex_sqs_client(access_key, secret_key):
+    import boto3
+    return boto3.client(
+        'sqs',
+        endpoint_url='https://message-queue.api.cloud.yandex.net/',
+        region_name='ru-central1',
+        aws_access_key_id=access_key,
+        aws_secret_access_key=secret_key,
+    )
+
+
+def get_fmt_date():
+    return datetime.now().strftime('%F %H:%M %Z')

@@ -1,3 +1,4 @@
+import json
 import logging
 from datetime import datetime
 
@@ -85,3 +86,60 @@ def make_deploy(c, rebuild_venv=False, no_secret_cache=False):
         c.run('docker-clean')
     except Exception as e:
         logging.warning(e)
+
+
+LOREM_IPSUM = """
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin in mollis ipsum. Proin id ornare 
+turpis, vitae accumsan est. Nunc lobortis non leo at hendrerit. Nullam nunc mauris, accumsan sollicitudin mauris sed, 
+efficitur aliquam enim.
+""".strip()
+
+
+@task
+def send_sms_to_sqs_test(
+    _,
+    device_id='TestDevice',
+    tel='000',
+    message_type='sms',
+    printable_message_type='SMS',
+    text=LOREM_IPSUM,
+):
+    sqs_test_queue = common.get_sqs_params()[1]
+    send_sqs_message(sqs_test_queue, device_id, message_type, printable_message_type, tel, text)
+
+
+@task
+def send_sms_to_sqs_prod(
+    _,
+    device_id='TestDevice',
+    tel='000',
+    message_type='sms',
+    printable_message_type='SMS',
+    text=LOREM_IPSUM,
+):
+    sqs_prod_queue = common.get_sqs_params()[0]
+    send_sqs_message(sqs_prod_queue, device_id, message_type, printable_message_type, tel, text)
+
+
+def send_sqs_message(queue_url, device_id, message_type, printable_message_type, tel, text):
+    _, _, sqs_access_key, sqs_secret_key = common.get_sqs_params()
+    sqs_client = common.create_yandex_sqs_client(sqs_access_key, sqs_secret_key)
+    dt = common.get_fmt_date()
+    res = sqs_client.send_message(
+        QueueUrl=queue_url,
+        MessageGroupId='0',
+        MessageBody=json.dumps({
+            'type': 'new_messages',
+            'data': [{
+                'device_id': device_id,
+                'tel': tel,
+                'message_type': message_type,
+                'printable_message_type': printable_message_type,
+                'date_time': dt,
+                'sms_date_time': dt,
+                'printable_date_time': dt,
+                'text': text,
+            }],
+        }),
+    )
+    logging.info(f'Message to SQS sent: {res}')
