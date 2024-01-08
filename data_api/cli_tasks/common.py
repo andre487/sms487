@@ -130,7 +130,9 @@ def run_mongo(force_db_cleaning=False, db_name=DEV_DB_NAME):
 
     cont_id, is_running = get_container_data(docker, container_name)
     if not cont_id:
-        subprocess.check_output((docker, 'run', '-d', '-p', '127.0.0.1:57017:27017', '--name', container_name, 'mongo'))
+        subprocess.check_output((
+            docker, 'run', '-d', '-p', '127.0.0.1:57017:27017', '--name', container_name, 'mongo:4'
+        ))
         cont_id, is_running = get_container_data(docker, container_name)
 
     if not is_running:

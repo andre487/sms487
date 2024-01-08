@@ -8,7 +8,7 @@ import flask
 from auth487 import common as acm
 from auth487 import flask as ath
 from flask import request
-from werkzeug.exceptions import BadRequest
+from werkzeug.exceptions import UnsupportedMediaType
 
 from app import data_handler, templating
 
@@ -116,7 +116,7 @@ def add_sms():
     try:
         try:
             data = request.json
-        except BadRequest:
+        except UnsupportedMediaType:
             data = request.form
         count = data_handler.add_sms(data)
         return create_json_response({'status': 'OK', 'added': count})
@@ -124,7 +124,7 @@ def add_sms():
         logging.info('Client error: %s', e)
         return create_json_response({'error': str(e)}, status=400)
     except Exception as e:
-        logging.error('General error: %s', e)
+        logging.exception('General error: %s', e)
         return create_json_response({'error': str(e)}, status=500)
 
 
@@ -148,7 +148,7 @@ def save_filters():
         logging.info('Client error: %s', e)
         return create_json_response({'error': str(e)}, status=400)
     except Exception as e:
-        logging.error('General error: %s', e)
+        logging.exception('General error: %s', e)
         return create_json_response({'error': str(e)}, status=500)
 
 
@@ -171,7 +171,7 @@ def import_filters():
         logging.info('Client error: %s', e)
         return create_json_response({'error': str(e)}, status=400)
     except Exception as e:
-        logging.error('General error: %s', e)
+        logging.exception('General error: %s', e)
         return create_json_response({'error': str(e)}, status=500)
 
 
