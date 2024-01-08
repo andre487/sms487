@@ -88,6 +88,7 @@ def make_deploy(c, rebuild_venv=False, no_secret_cache=False):
         logging.warning(e)
 
 
+# flake8: noqa: W291
 LOREM_IPSUM = """
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin in mollis ipsum. Proin id ornare 
 turpis, vitae accumsan est. Nunc lobortis non leo at hendrerit. Nullam nunc mauris, accumsan sollicitudin mauris sed, 
