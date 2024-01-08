@@ -1,5 +1,5 @@
-export IAM_TOKEN="$(yc iam create-token)"
-export PROJECT_DIR="$(realpath "$(cd "$(dirname "$0")/../.." && pwd)")"
+IAM_TOKEN="$(yc iam create-token)"; export IAM_TOKEN
+PROJECT_DIR="$(realpath "$(cd "$(dirname "$0")/../.." && pwd)")"; export PROJECT_DIR
 export SECRET_DIR="$PROJECT_DIR/.secret"
 export LOCKBOX_SECRET_URL=https://payload.lockbox.api.cloud.yandex.net/lockbox/v1/secrets
 
