@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-zone="${1:-ru-central1-c}"
+zone="${1:-ru-central1-d}"
 echo "Log stream for container in zone $zone"
 
 cur_dir="$(cd "$(dirname "$0")" && pwd)"

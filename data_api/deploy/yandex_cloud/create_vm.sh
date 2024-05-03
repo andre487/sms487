@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-zone="${ZONE:-ru-central1-c}"
+zone="${ZONE:-ru-central1-d}"
 machine_name="sms487-api-$zone"
 
 cur_dir="$(cd "$(dirname "$0")" && pwd)"
