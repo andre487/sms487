@@ -32,6 +32,7 @@ public class MainActivity extends Activity {
     private boolean lockSettingsSave = false;
 
     private EditText serverKeyInput;
+    private EditText authUrlInput;
     private EditText serverUrlInput;
     private CheckBox sendSmsCheckBox;
     private TextView messagesField;
@@ -69,14 +70,19 @@ public class MainActivity extends Activity {
     }
 
     private void findViewComponents() {
-        serverKeyInput = findViewById(R.id.serverKeyInput);
+        authUrlInput = findViewById(R.id.authUrlInput);
         serverUrlInput = findViewById(R.id.serverUrlInput);
+        serverKeyInput = findViewById(R.id.serverKeyInput);
         sendSmsCheckBox = findViewById(R.id.sendSmsCheckBox);
         messagesField = findViewById(R.id.messagesField);
         logsField = findViewById(R.id.logsField);
     }
 
     private void bindEvents() {
+        authUrlInput.setOnEditorActionListener((v, actionId, event) -> {
+            saveAuthUrl();
+            return false;
+        });
         serverUrlInput.setOnEditorActionListener((v, actionId, event) -> {
             saveServerUrl();
             return false;
@@ -95,17 +101,29 @@ public class MainActivity extends Activity {
     @NonNull
     private SettingsToShow getSettingsToShow() {
         AppSettings st = AppSettings.getInstance();
-        return new SettingsToShow(st.getServerUrl(), st.getServerKey(), st.getNeedSendSms());
+        return new SettingsToShow(
+            st.getAuthUrl(),
+            st.getServerUrl(),
+            st.getServerKey(),
+            st.getNeedSendSms()
+        );
     }
 
     private void fillSettingFields(@NonNull SettingsToShow st) {
         lockSettingsSave = true;
 
+        showAuthUrl(st.authUrl);
         showServerUrl(st.serverUrl);
         showServerKey(st.serverKey);
         showNeedSendSms(st.needSendSms);
 
         lockSettingsSave = false;
+    }
+
+    public void showAuthUrl(@NonNull String authUrl) {
+        if (authUrlInput != null) {
+            authUrlInput.setText(authUrl);
+        }
     }
 
     public void showServerUrl(@NonNull String serverUrl) {
@@ -124,6 +142,20 @@ public class MainActivity extends Activity {
         if (sendSmsCheckBox != null) {
             sendSmsCheckBox.setChecked(needSendSms);
         }
+    }
+
+    void saveAuthUrl() {
+        if (authUrlInput == null || lockSettingsSave) {
+            return;
+        }
+
+        BgTask.run(() -> {
+            Editable authUrlText = authUrlInput.getText();
+            if (authUrlText != null) {
+                AppSettings.getInstance().saveAuthUrl(authUrlText.toString());
+            }
+            return null;
+        });
     }
 
     void saveServerUrl() {
@@ -226,12 +258,15 @@ public class MainActivity extends Activity {
 
     private static class SettingsToShow {
         @NonNull
+        final String authUrl;
+        @NonNull
         final String serverUrl;
         @NonNull
         final String serverKey;
         final boolean needSendSms;
 
-        SettingsToShow(@NonNull String serverUrl, @NonNull String serverKey, boolean needSendSms) {
+        SettingsToShow(@NonNull String authUrl, @NonNull String serverUrl, @NonNull String serverKey, boolean needSendSms) {
+            this.authUrl = authUrl;
             this.serverUrl = serverUrl;
             this.serverKey = serverKey;
             this.needSendSms = needSendSms;
