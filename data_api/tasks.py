@@ -64,9 +64,9 @@ def docker_test(c, rebuild=False):
 
 
 @task
-def prepare_secrets(c, no_secret_cache=False):
+def prepare_secrets(c):
     """Prepare secrets for production"""
-    cli_tasks.prepare_secrets.run(c, no_secret_cache)
+    cli_tasks.prepare_secrets.run(c)
 
 
 @task

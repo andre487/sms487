@@ -12,7 +12,7 @@ def run(c, tag='latest'):
 
     logging.info('Start Docker instance')
     _, mongo_port = common.start_docker_instance(port, db_name=common.TEST_DB_NAME, tag=tag, as_daemon=True)
-    time.sleep(2)
+    time.sleep(10)
 
     test_proc = subprocess.Popen((common.PYTHON, '-m', 'pytest', '-s', 'http_test.py'), env={
         'APP_PORT': str(port),
