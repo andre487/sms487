@@ -1,4 +1,5 @@
 auth487 @ git+https://github.com/andre487/auth487.git@e6973c3#subdirectory=lib
+bjoern==3.2.2
 boto3==1.34.102
 cached-property==1.5.2
 click==8.1.7
@@ -12,4 +13,3 @@ pytz>=2024.1
 PyYAML==6.0.1
 requests==2.31.0
 user-agents==2.2.0
-uWSGI==2.0.25.1
