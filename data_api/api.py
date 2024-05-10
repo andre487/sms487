@@ -272,7 +272,7 @@ def create_html_response(template_name, data, status=200, headers=None):
     nonce = secrets.token_hex(4)
     app.jinja_env.globals.update(
         nonce=nonce,
-        auth_link=acm.AUTH_DOMAIN,
+        auth_link=acm.AUTH_BASE_URL,
         login=data_handler.get_login(),
         csrf_field_name=acm.CSRF_FIELD_NAME,
         csrf_token=ath.set_csrf_token(app, resp=resp),

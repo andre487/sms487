@@ -2,8 +2,8 @@ import logging
 from . import common
 
 
-def run(c, rebuild_venv):
-    common.prepare_virtual_env(c, rebuild_venv=rebuild_venv)
+def run(c):
+    common.prepare_virtual_env(c)
 
     logging.info('Running linters')
     c.run(f'{common.PYTHON} -m flake8')

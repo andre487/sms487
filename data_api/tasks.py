@@ -2,6 +2,7 @@ import json
 import logging
 from datetime import datetime
 
+# noinspection PyUnresolvedReferences
 from invoke import task
 
 import cli_tasks
@@ -9,27 +10,27 @@ from cli_tasks import common
 
 
 @task
-def run_dev(c, port=8080, rebuild_venv=False, clear_db=False):
+def run_dev(c, port=8080, clear_db=False):
     """Run Flask dev server"""
-    cli_tasks.run_dev.run(c, port, rebuild_venv, clear_db)
+    cli_tasks.run_dev.run(c, port, clear_db)
 
 
 @task
-def lint(c, rebuild_venv=False):
+def lint(c):
     """Run flake8"""
-    cli_tasks.run_linters.run(c, rebuild_venv)
+    cli_tasks.run_linters.run(c)
 
 
 @task
-def install(c, rebuild_venv=False, packages=''):
+def install(c, packages=''):
     """Install packages: invoke install --packages='flask pytest'"""
-    cli_tasks.install.run(c, rebuild_venv, packages)
+    cli_tasks.install.run(c, packages)
 
 
 @task
-def http_test(c, rebuild_venv=False, k=None):
+def http_test(c, k=None):
     """Run HTTP handlers test on dev instance"""
-    cli_tasks.http_test.run(c, rebuild_venv, test_filter=k)
+    cli_tasks.http_test.run(c, test_filter=k)
 
 
 @task
@@ -51,33 +52,33 @@ def docker_run(c, port=8181):
 
 
 @task
-def docker_test(c, rebuild_venv=False):
+def docker_test(c):
     """Run HTTP handlers test on Docker instance"""
-    cli_tasks.docker_test.run(c, rebuild_venv)
+    cli_tasks.docker_test.run(c)
 
 
 @task
-def prepare_secrets(c, rebuild_venv=False, no_secret_cache=False):
+def prepare_secrets(c, no_secret_cache=False):
     """Prepare secrets for production"""
-    cli_tasks.prepare_secrets.run(c, rebuild_venv, no_secret_cache)
+    cli_tasks.prepare_secrets.run(c, no_secret_cache)
 
 
 @task
-def create_local_venv(c, rebuild_venv=False):
+def create_local_venv(c, rebuild_venv=True):
     """Prepare .venv dir for using in IDE"""
     common.prepare_virtual_env(c, rebuild_venv)
 
 
 @task
-def make_deploy(c, rebuild_venv=False, no_secret_cache=False):
+def make_deploy(c):
     """Deploy current work dir to production"""
     tag = datetime.utcnow().strftime('t%Y%m%d_%H%M%S')
 
-    cli_tasks.run_linters.run(c, rebuild_venv)
-    cli_tasks.prepare_secrets.run(c, rebuild_venv, no_secret_cache)
+    cli_tasks.run_linters.run(c)
+    cli_tasks.prepare_secrets.run(c)
 
     cli_tasks.docker_build.run(c, tag=tag)
-    cli_tasks.docker_test.run(c, rebuild_venv, tag=tag)
+    cli_tasks.docker_test.run(c, tag=tag)
     cli_tasks.docker_push.run(c, tag=tag)
 
     c.run(f'{common.PROJECT_DIR}/deploy/yandex_cloud/update_container.sh {tag}')
@@ -89,9 +90,10 @@ def make_deploy(c, rebuild_venv=False, no_secret_cache=False):
 
 
 # flake8: noqa: W291
+# noinspection SpellCheckingInspection
 LOREM_IPSUM = """
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin in mollis ipsum. Proin id ornare 
-turpis, vitae accumsan est. Nunc lobortis non leo at hendrerit. Nullam nunc mauris, accumsan sollicitudin mauris sed, 
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin in mollis ipsum. Proin id ornare
+turpis, vitae accumsan est. Nunc lobortis non leo at hendrerit. Nullam nunc mauris, accumsan sollicitudin mauris sed,
 efficitur aliquam enim.
 """.strip()
 

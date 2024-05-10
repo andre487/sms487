@@ -37,7 +37,7 @@ class EmptyData(Exception):
 
 
 def get_login():
-    login = acm.extract_auth_info(ath.get_auth_token()).get('login')
+    login = ath.extract_auth_info_from_token().get('name')
     if not login:
         raise FormDataError('Token has no login')
     return login
@@ -383,6 +383,7 @@ def save_filters(form_data):
 
     try:
         new_data = get_filter_fields(new_data)
+        # noinspection PyTypeChecker
         doc = dict(new_data, login=login, created=time.time())
         collection.insert_one(doc)
     except EmptyData:

@@ -1,7 +1,7 @@
 import logging
 import os
 import re
-from flask import Markup
+from markupsafe import Markup
 
 LINK_PATTERN = re.compile(r'(https?://[\w.:/#?&@~=%!+-]+)([^\w.:/#?&@~=%!+-]|$)')
 LINK_REPLACEMENT = r'<a class="link" href="\1" target="_blank" rel="noopener">\1</a>\2'

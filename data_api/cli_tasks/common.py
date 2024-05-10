@@ -2,7 +2,6 @@ import atexit
 import json
 import logging
 import os
-import shutil
 import socket
 import subprocess
 from datetime import datetime
@@ -28,23 +27,20 @@ DEFAULT_APP_ENV = {
     'FLASK_APP': 'api.py',
     'FLASK_ENV': 'dev',
     'FLASK_DEBUG': '1',
-    'AUTH_DOMAIN': 'https://auth.andre.life',
-    'AUTH_PRIVATE_KEY_FILE': os.path.join(TEST_DATA_DIR, 'auth_keys', 'key'),
-    'AUTH_PUBLIC_KEY_FILE': os.path.join(TEST_DATA_DIR, 'auth_keys', 'key.pub.pem'),
+    'AUTH_BASE_URL': 'https://auth.andre.life',
+    'AUTH_PRIVATE_KEY_FILE': os.path.join(TEST_DATA_DIR, 'auth_keys', 'auth_key.pem'),
+    'AUTH_PUBLIC_KEY_FILE': os.path.join(TEST_DATA_DIR, 'auth_keys', 'auth_key.pub.pem'),
     'ENABLE_TEST_TOKEN_SET': '1',
 }
 
 
-def prepare_virtual_env(c, rebuild_venv):
+def prepare_virtual_env(c, rebuild_venv=False):
     os.chdir(PROJECT_DIR)
 
-    if os.path.exists(VENV_DIR):
-        if rebuild_venv:
-            shutil.rmtree(VENV_DIR)
-        else:
-            return
+    if os.path.exists(VENV_DIR) and not rebuild_venv:
+        return
 
-    c.run(f'python3 -m venv --copies --upgrade-deps {VENV_DIR}')
+    c.run(f'python3.10 -m venv --copies --clear --upgrade-deps {VENV_DIR}')
     c.run(f'{PYTHON} -m pip install -r {PROJECT_DIR}/requirements.txt')
 
 
