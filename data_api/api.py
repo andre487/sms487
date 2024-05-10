@@ -5,15 +5,14 @@ import secrets
 import sys
 
 import flask
-from auth487 import common as acm
-from auth487 import flask as ath
+from auth487 import common as acm, flask as ath
 from flask import request
 from werkzeug.exceptions import UnsupportedMediaType
 
 from app import data_handler, templating
 
-if sys.version_info[0] < 3 or sys.version_info[1] < 6:
-    raise EnvironmentError('Use Python >= 3.6')
+if sys.version_info[0] < 3 or sys.version_info[1] < 10:
+    raise EnvironmentError('Use Python >= 3.10')
 
 
 def get_sw_content():

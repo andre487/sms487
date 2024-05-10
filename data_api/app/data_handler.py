@@ -87,7 +87,7 @@ def get_sms(device_id=None, limit=None, apply_filters=True, ids=None):
 
 
 def add_sms(data):
-    if not isinstance(data, list) and not isinstance(data, tuple):
+    if not isinstance(data, (list, tuple)):
         data = (data,)
 
     login = get_login()
