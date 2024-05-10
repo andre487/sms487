@@ -2,7 +2,6 @@ import json
 import logging
 import os
 import re
-import ssl
 import time
 from collections import defaultdict
 from collections.abc import Mapping
@@ -459,8 +458,6 @@ def get_mongo_client():
 
         mongo_options.update({
             'tlsCAFile': mongo_secrets.ssl_cert,
-            'tlsAllowInvalidCertificates': False,
-            'ssl_cert_reqs': ssl.CERT_REQUIRED,
         })
 
     logging.info('Connecting to MongoDB: %s:%s', mongo_secrets.host, mongo_secrets.port)
