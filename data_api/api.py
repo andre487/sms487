@@ -27,7 +27,6 @@ SW_JS = get_sw_content()
 app = flask.Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024
 
-# noinspection SpellCheckingInspection
 LOG_FORMAT = '%(asctime)s %(levelname)s\t%(message)s\t%(pathname)s:%(lineno)d %(funcName)s %(process)d %(threadName)s'
 LOG_LEVEL = os.getenv('LOG_LEVEL', logging.INFO)
 
@@ -226,24 +225,22 @@ if os.getenv('ENABLE_TEST_TOKEN_SET') == '1':
         if not is_dev_env:
             return create_json_response({'error': 'Not in dev env'}, status=403)
 
-        token_file = os.path.join(os.path.dirname(__file__), 'test_data', 'test-auth-token.txt')
-        with open(token_file) as fp:
-            auth_token = fp.read().strip()
+        with open(os.path.join(os.path.dirname(__file__), 'test_data', 'auth_key.pem')) as fp:
+            auth_private_key = fp.read()
+        auth_token = acm.create_auth_token('test', {'access': {'sms': True}}, auth_private_key)
 
         resp = flask.make_response('OK')
         resp.set_cookie(acm.AUTH_COOKIE_NAME, auth_token, httponly=True, secure=False)
         return resp
 
 
-# noinspection PyUnusedLocal
 @app.errorhandler(404)
-def error_404(*args):
+def error_404(*_args):
     return create_json_response({'error': 'Not found'}, status=404)
 
 
-# noinspection PyUnusedLocal
 @app.errorhandler(405)
-def error_405(*args):
+def error_405(*_args):
     return create_json_response({'error': 'Method is not allowed'}, status=405)
 
 

@@ -1,8 +1,10 @@
 import json
 import logging
+import sys
+import urllib.parse
+import urllib.request
 from datetime import datetime
 
-# noinspection PyUnresolvedReferences
 from invoke import task
 
 import cli_tasks
@@ -89,12 +91,85 @@ def make_deploy(c):
         logging.warning(e)
 
 
+@task
+def create_dev_auth_token(_):
+    print(common.create_dev_auth_token())
+
+
+@task
+def add_dev_sms(_, port=8080):
+    auth_token = common.create_dev_auth_token()
+    req = urllib.request.Request(
+        method='POST',
+        url=f'http://127.0.0.1:{port}/add-sms',
+        headers={
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Cookie': f'Dev-Auth-Token={auth_token}',
+        },
+        data=urllib.parse.urlencode({
+            'message_type': 'sms',
+            'device_id': 'test',
+            'tel': '01',
+            'date_time': '2020-01-01 20:00:00',
+            'sms_date_time': '2020-01-01 20:00:00',
+            'text': LOREM_IPSUM,
+        }).encode('utf8'),
+    )
+
+    try:
+        with urllib.request.urlopen(req) as resp:
+            print(resp.read().decode('utf8'))
+    except urllib.request.HTTPError as e:
+        print('Error:', e)
+        print(e.read().decode('utf8'))
+        sys.exit(1)
+
+
+@task
+def add_dev_sms_batch(_, port=8080):
+    auth_token = common.create_dev_auth_token()
+    req = urllib.request.Request(
+        method='POST',
+        url=f'http://127.0.0.1:{port}/add-sms',
+        headers={
+            'Content-Type': 'application/json',
+            'Cookie': f'Dev-Auth-Token={auth_token}',
+        },
+        data=json.dumps([
+            {
+                "message_type": "sms",
+                "device_id": "test",
+                "tel": "01",
+                "date_time": "2020-01-01 00:00",
+                "sms_date_time": "2020-01-01 00:00",
+                "text": "SMS test"
+            },
+            {
+                "message_type": "notification",
+                "device_id": "test",
+                "tel": "01",
+                "date_time": "2020-01-01 00:00",
+                "sms_date_time": "2020-01-01 00:00",
+                "text": "Notification test"
+            },
+        ]).encode('utf8'),
+    )
+
+    try:
+        with urllib.request.urlopen(req) as resp:
+            print(resp.read().decode('utf8'))
+    except urllib.request.HTTPError as e:
+        print('Error:', e)
+        print(e.read().decode('utf8'))
+        sys.exit(1)
+
+
 # flake8: noqa: W291
 # noinspection SpellCheckingInspection
 LOREM_IPSUM = """
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin in mollis ipsum. Proin id ornare
-turpis, vitae accumsan est. Nunc lobortis non leo at hendrerit. Nullam nunc mauris, accumsan sollicitudin mauris sed,
-efficitur aliquam enim.
+ turpis, vitae accumsan est. Nunc lobortis non leo at hendrerit. Nullam nunc mauris, accumsan sollicitudin mauris sed,
+ efficitur aliquam enim.
 """.strip()
 
 

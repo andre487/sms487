@@ -7,11 +7,7 @@ def run(_, tag='latest'):
     os.chdir(common.PROJECT_DIR)
 
     docker = common.get_docker()
-    subprocess.check_call((
-        docker, 'buildx', 'build', '--platform', 'linux/amd64', '--load',
-        '-t', common.DOCKER_IMAGE_NAME + ':' + tag,
-        '--force-rm', '.',
-    ))
+    subprocess.check_call((docker, 'build', '-t', common.DOCKER_IMAGE_NAME + ':' + tag, '--force-rm', '.',))
 
     if tag != 'latest':
         subprocess.check_call((
