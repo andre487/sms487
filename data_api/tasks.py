@@ -48,14 +48,18 @@ def docker_push(c):
 
 
 @task
-def docker_run(c, port=8181):
+def docker_run(c, port=8181, rebuild=False):
     """Run app in Docker container"""
+    if rebuild:
+        cli_tasks.docker_build.run(c)
     cli_tasks.docker_run.run(c, port)
 
 
 @task
-def docker_test(c):
+def docker_test(c, rebuild=False):
     """Run HTTP handlers test on Docker instance"""
+    if rebuild:
+        cli_tasks.docker_build.run(c)
     cli_tasks.docker_test.run(c)
 
 

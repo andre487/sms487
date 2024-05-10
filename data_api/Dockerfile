@@ -1,4 +1,4 @@
-FROM ubuntu:focal
+FROM ubuntu:jammy
 
 ADD ./requirements.txt /usr/local/bin/app/requirements.txt
 
