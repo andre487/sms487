@@ -1,3 +1,4 @@
+import dataclasses
 import logging
 import os
 from dataclasses import dataclass
@@ -123,7 +124,7 @@ class YcSecretProvider(SecretProvider):
         result = MongoSecrets(**sec_data).validate()
 
         changed = result != self._prev_mongo_secrets
-        self._prev_mongo_secrets = result
+        self._prev_mongo_secrets = dataclasses.replace(result)
         result.changed = changed
 
         log_data = {k: v for k, v in vars(result).items() if k != 'password'}
@@ -147,7 +148,7 @@ class YcSecretProvider(SecretProvider):
         )
 
         changed = result != self._prev_sqs_secrets
-        self._prev_sqs_secrets = result
+        self._prev_sqs_secrets = dataclasses.replace(result)
         result.changed = changed
 
         return result
