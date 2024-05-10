@@ -5,15 +5,12 @@ from . import common, yandex_cloud
 SECRETS = {
     'mongo': 'e6q502o8uulleoq6jnpg',
     'sqs': 'e6qq93te4b88t6qv2ak0',
+    'ssh': 'e6q8k4tum8bhg084g22n',
 }
 
 
-def run(c, rebuild_venv, no_secret_cache=False):
-    common.prepare_virtual_env(c, rebuild_venv)
-
-    if not no_secret_cache and os.path.exists(common.SECRET_DIR):
-        logging.info('Has secret data, use --no-secret-cache to renew')
-        return
+def run(c):
+    common.prepare_virtual_env(c)
 
     for secret_name, secret_id in SECRETS.items():
         secret_data = yandex_cloud.get_secret(secret_id)

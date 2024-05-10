@@ -2,7 +2,6 @@ import json
 import logging
 import os
 import re
-import ssl
 import time
 from collections import defaultdict
 from collections.abc import Mapping
@@ -25,7 +24,6 @@ message_type_pattern = re.compile(r'^\w{3,32}$')
 
 _mongo_client = None
 _sqs_client = None
-_sqs_params = None
 
 
 class FormDataError(Exception):
@@ -37,7 +35,7 @@ class EmptyData(Exception):
 
 
 def get_login():
-    login = acm.extract_auth_info(ath.get_auth_token()).get('login')
+    login = ath.extract_auth_info_from_token().get('name')
     if not login:
         raise FormDataError('Token has no login')
     return login
@@ -89,7 +87,7 @@ def get_sms(device_id=None, limit=None, apply_filters=True, ids=None):
 
 
 def add_sms(data):
-    if not isinstance(data, list) and not isinstance(data, tuple):
+    if not isinstance(data, (list, tuple)):
         data = (data,)
 
     login = get_login()
@@ -383,6 +381,7 @@ def save_filters(form_data):
 
     try:
         new_data = get_filter_fields(new_data)
+        # noinspection PyTypeChecker
         doc = dict(new_data, login=login, created=time.time())
         collection.insert_one(doc)
     except EmptyData:
@@ -430,8 +429,14 @@ def import_filters(file_obj):
 
 def get_mongo_client():
     global _mongo_client
-    if _mongo_client:
+    mongo_secrets = SecretProvider.get_instance().mongo_secrets
+
+    if _mongo_client and not mongo_secrets.changed:
         return _mongo_client
+
+    if _mongo_client and mongo_secrets.changed:
+        logging.info('MongoDB credentials are changed, reconnect')
+        _mongo_client.close()
 
     mongo_secrets = SecretProvider.get_instance().mongo_secrets
     mongo_options = dict(
@@ -453,8 +458,6 @@ def get_mongo_client():
 
         mongo_options.update({
             'tlsCAFile': mongo_secrets.ssl_cert,
-            'tlsAllowInvalidCertificates': False,
-            'ssl_cert_reqs': ssl.CERT_REQUIRED,
         })
 
     logging.info('Connecting to MongoDB: %s:%s', mongo_secrets.host, mongo_secrets.port)
@@ -463,16 +466,24 @@ def get_mongo_client():
 
 
 def get_sqs_client():
-    global _sqs_client, _sqs_params
-    if _sqs_client and _sqs_params:
-        return _sqs_client, _sqs_params
+    global _sqs_client
+    sqs_secrets = SecretProvider.get_instance().sqs_secrets
 
-    _sqs_params = SecretProvider.get_instance().sqs_secrets
+    if _sqs_client and not sqs_secrets.changed:
+        return _sqs_client, sqs_secrets
+
+    if sqs_secrets.changed:
+        logging.info('SQS credentials are changed, rebuild client')
+
     _sqs_client = boto3.client(
-        'sqs', endpoint_url=_sqs_params.endpoint_url, region_name='ru-central1',
-        aws_access_key_id=_sqs_params.access_key, aws_secret_access_key=_sqs_params.secret_key,
+        'sqs',
+        endpoint_url=sqs_secrets.endpoint_url,
+        region_name='ru-central1',
+        aws_access_key_id=sqs_secrets.access_key,
+        aws_secret_access_key=sqs_secrets.secret_key,
     )
-    return _sqs_client, _sqs_params
+
+    return _sqs_client, sqs_secrets
 
 
 def get_mongo_db():

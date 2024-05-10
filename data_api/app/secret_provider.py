@@ -1,3 +1,4 @@
+import dataclasses
 import logging
 import os
 from dataclasses import dataclass
@@ -5,9 +6,11 @@ from functools import cached_property
 from typing import Dict
 
 import requests
+from cached_property import cached_property_with_ttl
 
 LOCKBOX_SECRET_URL = 'https://payload.lockbox.api.cloud.yandex.net/lockbox/v1/secrets'
 DEFAULT_DB_NAME = 'sms487'
+SECRET_TTL = 90
 
 deploy_type = os.getenv('DEPLOY_TYPE', 'not-set')
 meta_service = os.getenv('YC_METADATA_SERVICE', '169.254.169.254')
@@ -23,6 +26,7 @@ class MongoSecrets:
     db_name: str
     ssl_cert: str = None
     replica_set: str = None
+    changed: bool | None = False
 
     def validate(self):
         check_fields_non_empty = ('host', 'port', 'db_name')
@@ -44,6 +48,7 @@ class SqsSecrets:
     access_key: str
     secret_key: str
     endpoint_url: str = 'https://message-queue.api.cloud.yandex.net'
+    changed: bool | None = False
 
 
 class SecretProvider:
@@ -77,7 +82,7 @@ class SecretProvider:
 
 
 class DevSecretProvider(SecretProvider):
-    @cached_property
+    @property
     def mongo_secrets(self):
         return MongoSecrets(
             host=os.getenv('MONGO_HOST', 'localhost'),
@@ -90,7 +95,7 @@ class DevSecretProvider(SecretProvider):
             db_name=os.getenv('MONGO_DB_NAME', DEFAULT_DB_NAME),
         ).validate()
 
-    @cached_property
+    @property
     def sqs_secrets(self):
         return SqsSecrets(
             queue_url=os.getenv('SQS_QUEUE'),
@@ -104,8 +109,35 @@ class YcSecretProvider(SecretProvider):
     sqs_secret_id = 'e6qq93te4b88t6qv2ak0'
     not_exist = object()
 
-    @cached_property
+    _prev_mongo_secrets = None
+    _prev_sqs_secrets = None
+
+    @property
     def mongo_secrets(self):
+        # noinspection PyTypeChecker
+        result: MongoSecrets = self._mongo_secrets
+
+        compare_obj = dataclasses.replace(result, changed=None)
+        changed = compare_obj != self._prev_mongo_secrets
+        self._prev_mongo_secrets = compare_obj
+        result.changed = changed
+
+        return result
+
+    @property
+    def sqs_secrets(self):
+        # noinspection PyTypeChecker
+        result: SqsSecrets = self._sqs_secrets
+
+        compare_obj = dataclasses.replace(result, changed=None)
+        changed = compare_obj != self._prev_sqs_secrets
+        self._prev_sqs_secrets = compare_obj
+        result.changed = changed
+
+        return result
+
+    @cached_property_with_ttl(ttl=SECRET_TTL)
+    def _mongo_secrets(self):
         sec_data = self._request_lockbox(self.mongo_secret_id)
         required_fields = ('host', 'port', 'ssl_cert', 'user', 'password')
         for name in required_fields:
@@ -113,28 +145,27 @@ class YcSecretProvider(SecretProvider):
             if val is self.not_exist:
                 raise RuntimeError(f'Required field not found in secret data: {name}')
 
-        result = MongoSecrets(**sec_data).validate()
-
-        log_data = {k: v for k, v in vars(result).items() if k != 'password'}
+        log_data = {k: v for k, v in sec_data.items() if k != 'password'}
         logging.info('MongoDB params: %s', log_data)
 
-        return result
+        return MongoSecrets(**sec_data).validate()
 
-    @cached_property
-    def sqs_secrets(self):
+    @cached_property_with_ttl(ttl=SECRET_TTL)
+    def _sqs_secrets(self) -> SqsSecrets:
         sec_data = self._request_lockbox(self.sqs_secret_id)
         required_fields = ('access-key', 'secret-key', 'prod-queue')
         for name in required_fields:
             val = sec_data.get(name, self.not_exist)
             if val is self.not_exist:
                 raise RuntimeError(f'Required field not found in secret data: {name}')
+
         return SqsSecrets(
             access_key=sec_data['access-key'],
             secret_key=sec_data['secret-key'],
             queue_url=sec_data['prod-queue'],
         )
 
-    @cached_property
+    @cached_property_with_ttl(ttl=SECRET_TTL)
     def iam_token(self):
         url = f'http://{meta_service}/computeMetadata/v1/instance/service-accounts/default/token'
         resp = requests.get(url, headers={'Metadata-Flavor': 'Google'})

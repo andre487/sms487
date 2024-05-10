@@ -2,7 +2,6 @@ import atexit
 import json
 import logging
 import os
-import shutil
 import socket
 import subprocess
 from datetime import datetime
@@ -22,29 +21,37 @@ DOCKER_APP_NAME = 'sms487-server-test'
 DEV_DB_NAME = 'sms487'
 TEST_DB_NAME = 'sms487_test'
 
+AUTH_PRIVATE_KEY = os.path.join(TEST_DATA_DIR, 'auth_keys', 'auth_key.pem')
+
 DEFAULT_APP_ENV = {
     'MONGO_DB_NAME': TEST_DB_NAME,
     'AUTH_MONGO_DB_NAME': TEST_DB_NAME,
     'FLASK_APP': 'api.py',
     'FLASK_ENV': 'dev',
     'FLASK_DEBUG': '1',
-    'AUTH_DOMAIN': 'https://auth.andre.life',
-    'AUTH_PRIVATE_KEY_FILE': os.path.join(TEST_DATA_DIR, 'auth_keys', 'key'),
-    'AUTH_PUBLIC_KEY_FILE': os.path.join(TEST_DATA_DIR, 'auth_keys', 'key.pub.pem'),
+    'AUTH_BASE_URL': 'https://auth.andre.life',
+    'AUTH_PRIVATE_KEY_FILE': AUTH_PRIVATE_KEY,
+    'AUTH_PUBLIC_KEY_FILE': os.path.join(TEST_DATA_DIR, 'auth_keys', 'auth_key.pub.pem'),
     'ENABLE_TEST_TOKEN_SET': '1',
 }
 
+TEST_AUTH_DATA = {'access': {'sms': True}}
 
-def prepare_virtual_env(c, rebuild_venv):
+
+def create_dev_auth_token(login='test'):
+    from auth487 import common as acm
+    with open(AUTH_PRIVATE_KEY) as fp:
+        private_key = fp.read()
+    return acm.create_auth_token(login, TEST_AUTH_DATA, private_key)
+
+
+def prepare_virtual_env(c, rebuild_venv=False):
     os.chdir(PROJECT_DIR)
 
-    if os.path.exists(VENV_DIR):
-        if rebuild_venv:
-            shutil.rmtree(VENV_DIR)
-        else:
-            return
+    if os.path.exists(VENV_DIR) and not rebuild_venv:
+        return
 
-    c.run(f'python3 -m venv --copies --upgrade-deps {VENV_DIR}')
+    c.run(f'python3.10 -m venv --copies --clear --upgrade-deps {VENV_DIR}')
     c.run(f'{PYTHON} -m pip install -r {PROJECT_DIR}/requirements.txt')
 
 
@@ -72,7 +79,7 @@ def start_dev_instance(port, db_name=DEV_DB_NAME, force_db_cleaning=False):
     ), mongo_port
 
 
-def start_docker_instance(port, tag='latest', db_name=DEV_DB_NAME, force_db_cleaning=False):
+def start_docker_instance(port, tag='latest', db_name=DEV_DB_NAME, force_db_cleaning=False, as_daemon=False):
     logging.info('Starting Docker app instance')
     mongo_port = run_mongo(force_db_cleaning=force_db_cleaning, db_name=db_name)
     mongo_cont_name = DOCKER_MONGO_NAME + '-' + db_name
@@ -83,14 +90,18 @@ def start_docker_instance(port, tag='latest', db_name=DEV_DB_NAME, force_db_clea
     if cont_id:
         subprocess.check_call((docker, 'rm', '-f', cont_id))
 
+    daemon_arg = []
+    if as_daemon:
+        daemon_arg = ['-d']
+
     cont_id = subprocess.check_output((
-        docker, 'run', '--rm', '-d', '--name', DOCKER_APP_NAME,
+        docker, 'run', '--rm', *daemon_arg, '--name', DOCKER_APP_NAME,
         '--link', mongo_cont_name,
         '-p', f'127.0.0.1:{port}:5000',
         '-v', f'{os.path.join(TEST_DATA_DIR, "auth_keys")}:/opt/auth_keys',
         '-e', 'DEPLOY_TYPE=dev',
-        '-e', 'AUTH_PRIVATE_KEY_FILE=/opt/auth_keys/key',
-        '-e', 'AUTH_PUBLIC_KEY_FILE=/opt/auth_keys/key.pub.pem',
+        '-e', 'AUTH_PRIVATE_KEY_FILE=/opt/auth_keys/auth_key.pem',
+        '-e', 'AUTH_PUBLIC_KEY_FILE=/opt/auth_keys/auth_key.pub.pem',
         '-e', 'FLASK_APP=app.py',
         '-e', 'FLASK_ENV=dev',
         '-e', 'FLASK_DEBUG=1',
@@ -131,7 +142,7 @@ def run_mongo(force_db_cleaning=False, db_name=DEV_DB_NAME):
     cont_id, is_running = get_container_data(docker, container_name)
     if not cont_id:
         subprocess.check_output((
-            docker, 'run', '-d', '-p', '127.0.0.1:57017:27017', '--name', container_name, 'mongo:4'
+            docker, 'run', '-d', '-P', '--name', container_name, 'mongo:4'
         ))
         cont_id, is_running = get_container_data(docker, container_name)
 
@@ -234,9 +245,7 @@ def drop_db(db_name):
 
 
 def get_auth_token():
-    token_file = os.path.join(TEST_DATA_DIR, 'test-auth-token.txt')
-    with open(token_file) as fp:
-        return fp.read().strip()
+    return create_dev_auth_token()
 
 
 def get_free_port():

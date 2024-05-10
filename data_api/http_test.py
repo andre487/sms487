@@ -4,6 +4,7 @@ from io import StringIO
 
 import requests
 from auth487 import common as acm
+
 from app import data_handler
 from app.secret_provider import SecretProvider
 from cli_tasks import common
@@ -19,8 +20,8 @@ with open(os.path.join(TEST_DATA_PATH, 'fixture.json')) as fp:
 
 
 def make_app_request(
-        handler, method='GET', data=None, files=None, headers=None, cookies=None, set_token=True,
-        data_type_json=False,
+    handler, method='GET', data=None, files=None, headers=None, cookies=None, set_token=True,
+    data_type_json=False,
 ):
     if cookies is None:
         cookies = {}
@@ -171,7 +172,7 @@ class TestAddSms(BaseTest):
         assert res.headers['content-type'] == 'application/json'
 
         ans = res.json()
-        assert ans.get('error') == 'Auth error'
+        assert ans.get('error') == 'Auth error AuthTokenDeclineReason.NO_TOKEN'
 
     def test_main(self):
         res = make_app_request('/add-sms', method='POST', data={
@@ -446,7 +447,7 @@ class TestExportFilters(BaseTest):
         assert res.status_code == 403
         assert res.headers['content-type'] == 'application/json'
 
-        assert res.json().get('error') == 'Auth error'
+        assert res.json().get('error') == 'Auth error AuthTokenDeclineReason.NO_TOKEN'
 
     def test_main(self):
         res = make_app_request('/export-filters')
@@ -479,7 +480,7 @@ class TestSaveFilters(BaseTest):
         assert res.status_code == 403
         assert res.headers['content-type'] == 'application/json'
 
-        assert res.json().get('error') == 'Auth error'
+        assert res.json().get('error') == 'Auth error AuthTokenDeclineReason.NO_TOKEN'
 
     def test_update(self):
         filters = self._get_filters()
@@ -696,7 +697,7 @@ class TestImportFilters(BaseTest):
         assert res.status_code == 403
         assert res.headers['content-type'] == 'application/json'
 
-        assert res.json().get('error') == 'Auth error'
+        assert res.json().get('error') == 'Auth error AuthTokenDeclineReason.NO_TOKEN'
 
     def test_import(self):
         filters0 = self._remove_filters()

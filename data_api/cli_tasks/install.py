@@ -1,6 +1,6 @@
 from . import common
 
 
-def run(c, rebuild_venv, packages):
-    common.prepare_virtual_env(c, rebuild_venv)
+def run(c, packages):
+    common.prepare_virtual_env(c)
     c.run(f'{common.PYTHON} -m pip install -U {packages}')
