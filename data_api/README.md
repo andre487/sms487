@@ -8,10 +8,10 @@ python3 -m invoke --list
 
 ## Build in Docker
 
-This project needs Docker buildx for building x86_64 images on Mac M1.
+This project needs colima for building x86_64 images on Mac M1.
 
 ```
-  $ brew install colima docker docker-buildx
-  $ colima start
-  $ docker buildx ls
+  $ brew install colima docker
+  $ colima start --arch x86_64
+  $ docker ps
 ```
