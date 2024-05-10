@@ -8,4 +8,4 @@ cur_dir="$(cd "$(dirname "$0")" && pwd)"
 source "$cur_dir/common.sh"
 
 ip_addr="$(get_prod_machine "$zone")"
-ssh -tt -o "StrictHostKeyChecking accept-new" "yc-user@$ip_addr"
+ssh -tt -o "StrictHostKeyChecking no" "yc-user@$ip_addr"
