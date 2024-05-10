@@ -1,6 +1,7 @@
 import json
 import logging
 import sys
+import time
 import urllib.parse
 import urllib.request
 from datetime import datetime
@@ -76,18 +77,23 @@ def create_local_venv(c, rebuild_venv=True):
 
 
 @task
-def make_deploy(c):
+def make_deploy(c, no_test=False, no_lint=False):
     """Deploy current work dir to production"""
     tag = datetime.utcnow().strftime('t%Y%m%d_%H%M%S')
 
-    cli_tasks.run_linters.run(c)
+    if not no_lint:
+        cli_tasks.run_linters.run(c)
     cli_tasks.prepare_secrets.run(c)
 
     cli_tasks.docker_build.run(c, tag=tag)
-    cli_tasks.docker_test.run(c, tag=tag)
+    if not no_test:
+        cli_tasks.docker_test.run(c, tag=tag)
     cli_tasks.docker_push.run(c, tag=tag)
 
     c.run(f'{common.PROJECT_DIR}/deploy/yandex_cloud/update_container.sh {tag}')
+    print('Waiting 5 seconds...')
+    time.sleep(5)
+    c.run(f'{common.PROJECT_DIR}/deploy/yandex_cloud/cleanup_docker_images.sh')
 
     try:
         c.run('docker-clean')

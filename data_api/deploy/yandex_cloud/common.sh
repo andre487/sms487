@@ -16,6 +16,16 @@ get_main_user_public_key() {
     echo "$SECRET_DIR/ssh/id_ecdsa.pub"
 }
 
+get_instances() {
+    yc compute instance list --format json |
+    jq -r 'map(select(.labels.machine_type == "sms487-api").name) | .[0]'
+}
+
+get_zones() {
+    yc compute instance list --format json |
+    jq -r 'map(select(.labels.machine_type == "sms487-api").zone_id) | .[0]'
+}
+
 get_prod_machine() {
     zone="$1"
 
