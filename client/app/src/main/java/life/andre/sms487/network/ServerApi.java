@@ -6,10 +6,7 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
+import com.android.volley.*;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -35,7 +32,7 @@ import life.andre.sms487.utils.BgTask;
 import life.andre.sms487.utils.ValueThrottler;
 
 public class ServerApi {
-    public static final String TAG = "API";
+    public static final String TAG = "SAPI";
     public static final String MESSAGE_TYPE_SMS = "sms";
     public static final String MESSAGE_TYPE_NOTIFICATION = "notification";
     public static final long THROTTLE_DELAY = 500;
@@ -55,8 +52,8 @@ public class ServerApi {
     @NonNull
     public static ServerApi getInstance() {
         return Objects.requireNonNull(instance, "Not initialized");
-
     }
+
     private ServerApi(@NonNull Context ctx) {
         requestQueue = Volley.newRequestQueue(ctx);
     }
@@ -68,7 +65,7 @@ public class ServerApi {
     public void resendMessages() {
         BgTask.run(() -> {
             List<MessageContainer> messages = MessageStorage.getInstance().getNotSentMessages();
-            if (messages.size() == 0) {
+            if (messages.isEmpty()) {
                 return null;
             }
 
@@ -95,17 +92,17 @@ public class ServerApi {
         for (MessageContainer msg : messages) {
             toSend.add(msg);
             if (toSend.size() >= MESSAGES_TO_SEND) {
-                addMessagesList(toSend);
+                addMessageList(toSend);
                 toSend.clear();
             }
         }
 
-        if (toSend.size() > 0) {
-            addMessagesList(toSend);
+        if (!toSend.isEmpty()) {
+            addMessageList(toSend);
         }
     }
 
-    private void addMessagesList(@NonNull List<MessageContainer> messages) {
+    private void addMessageList(@NonNull List<MessageContainer> messages) {
         List<Long> dbIds = MessageStorage.getInstance().addMessages(messages);
 
         JSONArray reqData = new JSONArray();
@@ -121,7 +118,7 @@ public class ServerApi {
         String url = appSettings.getServerUrl();
         String key = appSettings.getServerKey();
 
-        if (url.length() == 0 || key.length() == 0) {
+        if (url.isEmpty() || key.isEmpty()) {
             Logger.w(TAG, "Server params are empty, skip sending");
             return;
         }
@@ -145,6 +142,7 @@ public class ServerApi {
                 .put("text", text);
         } catch (JSONException e) {
             Logger.e(TAG, e.toString());
+            //noinspection CallToPrintStackTrace
             e.printStackTrace();
             return null;
         }
@@ -175,6 +173,9 @@ public class ServerApi {
             super(Request.Method.POST, url + "/add-sms", new ApiResponseListener(dbIds), new ApiErrorListener());
             this.cookie = "__Secure-Auth-Token=" + key;
             this.requestBody = requestBody;
+            this.setRetryPolicy(new DefaultRetryPolicy(1000, 10, 2));
+            this.setShouldRetryConnectionErrors(true);
+            this.setShouldRetryServerErrors(true);
         }
 
         @NonNull
@@ -236,6 +237,7 @@ public class ServerApi {
                 Logger.i(TAG, "Added: " + added + ": " + status);
             } catch (JSONException e) {
                 Logger.e(TAG, e.toString());
+                //noinspection CallToPrintStackTrace
                 e.printStackTrace();
             }
         }

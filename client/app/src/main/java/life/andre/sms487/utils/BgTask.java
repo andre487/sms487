@@ -127,7 +127,7 @@ public class BgTask<Result> {
     private synchronized void handleSuccess() {
         state = STATE_SUCCESS;
 
-        if (successCallbacks.size() == 0) {
+        if (successCallbacks.isEmpty()) {
             clearCallbacks();
             return;
         }
@@ -147,7 +147,7 @@ public class BgTask<Result> {
             error = new Exception("Unknown error");
         }
 
-        if (errorCallbacks.size() == 0) {
+        if (errorCallbacks.isEmpty()) {
             logErrorReport();
             clearCallbacks();
             return;
@@ -186,7 +186,7 @@ public class BgTask<Result> {
 
         for (StackTraceElement trace : error.getStackTrace()) {
             if (trace != null) {
-                report.append("\tat ").append(trace.toString()).append("\n");
+                report.append("\tat ").append(trace).append("\n");
             }
         }
 

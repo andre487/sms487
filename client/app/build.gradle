@@ -23,10 +23,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
     namespace 'life.andre.sms487'
+    buildToolsVersion '34.0.0'
 }
 
 dependencies {
@@ -45,8 +46,18 @@ dependencies {
     implementation 'com.android.volley:volley:1.2.1'
     implementation 'cat.ereza:customactivityoncrash:2.4.0'
     implementation 'org.greenrobot:eventbus:3.3.1'
-    annotationProcessor 'androidx.room:room-compiler:2.5.0'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.13.4'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.9.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.4'
+    api('io.jsonwebtoken:jjwt-api:0.12.5')
+    runtimeOnly('io.jsonwebtoken:jjwt-impl:0.12.5')
+    runtimeOnly('io.jsonwebtoken:jjwt-orgjson:0.12.5') {
+        exclude(group: 'org.json', module: 'json') //provided by Android natively
+    }
+    annotationProcessor 'androidx.room:room-compiler:2.6.1'
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
+    testImplementation 'org.json:json:20140107'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }

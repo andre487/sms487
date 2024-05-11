@@ -8,6 +8,15 @@
     tools:context=".activities.MainActivity">
 
     <EditText
+        android:id="@+id/authUrlInput"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:textSize="18sp"
+        android:hint="@string/auth_placeholder"
+        android:autofillHints="@android:string/no"
+        android:inputType="textUri" />
+
+    <EditText
         android:id="@+id/serverUrlInput"
         android:layout_width="match_parent"
         android:layout_height="48dp"
