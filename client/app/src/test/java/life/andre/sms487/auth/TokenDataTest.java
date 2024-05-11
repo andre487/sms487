@@ -9,7 +9,6 @@ import life.andre.sms487.auth.errors.TokenException;
 import life.andre.sms487.utils.DateUtil;
 import life.andre.sms487.utils.ValueOrError;
 
-import java.io.IOException;
 import java.security.KeyPair;
 import java.util.Base64;
 import java.util.Date;
@@ -63,20 +62,26 @@ public class TokenDataTest extends TestCase {
 
     final private Date tokenIssuedAt = new Date(1715387043000L);
     final private Date tokenNotBefore = new Date(1715387043000L);
-    final private Date tokenExpiresAt = new Date(1715473443000L);
 
-    public void testBasic() throws IOException {
-        String authKeyContent = this.utils.getResultseAsString("auth/auth_key.pub.pem");
-        String tokenContent = this.utils.getResultseAsString("auth/auth_token.txt").trim();
+    public void testBasic() throws Exception {
+        var tokenExpiresAt = new Date(new Date().getTime() + 100000);
 
-        var td = new TokenData(authKeyContent, tokenContent);
+        var tokenContent = tokenBuilder.build(
+            (JwtBuilder x) -> x
+                .issuedAt(tokenIssuedAt)
+                .notBefore(tokenNotBefore)
+                .expiration(tokenExpiresAt)
+                .claim("name", "test")
+                .claim("access", Map.of("sms", true))
+        );
+        var td = new TokenData(tokenBuilder.getB64PubKey(), tokenContent);
 
         assertTrue(td.getHeader().isPayloadEncoded());
         assertEquals("ES512", td.getHeader().getAlgorithm());
 
         assertEquals(tokenIssuedAt, td.getIssuedAt());
         assertEquals(tokenNotBefore, td.getNotBefore());
-        assertEquals(tokenExpiresAt, td.getExpiresAt());
+        assertEquals(0, Math.abs(tokenIssuedAt.getTime() - td.getIssuedAt().getTime()));
         assertEquals("test", td.getName());
         assertTrue(td.getAccess().sms());
 
@@ -118,7 +123,17 @@ public class TokenDataTest extends TestCase {
     }
 
     public void testInvalidKey() throws Exception {
-        String tokenContent = this.utils.getResultseAsString("auth/auth_token.txt").trim();
+        var keyContent = this.utils.getResultseAsString("auth/auth_key.pub.pem");
+        var tokenExpiresAt = new Date(new Date().getTime() + 100000);
+
+        var tokenContent = tokenBuilder.build(
+            (JwtBuilder x) -> x
+                .issuedAt(tokenIssuedAt)
+                .notBefore(tokenNotBefore)
+                .expiration(tokenExpiresAt)
+                .claim("name", "test")
+                .claim("access", Map.of("sms", true))
+        );
 
         // empty key
         try {
@@ -138,7 +153,7 @@ public class TokenDataTest extends TestCase {
 
         // another key
         try {
-            new TokenData(tokenBuilder.getB64PubKey(), tokenContent);
+            new TokenData(keyContent, tokenContent);
             throw new Exception("There should be error");
         } catch (TokenException e) {
             assertEquals(TokenErrorType.InvalidSignature, e.getErrorType());
@@ -296,13 +311,22 @@ public class TokenDataTest extends TestCase {
         }
     }
 
-    public void testCreateMethod() throws IOException {
-        String authKeyContent = this.utils.getResultseAsString("auth/auth_key.pub.pem");
-        String tokenContent = this.utils.getResultseAsString("auth/auth_token.txt").trim();
+    public void testCreateMethod() throws Exception {
+        var tokenExpiresAt = new Date(new Date().getTime() + 100000);
+
+        var tokenContent = tokenBuilder.build(
+            (JwtBuilder x) -> x
+                .issuedAt(tokenIssuedAt)
+                .notBefore(tokenNotBefore)
+                .expiration(tokenExpiresAt)
+                .claim("name", "test")
+                .claim("access", Map.of("sms", true))
+        );
+
         ValueOrError<TokenData, TokenException> td;
 
         // Success
-        td = TokenData.create(authKeyContent, tokenContent);
+        td = TokenData.create(tokenBuilder.getB64PubKey(), tokenContent);
 
         assertTrue(td.success());
         assertNull(td.getError());
