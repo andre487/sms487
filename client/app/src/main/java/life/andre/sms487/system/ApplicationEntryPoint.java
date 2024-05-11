@@ -40,9 +40,10 @@ public class ApplicationEntryPoint extends Application {
         Intent intent = new Intent(this, NotificationListener.class);
         startService(intent);
 
-        Context ctx = getApplicationContext();
+        var ctx = getApplicationContext();
+
         MessageCleanupWorker.schedulePeriodic(ctx);
-        MessageResendWorker.scheduleOneTime();
+        MessageResendWorker.scheduleOneTime(ctx);
         TokenCheckWorker.schedulePeriodic(ctx);
     }
 }

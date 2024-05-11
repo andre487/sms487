@@ -1,10 +1,12 @@
 package life.andre.sms487.activities;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -34,6 +36,7 @@ public class MainActivity extends Activity {
     private EditText serverKeyInput;
     private EditText authUrlInput;
     private EditText serverUrlInput;
+    private Button getServerKeyButton;
     private CheckBox sendSmsCheckBox;
     private TextView messagesField;
     private TextView logsField;
@@ -55,6 +58,12 @@ public class MainActivity extends Activity {
         showMessages();
         logUpdater.run();
         eventBus.register(this);
+
+        System.out.println("!!!!!!!!!!!!!!!!!!!!");
+        System.out.println("!!!!!!!!!!!!!!!!!!!!");
+        System.out.println(serverKeyInput.getText());
+        System.out.println("!!!!!!!!!!!!!!!!!!!!");
+        System.out.println("!!!!!!!!!!!!!!!!!!!!");
     }
 
     @Override
@@ -64,6 +73,7 @@ public class MainActivity extends Activity {
         super.onStop();
     }
 
+    /** @noinspection unused*/
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMessagesStateChanged(MessagesStateChanged event) {
         showMessages();
@@ -73,6 +83,7 @@ public class MainActivity extends Activity {
         authUrlInput = findViewById(R.id.authUrlInput);
         serverUrlInput = findViewById(R.id.serverUrlInput);
         serverKeyInput = findViewById(R.id.serverKeyInput);
+        getServerKeyButton = findViewById(R.id.getServerKeyButton);
         sendSmsCheckBox = findViewById(R.id.sendSmsCheckBox);
         messagesField = findViewById(R.id.messagesField);
         logsField = findViewById(R.id.logsField);
@@ -92,6 +103,7 @@ public class MainActivity extends Activity {
             return false;
         });
         sendSmsCheckBox.setOnCheckedChangeListener((v, c) -> saveNeedSendSms());
+        getServerKeyButton.setOnClickListener((v) -> openAuthView());
     }
 
     private void showSettings() {
@@ -233,6 +245,10 @@ public class MainActivity extends Activity {
             logs.append(logLine).append('\n');
         }
         logsField.setText(logs.toString().trim());
+    }
+
+    private void openAuthView() {
+        this.startActivity(new Intent(this.getApplicationContext(), AuthActivity.class));
     }
 
     private static class LogUpdater implements Runnable {
