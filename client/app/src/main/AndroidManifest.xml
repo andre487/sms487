@@ -25,7 +25,7 @@
         android:theme="@style/AppTheme"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning"
         android:fullBackupContent="@xml/backup_descriptor"
-        android:usesCleartextTraffic="true"
+        android:usesCleartextTraffic="false"
         android:dataExtractionRules="@xml/data_extraction_rules">
         <activity android:name=".activities.MainActivity" android:exported="true">
             <intent-filter>
