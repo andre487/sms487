@@ -35,7 +35,7 @@ import life.andre.sms487.utils.BgTask;
 import life.andre.sms487.utils.ValueThrottler;
 
 public class ServerApi {
-    public static final String TAG = "API";
+    public static final String TAG = "SAPI";
     public static final String MESSAGE_TYPE_SMS = "sms";
     public static final String MESSAGE_TYPE_NOTIFICATION = "notification";
     public static final long THROTTLE_DELAY = 500;

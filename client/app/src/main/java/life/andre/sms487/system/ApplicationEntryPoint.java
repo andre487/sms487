@@ -8,6 +8,7 @@ import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageCleanupWorker;
 import life.andre.sms487.messages.MessageResendWorker;
 import life.andre.sms487.messages.MessageStorage;
+import life.andre.sms487.network.AuthApi;
 import life.andre.sms487.network.ServerApi;
 import life.andre.sms487.services.NotificationListener;
 import life.andre.sms487.settings.AppSettings;
@@ -27,10 +28,11 @@ public class ApplicationEntryPoint extends Application {
     private void initGlobalServiceObjects() {
         Context ctx = getApplicationContext();
 
+        Toaster.init(ctx);
         AppSettings.init(ctx);
         MessageStorage.init(ctx);
         ServerApi.init(ctx);
-        Toaster.init(ctx);
+        AuthApi.init(ctx);
     }
 
     private void startServiceTasks() {
