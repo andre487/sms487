@@ -1,19 +1,24 @@
 package life.andre.sms487.auth;
 
 import androidx.annotation.NonNull;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonRootName;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.SignatureException;
+import life.andre.sms487.auth.errors.TokenErrorType;
+import life.andre.sms487.auth.errors.TokenException;
+import life.andre.sms487.utils.DateUtil;
+import life.andre.sms487.utils.ValueOrError;
 
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.*;
-
-import com.fasterxml.jackson.annotation.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.jsonwebtoken.*;
-import life.andre.sms487.auth.errors.TokenException;
-import life.andre.sms487.utils.DateUtil;
+import java.util.Base64;
+import java.util.Date;
+import java.util.Objects;
 
 public class TokenData {
     @JsonRootName("access")
@@ -24,6 +29,15 @@ public class TokenData {
         @JsonProperty("sms")
         public boolean sms() {
             return sms;
+        }
+    }
+
+    @NonNull
+    public static ValueOrError<TokenData, TokenException> create(@NonNull String publicKey, @NonNull String token) {
+        try {
+            return new ValueOrError<>(new TokenData(publicKey, token));
+        } catch (TokenException e) {
+            return new ValueOrError<>(e);
         }
     }
 
@@ -53,21 +67,21 @@ public class TokenData {
         try {
             decodedKey = Base64.getDecoder().decode(trimmedKey);
         } catch (IllegalArgumentException e) {
-            throw new TokenException(e.toString(), e, TokenException.TokenErrorType.InvalidKey);
+            throw new TokenException(e.toString(), e, TokenErrorType.InvalidKey);
         }
 
         KeyFactory keyFactory;
         try {
             keyFactory = KeyFactory.getInstance("EC");
         } catch (NoSuchAlgorithmException e) {
-            throw new TokenException(e.toString(), e, TokenException.TokenErrorType.InternalError);
+            throw new TokenException(e.toString(), e, TokenErrorType.InternalError);
         }
 
         PublicKey pubKey;
         try {
             pubKey = keyFactory.generatePublic(new X509EncodedKeySpec(decodedKey));
         } catch (InvalidKeySpecException e) {
-            throw new TokenException(e.toString(), e, TokenException.TokenErrorType.InvalidKey);
+            throw new TokenException(e.toString(), e, TokenErrorType.InvalidKey);
         }
 
         Jws<Claims> parsed;
@@ -76,43 +90,45 @@ public class TokenData {
                 .verifyWith(pubKey)
                 .build()
                 .parseSignedClaims(token);
-        } catch (JwtException e) {
-            throw new TokenException(e.toString(), e, TokenException.TokenErrorType.InvalidToken);
+        } catch (SignatureException e) {
+            throw new TokenException(e.toString(), e, TokenErrorType.InvalidSignature);
+        } catch (JwtException | IllegalArgumentException e) {
+            throw new TokenException(e.toString(), e, TokenErrorType.InvalidToken);
         }
 
         header = parsed.getHeader();
         payload = parsed.getPayload();
 
         issuedAt = payload.getIssuedAt();
-        checkDateField(issuedAt, TokenException.TokenErrorType.NoIssuedAt);
+        checkDateField("iss", issuedAt, TokenErrorType.NoIssuedAt);
         if (issuedAt.after(new Date())) {
-            throw new TokenException("issuedAt after now", TokenException.TokenErrorType.InvalidIssuedAt);
+            throw new TokenException("issuedAt after now", TokenErrorType.InvalidIssuedAt);
         }
 
         notBefore = payload.getNotBefore();
-        checkDateField(notBefore, TokenException.TokenErrorType.NoNotBefore);
+        checkDateField("nbf", notBefore, TokenErrorType.NoNotBefore);
 
         expiresAt = payload.getExpiration();
-        checkDateField(expiresAt, TokenException.TokenErrorType.NoExpiration);
+        checkDateField("exp", expiresAt, TokenErrorType.NoExpiration);
 
         try {
             name = (String) Objects.requireNonNull(payload.getOrDefault("name", ""));
         } catch (NullPointerException e) {
-            throw new TokenException(e.toString(), e, TokenException.TokenErrorType.InternalError);
+            throw new TokenException(e.toString(), e, TokenErrorType.InternalError);
         }
         if (name.isEmpty()) {
-            throw new TokenException("name is absent", TokenException.TokenErrorType.NoName);
+            throw new TokenException("name is absent", TokenErrorType.NoName);
         }
 
         var accessObj = payload.getOrDefault("access", null);
         if (accessObj == null) {
-            throw new TokenException("access is absent", TokenException.TokenErrorType.NoAccessField);
+            throw new TokenException("access is absent", TokenErrorType.NoAccessField);
         }
 
         try {
             access = Objects.requireNonNull(new ObjectMapper().convertValue(accessObj, AccessField.class));
         } catch (IllegalArgumentException | NullPointerException e) {
-            throw new TokenException("access is absent", TokenException.TokenErrorType.InvalidAccessField);
+            throw new TokenException("access is absent", TokenErrorType.InvalidAccessField);
         }
     }
 
@@ -146,9 +162,9 @@ public class TokenData {
         return access;
     }
 
-    private void checkDateField(Date val, TokenException.TokenErrorType errType) {
+    private void checkDateField(@NonNull String fieldName, Date val, TokenErrorType errType) {
         if (val == null || val.equals(DateUtil.ZERO_DATE)) {
-            throw new TokenException("Expiration required", errType);
+            throw new TokenException(fieldName + " is absent", errType);
         }
     }
 
