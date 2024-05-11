@@ -18,7 +18,7 @@ public class MessageCleanupWorker extends Worker {
     public static final String TAG = "MCW";
     public static final String TASK_ID = "MessageCleanupWorker";
 
-    public static void schedulePeriodic() {
+    public static void schedulePeriodic(@NonNull Context ctx) {
         PeriodicWorkRequest task = new PeriodicWorkRequest.Builder(
                 MessageCleanupWorker.class,
                 1, TimeUnit.DAYS
@@ -29,7 +29,7 @@ public class MessageCleanupWorker extends Worker {
                         .build()
         ).build();
 
-        WorkManager workManager = WorkManager.getInstance();
+        WorkManager workManager = WorkManager.getInstance(ctx);
         workManager.enqueueUniquePeriodicWork(TASK_ID, ExistingPeriodicWorkPolicy.KEEP, task);
 
         Logger.i(TAG, "Schedule old messages cleanup");
@@ -48,6 +48,7 @@ public class MessageCleanupWorker extends Worker {
             return Result.success();
         } catch (Exception e) {
             Logger.e(TAG, e.toString());
+            //noinspection CallToPrintStackTrace
             e.printStackTrace();
             return Result.failure();
         }

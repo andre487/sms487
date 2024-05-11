@@ -47,4 +47,9 @@ public class ValueOrError<V, E extends Exception> {
     public E getErrorNonNull() {
         return Objects.requireNonNull(error);
     }
+
+    @NonNull
+    public String toString() {
+        return "ValueOrError[value=" + value + ", error=" + error + "]";
+    }
 }

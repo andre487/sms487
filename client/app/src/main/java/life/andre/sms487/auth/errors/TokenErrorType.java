@@ -5,6 +5,7 @@ public enum TokenErrorType {
     InvalidKey,
     InvalidSignature,
     InvalidToken,
+    TokenExpired,
     NoExpiration,
     NoIssuedAt,
     NoNotBefore,

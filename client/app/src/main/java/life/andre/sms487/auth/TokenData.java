@@ -1,6 +1,7 @@
 package life.andre.sms487.auth;
 
 import androidx.annotation.NonNull;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,9 +17,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
-import java.util.Date;
-import java.util.Objects;
+import java.util.*;
 
 public class TokenData {
     @JsonRootName("access")
@@ -26,9 +25,21 @@ public class TokenData {
         @JsonProperty("sms")
         private boolean sms;
 
+        private final  Map<String, String> properties = new HashMap<>();
+
         @JsonProperty("sms")
         public boolean sms() {
             return sms;
+        }
+
+        @JsonAnySetter
+        public void setOtherProperty(String key, String value) {
+            properties.put(key, value);
+        }
+
+        /** @noinspection unused*/
+        public Map<String, String> getProperties() {
+            return properties;
         }
     }
 
@@ -92,6 +103,8 @@ public class TokenData {
                 .parseSignedClaims(token);
         } catch (SignatureException e) {
             throw new TokenException(e.toString(), e, TokenErrorType.InvalidSignature);
+        } catch (ExpiredJwtException e) {
+            throw new TokenException(e.toString(), e, TokenErrorType.TokenExpired);
         } catch (JwtException | IllegalArgumentException e) {
             throw new TokenException(e.toString(), e, TokenErrorType.InvalidToken);
         }

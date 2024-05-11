@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 
+import life.andre.sms487.auth.TokenCheckWorker;
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageCleanupWorker;
 import life.andre.sms487.messages.MessageResendWorker;
@@ -39,7 +40,9 @@ public class ApplicationEntryPoint extends Application {
         Intent intent = new Intent(this, NotificationListener.class);
         startService(intent);
 
-        MessageCleanupWorker.schedulePeriodic();
+        Context ctx = getApplicationContext();
+        MessageCleanupWorker.schedulePeriodic(ctx);
         MessageResendWorker.scheduleOneTime();
+        TokenCheckWorker.schedulePeriodic(ctx);
     }
 }
