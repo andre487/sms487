@@ -1,5 +1,6 @@
 package life.andre.sms487.network;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
 
@@ -38,12 +39,15 @@ public class ServerApi {
     public static final long THROTTLE_DELAY = 500;
     public static final int MESSAGES_TO_SEND = 42;
 
+    @SuppressLint("StaticFieldLeak")
     private static ServerApi instance;
 
     @NonNull
     private final RequestQueue requestQueue;
     @NonNull
     private final ValueThrottler<MessageContainer> throttler = new ValueThrottler<>(this::handleMessages, THROTTLE_DELAY);
+    @NonNull
+    private final Context ctx;
 
     public static void init(@NonNull Context ctx) {
         instance = new ServerApi(ctx);
@@ -56,6 +60,7 @@ public class ServerApi {
 
     private ServerApi(@NonNull Context ctx) {
         requestQueue = Volley.newRequestQueue(ctx);
+        this.ctx = ctx;
     }
 
     public void addMessage(@NonNull MessageContainer msg) {
@@ -123,7 +128,13 @@ public class ServerApi {
             return;
         }
 
-        this.requestQueue.add(new ApiAddMessageRequest(url, key, reqData.toString(), dbIds));
+        this.requestQueue.add(new ApiAddMessageRequest(
+            ctx,
+            url,
+            key,
+            reqData.toString(),
+            dbIds
+        ));
     }
 
     @Nullable
@@ -169,8 +180,14 @@ public class ServerApi {
         @NonNull
         private final String requestBody;
 
-        ApiAddMessageRequest(@NonNull String url, @NonNull String key, @NonNull String requestBody, @NonNull List<Long> dbIds) {
-            super(Request.Method.POST, url + "/add-sms", new ApiResponseListener(dbIds), new ApiErrorListener());
+        ApiAddMessageRequest(
+            @NonNull Context ctx,
+            @NonNull String url,
+            @NonNull String key,
+            @NonNull String requestBody,
+            @NonNull List<Long> dbIds
+        ) {
+            super(Request.Method.POST, url + "/add-sms", new ApiResponseListener(dbIds), new ApiErrorListener(ctx));
             this.cookie = "__Secure-Auth-Token=" + key;
             this.requestBody = requestBody;
             this.setRetryPolicy(new DefaultRetryPolicy(1000, 10, 2));
@@ -244,9 +261,16 @@ public class ServerApi {
     }
 
     private static class ApiErrorListener implements Response.ErrorListener {
+        @NonNull
+        private final Context ctx;
+
+        public ApiErrorListener(@NonNull Context ctx) {
+            this.ctx = ctx;
+        }
+
         @Override
         public void onErrorResponse(@NonNull VolleyError error) {
-            MessageResendWorker.scheduleOneTime();
+            MessageResendWorker.scheduleOneTime(ctx);
 
             String finalErrorMessage = getFinalErrorMessage(error);
             Logger.e(TAG, finalErrorMessage);

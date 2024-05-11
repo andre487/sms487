@@ -18,16 +18,16 @@ public class MessageResendWorker extends Worker {
     public static final String TAG = "MRW";
     public static final String TASK_ID = "MessageResendWorker";
 
-    public static void scheduleOneTime() {
+    public static void scheduleOneTime(@NonNull Context ctx) {
         OneTimeWorkRequest task = new OneTimeWorkRequest.Builder(
-                MessageResendWorker.class
+            MessageResendWorker.class
         ).setConstraints(
-                new Constraints.Builder()
-                        .setRequiredNetworkType(NetworkType.CONNECTED)
-                        .build()
+            new Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
         ).build();
 
-        WorkManager workManager = WorkManager.getInstance();
+        WorkManager workManager = WorkManager.getInstance(ctx);
         workManager.enqueueUniqueWork(TASK_ID, ExistingWorkPolicy.KEEP, task);
 
         Logger.i(TAG, "Schedule messages resend");
@@ -45,6 +45,7 @@ public class MessageResendWorker extends Worker {
             return Result.success();
         } catch (Exception e) {
             Logger.e(TAG, e.toString());
+            //noinspection CallToPrintStackTrace
             e.printStackTrace();
             return Result.failure();
         }
