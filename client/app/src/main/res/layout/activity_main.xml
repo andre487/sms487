@@ -25,14 +25,26 @@
         android:autofillHints="@android:string/no"
         android:inputType="textUri" />
 
-    <EditText
-        android:id="@+id/serverKeyInput"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:textSize="12sp"
-        android:hint="@string/server_key"
-        android:autofillHints="@android:string/no"
-        android:inputType="textPassword" />
+        android:layout_height="48dp">
+        <EditText
+            android:id="@+id/serverKeyInput"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:textSize="12sp"
+            android:hint="@string/server_key"
+            android:autofillHints="@android:string/no"
+            android:layout_marginEnd="50dp"
+            android:inputType="textPassword" />
+
+        <Button
+            android:id="@+id/getServerKeyButton"
+            android:layout_width="52dp"
+            android:layout_height="48dp"
+            android:layout_alignParentEnd="true"
+            android:text="@string/get" />
+    </RelativeLayout>
 
     <CheckBox
         android:id="@+id/sendSmsCheckBox"
