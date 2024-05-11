@@ -49,9 +49,10 @@ dependencies {
     implementation 'com.android.volley:volley:1.2.1'
     implementation 'cat.ereza:customactivityoncrash:2.4.0'
     implementation 'org.greenrobot:eventbus:3.3.1'
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.13.4'
-    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.9.0'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.4'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.16.1'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.16.1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.16.1'
+    implementation platform('com.fasterxml.jackson:jackson-bom:2.16.1')
     api('io.jsonwebtoken:jjwt-api:0.12.5')
     runtimeOnly('io.jsonwebtoken:jjwt-impl:0.12.5')
     runtimeOnly('io.jsonwebtoken:jjwt-orgjson:0.12.5') {
