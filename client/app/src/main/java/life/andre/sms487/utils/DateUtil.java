@@ -8,7 +8,11 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 public class DateUtil {
+    @NonNull
     public static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm Z", Locale.US);
+
+    @NonNull
+    public static final Date ZERO_DATE = new Date(0);
 
     @NonNull
     public static String nowFormatted() {
