@@ -2,6 +2,7 @@ package life.andre.sms487.network;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.StringRequest;
@@ -41,7 +42,11 @@ public class AuthApi {
             authUrl + "/get-public-key",
             onSuccess::accept,
             onError::accept
-        );
+        )
+            .setRetryPolicy(new DefaultRetryPolicy(1000, 10, 2))
+            .setShouldRetryConnectionErrors(true)
+            .setShouldRetryServerErrors(true);
+
         requestQueue.add(req);
     }
 }

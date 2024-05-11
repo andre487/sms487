@@ -6,10 +6,7 @@ import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
+import com.android.volley.*;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -176,6 +173,9 @@ public class ServerApi {
             super(Request.Method.POST, url + "/add-sms", new ApiResponseListener(dbIds), new ApiErrorListener());
             this.cookie = "__Secure-Auth-Token=" + key;
             this.requestBody = requestBody;
+            this.setRetryPolicy(new DefaultRetryPolicy(1000, 10, 2));
+            this.setShouldRetryConnectionErrors(true);
+            this.setShouldRetryServerErrors(true);
         }
 
         @NonNull
