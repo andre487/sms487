@@ -5,6 +5,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Context;
+import android.content.pm.ServiceInfo;
 import android.os.Bundle;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
@@ -103,6 +104,6 @@ public class NotificationListener extends NotificationListenerService {
                 .setForegroundServiceBehavior(Notification.FOREGROUND_SERVICE_IMMEDIATE)
                 .build();
 
-        startForeground(RUN_ID, notification);
+        startForeground(RUN_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
     }
 }

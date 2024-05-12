@@ -6,7 +6,7 @@ android {
     compileSdk 34
     defaultConfig {
         applicationId "life.andre.sms487"
-        minSdk 31
+        minSdk 33
         //noinspection EditedTargetSdkVersion
         targetSdk 34
         versionCode 2

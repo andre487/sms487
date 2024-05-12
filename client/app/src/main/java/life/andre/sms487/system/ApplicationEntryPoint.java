@@ -3,7 +3,6 @@ package life.andre.sms487.system;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
-
 import life.andre.sms487.auth.TokenCheckWorker;
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageCleanupWorker;
@@ -22,7 +21,12 @@ public class ApplicationEntryPoint extends Application {
     public void onCreate() {
         super.onCreate();
         initGlobalServiceObjects();
-        startServiceTasks();
+        try {
+            startServiceTasks();
+        } catch (Exception e) {
+            Toaster.getInstance().showThrottled("SMS487 error: " + e);
+            Logger.e(TAG, "Launch services error: " + e);
+        }
         Logger.i(TAG, "Application started");
     }
 
@@ -37,10 +41,8 @@ public class ApplicationEntryPoint extends Application {
     }
 
     private void startServiceTasks() {
-        Intent intent = new Intent(this, NotificationListener.class);
-        startService(intent);
-
         var ctx = getApplicationContext();
+        ctx.startService(new Intent(ctx, NotificationListener.class));
 
         MessageCleanupWorker.schedulePeriodic(ctx);
         MessageResendWorker.scheduleOneTime(ctx);
