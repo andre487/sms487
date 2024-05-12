@@ -52,11 +52,7 @@ public class AuthActivity extends Activity {
         wvSettings.setJavaScriptEnabled(true);
 
         authWebView.addJavascriptInterface(new AuthAppJsInterface(this::onWebData), "App487Bridge");
-    }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
         BgTask.run(() -> AppSettings.getInstance().getAuthUrl()).onSuccess(this::showAuthView);
     }
 
