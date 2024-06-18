@@ -77,7 +77,6 @@
         path: /data/db
         state: directory
         owner: '{{ runtime_user }}'
-        mode: 0755
 
     - name: Setup docker compose config
       template:
