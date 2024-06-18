@@ -5,6 +5,7 @@ IFS=$'\n' read -r -d '' -a images_list < <(
     docker images --all --no-trunc |
         tail -n +2 |
         grep -v ' latest ' |
+        grep -v 'mongodb-community-server   4.4-ubuntu2004' |
         sort &&
         printf '\0'
 )
