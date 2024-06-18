@@ -89,7 +89,7 @@ def make_deploy(c, no_test=False, no_lint=False):
         cli_tasks.docker_test.run(c, tag=tag)
     cli_tasks.docker_push.run(c, tag=tag)
 
-    c.run(f'ansible-playbook {common.PROJECT_DIR}/deploy/setup.yml', pty=True, env={
+    c.run(f'ansible-playbook -v {common.PROJECT_DIR}/deploy/setup.yml', pty=True, env={
         'APP_DOCKER_IMAGE': common.DOCKER_IMAGE_NAME,
         'APP_DOCKER_TAG': tag,
         'DOCKER_REGISTRY_URL': common.DOCKER_IMAGE_NAME,

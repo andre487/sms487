@@ -85,16 +85,20 @@
         dest: /opt/app/docker-compose.yml
         owner: '{{ runtime_user }}'
 
+    - name: Setup Docker images cleanup script
+      copy:
+        src: provision/cleanup_docker_images.sh
+        dest: /opt/app/cleanup_docker_images.sh
+        owner: '{{ runtime_user }}'
+        mode: 0755
+
     - name: Docker login
       shell:
         executable: /bin/bash
         cmd: |
           set -eo pipefail
           iam_token="$(curl -H 'Metadata-Flavor: Google' 'http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/token' | jq -r .access_token)"
-          docker login \
-            --username iam \
-            --password "$iam_token" \
-            cr.yandex
+          echo "$iam_token" | docker login --username iam --password-stdin cr.yandex
 
     - name: Run app
       shell:
@@ -110,6 +114,10 @@
       docker_login:
         state: absent
         registry_url: cr.yandex
+
+    - name: Cleanup images
+      shell:
+        cmd: /opt/app/cleanup_docker_images.sh
 
     - name: Docker clean
       shell:
