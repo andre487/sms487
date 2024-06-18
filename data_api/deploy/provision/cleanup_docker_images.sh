@@ -12,7 +12,7 @@ IFS=$'\n' read -r -d '' -a images_list < <(
 images_count="${#images_list[@]}"
 if ((images_count <= 3)); then
     echo "We have only $images_count images, don't clean"
-    return 0
+    exit 0
 fi
 
 stop_select=$((images_count - 3))
