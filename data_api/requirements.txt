@@ -1,4 +1,4 @@
-auth487 @ git+https://github.com/andre487/auth487.git@e6973c3#subdirectory=lib
+auth487 @ git+https://github.com/andre487/auth487.git@8056aba#subdirectory=lib
 bjoern==3.2.2
 boto3==1.29.6
 cached-property==1.5.2

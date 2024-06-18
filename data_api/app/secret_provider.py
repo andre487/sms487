@@ -114,20 +114,23 @@ class YcSecretProvider(SecretProvider):
 
     @property
     def mongo_secrets(self):
-        # noinspection PyTypeChecker
-        result: MongoSecrets = self._mongo_secrets
-
-        compare_obj = dataclasses.replace(result, changed=None)
-        changed = compare_obj != self._prev_mongo_secrets
-        self._prev_mongo_secrets = compare_obj
-        result.changed = changed
-
+        result = MongoSecrets(
+            host=os.getenv('MONGO_HOSTS'),
+            port=int(os.getenv('MONGO_PORT', '27017')),
+            user=os.getenv('MONGO_USER'),
+            password=os.getenv('MONGO_PASSWORD'),
+            auth_source=os.getenv('MONGO_AUTH_SOURCE'),
+            db_name=os.getenv('MONGO_DB_NAME', DEFAULT_DB_NAME),
+            ssl_cert=os.getenv('MONGO_SSL_CERT'),
+            replica_set=os.getenv('MONGO_REPLICA_SET'),
+            changed=False,
+        )
         return result
 
     @property
     def sqs_secrets(self):
         # noinspection PyTypeChecker
-        result: SqsSecrets = self._sqs_secrets
+        result: SqsSecrets = self._sqs_secrets_from_lockbox
 
         compare_obj = dataclasses.replace(result, changed=None)
         changed = compare_obj != self._prev_sqs_secrets
@@ -137,7 +140,7 @@ class YcSecretProvider(SecretProvider):
         return result
 
     @cached_property_with_ttl(ttl=SECRET_TTL)
-    def _mongo_secrets(self):
+    def _mongo_secrets_from_lockbox(self):
         sec_data = self._request_lockbox(self.mongo_secret_id)
         required_fields = ('host', 'port', 'ssl_cert', 'user', 'password')
         for name in required_fields:
@@ -151,7 +154,7 @@ class YcSecretProvider(SecretProvider):
         return MongoSecrets(**sec_data).validate()
 
     @cached_property_with_ttl(ttl=SECRET_TTL)
-    def _sqs_secrets(self) -> SqsSecrets:
+    def _sqs_secrets_from_lockbox(self) -> SqsSecrets:
         sec_data = self._request_lockbox(self.sqs_secret_id)
         required_fields = ('access-key', 'secret-key', 'prod-queue')
         for name in required_fields:

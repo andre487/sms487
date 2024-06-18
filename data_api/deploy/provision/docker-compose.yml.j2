@@ -1,0 +1,26 @@
+version: '3'
+services:
+  app:
+    restart: always
+    # noinspection ComposeUnknownValues
+    image: '{{ app_docker_image }}:{{ app_docker_tag }}'
+    # noinspection ComposeUnknownValues
+    ports:
+      - '127.0.0.1:{{service_port}}:5000'
+    depends_on:
+      - mongodb
+    environment:
+      - DEPLOY_TYPE=yc
+      - LOG_LEVEL=INFO
+      - TZ_OFFSET=3
+      - START_URL=/
+      - AUTH_BASE_URL={{ auth_base_url }}
+      - YC_METADATA_SERVICE=169.254.169.254
+      - MONGO_HOSTS=mongodb
+      - MONGO_PORT=27017
+      - MONGO_DB_NAME=sms487
+  mongodb:
+    restart: always
+    image: 'docker.io/mongodb/mongodb-community-server:4.4-ubuntu2004'
+    volumes:
+      - /data/db:/data/db:rw

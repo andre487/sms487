@@ -1,7 +1,6 @@
 import json
 import logging
 import sys
-import time
 import urllib.parse
 import urllib.request
 from datetime import datetime
@@ -90,10 +89,11 @@ def make_deploy(c, no_test=False, no_lint=False):
         cli_tasks.docker_test.run(c, tag=tag)
     cli_tasks.docker_push.run(c, tag=tag)
 
-    c.run(f'{common.PROJECT_DIR}/deploy/yandex_cloud/update_container.sh {tag}')
-    print('Waiting 5 seconds...')
-    time.sleep(5)
-    c.run(f'{common.PROJECT_DIR}/deploy/yandex_cloud/cleanup_docker_images.sh')
+    c.run(f'ansible-playbook {common.PROJECT_DIR}/deploy/setup.yml', pty=True, env={
+        'APP_DOCKER_IMAGE': common.DOCKER_IMAGE_NAME,
+        'APP_DOCKER_TAG': tag,
+        'DOCKER_REGISTRY_URL': common.DOCKER_IMAGE_NAME,
+    })
 
     try:
         c.run('docker-clean')
