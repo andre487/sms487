@@ -65,15 +65,17 @@ def get_sms(device_id=None, limit=None, apply_filters=True, ids=None):
         {'$match': query},
         {'$sort': sort_key},
         {'$limit': limit * 10},
-        {'$group': {
-            '_id': {'device_id': '$device_id', 'tel': '$tel', 'text_prefix': {'$substrCP': ['$text', 0, 128]}},
-            'message_type': {'$last': '$message_type'},
-            'device_id': {'$last': '$device_id'},
-            'tel': {'$last': '$tel'},
-            'date_time': {'$last': '$date_time'},
-            'sms_date_time': {'$last': '$sms_date_time'},
-            'text': {'$last': '$text'},
-        }},
+        {
+            '$group': {
+                '_id': {'device_id': '$device_id', 'tel': '$tel', 'text_prefix': {'$substrCP': ['$text', 0, 128]}},
+                'message_type': {'$last': '$message_type'},
+                'device_id': {'$last': '$device_id'},
+                'tel': {'$last': '$tel'},
+                'date_time': {'$last': '$date_time'},
+                'sms_date_time': {'$last': '$sms_date_time'},
+                'text': {'$last': '$text'},
+            }
+        },
         {'$sort': sort_key},
         {'$limit': limit},
     ]
@@ -219,7 +221,12 @@ def get_device_ids():
 
 def get_filters():
     login = get_login()
-    cursor = _get_filters_collection().find({'login': login}).sort('created', pymongo.DESCENDING)
+    cursor = _get_filters_collection().find({'login': login}).sort([
+        ('tel', pymongo.ASCENDING),
+        ('device_id', pymongo.ASCENDING),
+        ('text', pymongo.ASCENDING),
+        ('action', pymongo.ASCENDING),
+    ])
 
     result = []
     for mongo_item in cursor:

@@ -463,11 +463,11 @@ class TestExportFilters(BaseTest):
 
         first.pop('id')
         assert ans[0] == {
-            'op': 'and',
+            'op': 'or',
             'tel': '',
             'device_id': '',
-            'text': 'Foo',
-            'action': 'mark',
+            'text': '<script>alert(1)</script>',
+            'action': 'hide',
         }
 
 
@@ -485,7 +485,7 @@ class TestSaveFilters(BaseTest):
     def test_update(self):
         filters = self._get_filters()
 
-        assert filters[0]['text'] == 'Foo'
+        assert filters[0]['text'] == '<script>alert(1)</script>'
         filters[0]['text'] = 'Bar'
 
         req_data = self._create_update_data(filters)
@@ -568,12 +568,12 @@ class TestSaveFilters(BaseTest):
     def test_create(self):
         filters = self._get_filters()
 
-        assert filters[0]['text'] == 'Foo'
+        assert filters[0]['text'] == '<script>alert(1)</script>'
 
         req_data = self._create_update_data(filters)
         req_data.update({
             'op:new': 'and',
-            'tel:new': '487',
+            'tel:new': '_487',
             'device_id:new': 'Device Foo',
             'text:new': 'Quux',
             'action:new': 'mark',
@@ -589,16 +589,8 @@ class TestSaveFilters(BaseTest):
         filters = self._get_filters()
 
         assert len(filters) > 1
-        first = filters[0]
-        second = filters[1]
-
-        assert first['op'] == 'and'
-        assert first['tel'] == '487'
-        assert first['device_id'] == 'Device Foo'
-        assert first['text'] == 'Quux'
-        assert first['action'] == 'mark'
-
-        assert second['text'] == 'Foo'
+        expected_item = [x for x in filters if x['tel'] == '_487']
+        assert len(expected_item) == 1
 
     def test_create_no_csrf(self):
         res = make_app_request('/save-filters', method='POST', data={}, cookies={

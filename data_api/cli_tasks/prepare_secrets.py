@@ -3,9 +3,7 @@ import os
 from . import common, yandex_cloud
 
 SECRETS = {
-    'mongo': 'e6q502o8uulleoq6jnpg',
     'sqs': 'e6qq93te4b88t6qv2ak0',
-    'ssh': 'e6q8k4tum8bhg084g22n',
 }
 
 
