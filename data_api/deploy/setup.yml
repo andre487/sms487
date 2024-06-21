@@ -2,122 +2,20 @@
   become: true
   vars:
     docker_registry_url: "{{ lookup('ansible.builtin.env', 'DOCKER_REGISTRY_URL') }}"
-    app_docker_image: "{{ lookup('ansible.builtin.env', 'APP_DOCKER_IMAGE') }}"
-    app_docker_tag: "{{ lookup('ansible.builtin.env', 'APP_DOCKER_TAG') }}"
+    app_docker_image: "{{ lookup('ansible.builtin.env', 'APP_DOCKER_IMAGE') + ':' + lookup('ansible.builtin.env', 'APP_DOCKER_TAG') }}"
+    docker_yandex_cloud_login: true
+    internal_port: 5000
+    project_environment:
+      - DEPLOY_TYPE=yc
+      - LOG_LEVEL=INFO
+      - TZ_OFFSET=3
+      - START_URL=/
+      - AUTH_BASE_URL={{ auth_base_url }}
+      - YC_METADATA_SERVICE=169.254.169.254
+      - MONGO_HOSTS=mongodb
+      - MONGO_PORT=27017
+      - MONGO_DB_NAME=sms487
 
-  tasks:
-    - name: Check SSL certificates
-      stat:
-        path: /etc/letsencrypt/live/{{ http_domain }}
-      register: nginx_ssl_result
-
-    - name: Setup NGINX no SSL host config
-      template:
-        src: provision/nginx-no-ssl.conf.j2
-        dest: /etc/nginx/sites-available/{{ http_domain }}.conf
-      when: nginx_ssl_result.stat.exists == False
-      register: no_ssl_config_res
-
-    - name: Enable NGINX host config
-      file:
-        state: link
-        src: /etc/nginx/sites-available/{{ http_domain }}.conf
-        dest: /etc/nginx/sites-enabled/{{ http_domain }}.conf
-      when: no_ssl_config_res.changed
-
-    - name: Reload NGINX
-      service:
-        name: nginx
-        state: reloaded
-      when: no_ssl_config_res.changed
-
-    - name: Install certificate
-      shell: |
-        certbot --nginx \
-          -d {{ http_domain }} \
-          -n \
-          --agree-tos \
-          -m '{{ cert_email }}'
-      when: nginx_ssl_result.stat.exists == False
-      register: certificate_res
-
-    - name: Create web root
-      file:
-        dest: /var/www/{{ http_domain }}
-        state: directory
-        owner: www-data
-        group: www-data
-
-    - name: Setup NGINX host config
-      template:
-        src: provision/nginx.conf.j2
-        dest: /etc/nginx/sites-available/{{ http_domain }}.conf
-      register: config_res
-
-    - name: Enable NGINX host config
-      file:
-        state: link
-        src: /etc/nginx/sites-available/{{ http_domain }}.conf
-        dest: /etc/nginx/sites-enabled/{{ http_domain }}.conf
-
-    - name: Reload NGINX
-      service:
-        name: nginx
-        state: reloaded
-      when: config_res.changed or certificate_res.changed
-
-    - name: Create app dir
-      file:
-        path: /opt/app
-        state: directory
-        owner: '{{ runtime_user }}'
-
-    - name: Create data dir
-      file:
-        path: /data/db
-        state: directory
-        owner: '{{ runtime_user }}'
-
-    - name: Setup docker compose config
-      template:
-        src: provision/docker-compose.yml.j2
-        dest: /opt/app/docker-compose.yml
-        owner: '{{ runtime_user }}'
-
-    - name: Setup Docker images cleanup script
-      copy:
-        src: provision/cleanup_docker_images.sh
-        dest: /opt/app/cleanup_docker_images.sh
-        owner: '{{ runtime_user }}'
-        mode: 0755
-
-    - name: Docker login
-      shell:
-        executable: /bin/bash
-        cmd: |
-          set -eo pipefail
-          iam_token="$(curl -H 'Metadata-Flavor: Google' 'http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/token' | jq -r .access_token)"
-          echo "$iam_token" | docker login --username iam --password-stdin cr.yandex
-
-    - name: Run app
-      shell:
-        executable: /bin/bash
-        cmd: |
-          set -eo pipefail
-          docker compose pull
-          docker compose stop || true
-          docker compose up --detach --remove-orphans --wait
-        chdir: /opt/app
-
-    - name: Docker logout
-      docker_login:
-        state: absent
-        registry_url: cr.yandex
-
-    - name: Cleanup images
-      shell:
-        cmd: /opt/app/cleanup_docker_images.sh
-
-    - name: Docker clean
-      shell:
-        cmd: docker-clean
+  roles:
+    - https-site
+    - docker-compose-project
