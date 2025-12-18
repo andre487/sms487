@@ -1,0 +1,24 @@
+[Unit]
+Description=SMS487 service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+
+WorkingDirectory=%h
+ExecStart=%h/bin/sms487-yc-wrapper.py %h/bin/sms487
+
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+
+Restart=on-failure
+RestartSec=2s
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target
