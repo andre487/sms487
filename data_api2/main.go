@@ -212,6 +212,11 @@ func main() {
 		log.Fatal("SQS_QUEUE_URL is empty")
 	}
 
+	timeFormat := os.Getenv("TIME_FORMAT")
+	if timeFormat == "" {
+		timeFormat = "02 Jan 2006 15:04:05 UTC"
+	}
+
 	logLevel := GetLogLevel()
 	h := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: logLevel})
 	logger := slog.New(h)
@@ -260,20 +265,10 @@ func main() {
 		var sqsMsg SqsMessage
 		sqsMsg.Type = "new_messages"
 		for _, item := range items {
-			if item.Text == "org.telegram.messenger" {
+			if item.Tel == "org.telegram.messenger" {
 				continue
 			}
-			var data SqsMessageData
-			data.MessageType = item.MessageType
-			data.PrintableMessageType = item.MessageType
-			data.DeviceId = item.DeviceId
-			data.Tel = item.Tel
-			data.DateTime = item.DateTime
-			data.PrintableDateTime = item.DateTime
-			data.SmsDateTime = item.SmsDateTime
-			data.Marked = false
-			data.Text = item.Text
-			sqsMsg.Data = append(sqsMsg.Data, data)
+			sqsMsg.Data = append(sqsMsg.Data, CreateSqsMessageData(item, timeFormat, logger))
 		}
 
 		smsCount := len(sqsMsg.Data)
@@ -323,4 +318,74 @@ func main() {
 		logger.Error(fmt.Sprintf("Server error: %s", err))
 		os.Exit(1)
 	}
+}
+
+func CreateSqsMessageData(item RequestItem, timeFormat string, logger *slog.Logger) SqsMessageData {
+	var data SqsMessageData
+	data.MessageType = item.MessageType
+	if data.MessageType == "" {
+		data.MessageType = "sms"
+	}
+	data.DeviceId = item.DeviceId
+	data.Tel = item.Tel
+	data.DateTime = item.DateTime
+	data.SmsDateTime = item.SmsDateTime
+	data.Marked = false
+	data.Text = item.Text
+
+	if data.MessageType == "sms" {
+		data.PrintableMessageType = "SMS"
+	} else if data.MessageType == "notification" {
+		data.PrintableMessageType = "Notification"
+	} else {
+		data.PrintableMessageType = fmt.Sprintf("Type %s", item.MessageType)
+	}
+
+	dt, err := ParseDateUTC(item.DateTime)
+	if err == nil {
+		data.PrintableDateTime = dt.UTC().Format(timeFormat)
+	} else {
+		logger.Warn(fmt.Sprintf("Error parsing date: %s", err))
+		data.PrintableDateTime = item.DateTime
+	}
+
+	return data
+}
+
+func ParseDateUTC(s string) (time.Time, error) {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return time.Time{}, fmt.Errorf("empty date string")
+	}
+
+	layouts := []string{
+		"2006-01-02T15:04:05Z",
+		"2006-01-02T15:04:05",
+		time.RFC3339Nano,
+		time.RFC3339,
+		"2006-01-02 15:04:05Z07:00",
+		"2006-01-02 15:04:05Z",
+		"2006-01-02 15:04:05",
+		"2006-01-02 15:04",
+		"2006-01-02",
+		"02.01.2006 15:04:05",
+		"02.01.2006 15:04",
+		"02.01.2006",
+		"02/01/2006 15:04:05",
+		"02/01/2006",
+		"Jan 2, 2006 15:04:05",
+		"Jan 2, 2006 15:04",
+		"Jan 2, 2006",
+	}
+
+	var lastErr error
+	for _, layout := range layouts {
+		t, err := time.ParseInLocation(layout, s, time.UTC)
+		if err == nil {
+			return t.UTC(), nil
+		}
+		lastErr = err
+	}
+
+	return time.Time{}, fmt.Errorf("cannot parse %q: %w", s, lastErr)
 }
