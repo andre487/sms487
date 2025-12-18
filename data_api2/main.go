@@ -215,9 +215,7 @@ func main() {
 		log.Fatal("$HTTP_USER and $HTTP_PASSWORD must be set")
 	}
 
-	sqsCtx, sqsCtxCancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer sqsCtxCancel()
-
+	sqsCtx := context.Background()
 	sqsClient := CreateSqsClient(sqsCtx)
 
 	mux := http.NewServeMux()
