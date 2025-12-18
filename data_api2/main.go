@@ -325,6 +325,7 @@ func CreateSqsMessageData(item RequestItem, timeFormat string, logger *slog.Logg
 	data.MessageType = item.MessageType
 	if data.MessageType == "" {
 		data.MessageType = "sms"
+		logger.Warn("Message type is empty, using 'sms'")
 	}
 	data.DeviceId = item.DeviceId
 	data.Tel = item.Tel
