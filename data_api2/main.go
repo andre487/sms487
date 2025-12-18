@@ -239,7 +239,12 @@ func main() {
 			http.Error(w, "Content-Type not supported", http.StatusUnsupportedMediaType)
 			return
 		}
-		defer r.Body.Close()
+		defer func() {
+			err := r.Body.Close()
+			if err != nil {
+				logger.Warn(fmt.Sprintf("Error closing body: %s", err))
+			}
+		}()
 
 		var items []RequestItem
 		dec := json.NewDecoder(r.Body)
