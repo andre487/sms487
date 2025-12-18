@@ -1,5 +1,5 @@
 [Unit]
-Description=SMS487 service
+Description={{ app_name }} service
 After=network-online.target
 Wants=network-online.target
 
@@ -7,7 +7,7 @@ Wants=network-online.target
 Type=simple
 
 WorkingDirectory=%h
-ExecStart=%h/bin/sms487-yc-wrapper.py %h/bin/sms487
+ExecStart={{ remote_bin_dir }}/{{ app_name }}-yc-wrapper.py {{ remote_bin_dir }}/{{ app_name }}
 
 NoNewPrivileges=yes
 PrivateTmp=yes

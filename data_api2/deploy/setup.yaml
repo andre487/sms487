@@ -1,0 +1,101 @@
+- hosts: sms487_api
+  become: true
+  vars:
+    app_name: sms487
+    repo_path_local: "{{ playbook_dir }}/.."
+
+    unit_name: "{{ app_name }}.service"
+    local_binary_path: build/sms487
+
+    remote_bin_dir: "/home/{{ app_user }}/.local/bin"
+    remote_cfg_dir: "/home/{{ app_user }}/.config/{{ app_name }}"
+    remote_unit_dir: "/home/{{ app_user }}/.config/systemd/user"
+
+  roles:
+    - fail2ban
+    - firewall
+    - yandex-cloud
+    - https-site
+
+  tasks:
+    - name: Build app
+      delegate_to: localhost
+      become: false
+      environment:
+        GOOS: linux
+        GOARCH: amd64
+        CGO_ENABLED: '0'
+      ansible.builtin.command: >
+        go build -trimpath -ldflags "-s -w" -o ./deploy/build/sms487 .
+      args:
+        chdir: "{{ repo_path_local }}"
+
+    - name: Enable linger for user (allow user services without active login)
+      ansible.builtin.command: "loginctl enable-linger {{ app_user }}"
+      changed_when: false
+
+    - name: Ensure directories exist
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: "0755"
+      loop:
+        - "{{ remote_bin_dir }}"
+        - "{{ remote_cfg_dir }}"
+        - "{{ remote_unit_dir }}"
+
+    - name: Upload wrapper
+      ansible.builtin.copy:
+        src: "provision/yc-wrapper.py"
+        dest: "{{ remote_bin_dir }}/{{ app_name }}-yc-wrapper.py"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: "0755"
+      notify: Restart myapp (user)
+
+    - name: Upload binary
+      ansible.builtin.copy:
+        src: "{{ local_binary_path }}"
+        dest: "{{ remote_bin_dir }}/{{ app_name }}"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: "0755"
+      notify: Restart myapp (user)
+
+    - name: Setup systemd unit
+      ansible.builtin.template:
+        src: "provision/sms487.service.j2"
+        dest: "{{ remote_unit_dir }}/{{ unit_name }}"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: "0644"
+      notify:
+        - Daemon-reload user systemd
+        - Restart myapp (user)
+
+    - name: Enable and start user service
+      become: true
+      become_user: "{{ app_user }}"
+      ansible.builtin.systemd:
+        name: "{{ unit_name }}"
+        scope: user
+        enabled: true
+        state: started
+
+  handlers:
+    - name: Daemon-reload user systemd
+      become: true
+      become_user: "{{ app_user }}"
+      ansible.builtin.systemd:
+        daemon_reload: true
+        scope: user
+
+    - name: Restart myapp (user)
+      become: true
+      become_user: "{{ app_user }}"
+      ansible.builtin.systemd:
+        name: "{{ unit_name }}"
+        scope: user
+        state: restarted

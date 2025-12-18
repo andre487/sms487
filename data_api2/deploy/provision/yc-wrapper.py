@@ -31,7 +31,7 @@ def main():
     for env_name, sec_id, field_key in SEC_CONFIG:
         env[env_name] = get_lb_secret_field(sec_id, field_key)
 
-    os.execve(exe_path, (), env)
+    os.execve(exe_path, [exe_path], env)
 
 
 @functools.lru_cache
@@ -72,9 +72,9 @@ def get_lb_secret(sec_id):
 
 def get_lb_secret_field(sec_id, field_key):
     data = get_lb_secret(sec_id)
-    for item in data['Entries']:
-        if item['Key'] == field_key:
-            return item['TextValue']
+    for item in data['entries']:
+        if item['key'] == field_key:
+            return item['textValue']
     raise Exception(f'Key {field_key} not fount in {sec_id}')
 
 
