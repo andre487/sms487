@@ -159,24 +159,14 @@ func CreateSqsClient(ctx context.Context) *sqs.Client {
 		ctx,
 		config.WithRegion(region),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKey, secretKey, "")),
-		config.WithEndpointResolverWithOptions(
-			aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...any) (aws.Endpoint, error) {
-				if service == sqs.ServiceID {
-					return aws.Endpoint{
-						URL:               endpoint,
-						SigningRegion:     region,
-						HostnameImmutable: true,
-					}, nil
-				}
-				return aws.Endpoint{}, &aws.EndpointNotFoundError{}
-			}),
-		),
 	)
 	if err != nil {
-		log.Fatalf("Load config: %v", err)
+		log.Fatalf("LoadDefaultConfig: %v", err)
 	}
 
-	return sqs.NewFromConfig(cfg)
+	return sqs.NewFromConfig(cfg, func(o *sqs.Options) {
+		o.BaseEndpoint = aws.String(endpoint)
+	})
 }
 
 func GetLogLevel() slog.Level {
