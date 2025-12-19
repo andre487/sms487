@@ -3,12 +3,10 @@ package life.andre.sms487.system;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
-import life.andre.sms487.auth.TokenCheckWorker;
 import life.andre.sms487.logging.Logger;
 import life.andre.sms487.messages.MessageCleanupWorker;
 import life.andre.sms487.messages.MessageResendWorker;
 import life.andre.sms487.messages.MessageStorage;
-import life.andre.sms487.network.AuthApi;
 import life.andre.sms487.network.ServerApi;
 import life.andre.sms487.services.NotificationListener;
 import life.andre.sms487.settings.AppSettings;
@@ -37,7 +35,6 @@ public class ApplicationEntryPoint extends Application {
         AppSettings.init(ctx);
         MessageStorage.init(ctx);
         ServerApi.init(ctx);
-        AuthApi.init(ctx);
     }
 
     private void startServiceTasks() {
@@ -46,6 +43,5 @@ public class ApplicationEntryPoint extends Application {
 
         MessageCleanupWorker.schedulePeriodic(ctx);
         MessageResendWorker.scheduleOneTime(ctx);
-        TokenCheckWorker.schedulePeriodic(ctx);
     }
 }

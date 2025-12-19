@@ -38,8 +38,6 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activities.AuthActivity" android:exported="false" />
-
         <receiver android:name=".services.SmsListener"
             android:permission="android.permission.BROADCAST_SMS"
             android:exported="true">
