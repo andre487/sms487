@@ -280,6 +280,15 @@ func main() {
 		var sqsMsg SqsMessage
 		sqsMsg.Type = "new_messages"
 		for _, item := range items {
+			logger.Info(
+				"incoming_message",
+				"type", item.MessageType,
+				"device_id", item.DeviceId,
+				"tel", item.Tel,
+				"date_time", item.DateTime,
+				"sms_date_time", item.SmsDateTime,
+				"text_length", len(item.Text),
+			)
 			if item.Tel == "org.telegram.messenger" {
 				continue
 			}
