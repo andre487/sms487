@@ -1,6 +1,0 @@
-*.pyc
-*.retry
-.secret
-venv
-.venv
-.pytest_cache
