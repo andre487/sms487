@@ -1,10 +1,9 @@
 <resources>
     <string name="app_name">SMS 487</string>
     <string name="server_placeholder">Server URL</string>
-    <string name="auth_placeholder">Auth URL</string>
-    <string name="server_key">Server key</string>
+    <string name="server_user">User</string>
+    <string name="server_password">Password</string>
     <string name="send_sms_label">Send SMS to server</string>
     <string name="messages_label">Loading messages</string>
     <string name="logs_label">Loading logs</string>
-    <string name="get">Get</string>
 </resources>

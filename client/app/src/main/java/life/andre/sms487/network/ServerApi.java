@@ -3,6 +3,7 @@ package life.andre.sms487.network;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
+import android.util.Base64;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -121,9 +122,10 @@ public class ServerApi {
 
         AppSettings appSettings = AppSettings.getInstance();
         String url = appSettings.getServerUrl();
+        String user = appSettings.getServerKey();
         String key = appSettings.getServerKey();
 
-        if (url.isEmpty() || key.isEmpty()) {
+        if (url.isEmpty() || user.isEmpty() || key.isEmpty()) {
             Logger.w(TAG, "Server params are empty, skip sending");
             return;
         }
@@ -131,7 +133,6 @@ public class ServerApi {
         this.requestQueue.add(new ApiAddMessageRequest(
             ctx,
             url,
-            key,
             reqData.toString(),
             dbIds
         ));
@@ -176,19 +177,18 @@ public class ServerApi {
 
     private static class ApiAddMessageRequest extends StringRequest {
         @NonNull
-        private final String cookie;
+        private final AppSettings appSettings = AppSettings.getInstance();
+
         @NonNull
         private final String requestBody;
 
         ApiAddMessageRequest(
             @NonNull Context ctx,
             @NonNull String url,
-            @NonNull String key,
             @NonNull String requestBody,
             @NonNull List<Long> dbIds
         ) {
             super(Request.Method.POST, url + "/add-sms", new ApiResponseListener(dbIds), new ApiErrorListener(ctx));
-            this.cookie = "__Secure-Auth-Token=" + key;
             this.requestBody = requestBody;
             this.setRetryPolicy(new DefaultRetryPolicy(1000, 10, 2));
             this.setShouldRetryConnectionErrors(true);
@@ -199,8 +199,18 @@ public class ServerApi {
         @Override
         public Map<String, String> getHeaders() {
             Map<String, String> headers = new HashMap<>();
-            headers.put("Cookie", cookie);
+            headers.put("Authorization", basicAuthHeader());
             return headers;
+        }
+
+        private String basicAuthHeader() {
+            String user = appSettings.getServerUser();
+            String key = appSettings.getServerKey();
+
+            String creds = user + ":" + key;
+            String b64 = Base64.encodeToString(creds.getBytes(StandardCharsets.UTF_8), Base64.NO_WRAP);
+
+            return "Basic " + b64;
         }
 
         @NonNull

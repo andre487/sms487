@@ -1,12 +1,10 @@
 package life.andre.sms487.activities;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -33,10 +31,9 @@ public class MainActivity extends Activity {
     private final EventBus eventBus = EventBus.getDefault();
     private boolean lockSettingsSave = false;
 
-    private EditText serverKeyInput;
-    private EditText authUrlInput;
+    private EditText serverUserInput;
+    private EditText serverPasswordInput;
     private EditText serverUrlInput;
-    private Button getServerKeyButton;
     private CheckBox sendSmsCheckBox;
     private TextView messagesField;
     private TextView logsField;
@@ -58,12 +55,6 @@ public class MainActivity extends Activity {
         showMessages();
         logUpdater.run();
         eventBus.register(this);
-
-        System.out.println("!!!!!!!!!!!!!!!!!!!!");
-        System.out.println("!!!!!!!!!!!!!!!!!!!!");
-        System.out.println(serverKeyInput.getText());
-        System.out.println("!!!!!!!!!!!!!!!!!!!!");
-        System.out.println("!!!!!!!!!!!!!!!!!!!!");
     }
 
     @Override
@@ -80,30 +71,28 @@ public class MainActivity extends Activity {
     }
 
     private void findViewComponents() {
-        authUrlInput = findViewById(R.id.authUrlInput);
         serverUrlInput = findViewById(R.id.serverUrlInput);
-        serverKeyInput = findViewById(R.id.serverKeyInput);
-        getServerKeyButton = findViewById(R.id.getServerKeyButton);
+        serverUserInput = findViewById(R.id.serverUserInput);
+        serverPasswordInput = findViewById(R.id.serverPasswordInput);
         sendSmsCheckBox = findViewById(R.id.sendSmsCheckBox);
         messagesField = findViewById(R.id.messagesField);
         logsField = findViewById(R.id.logsField);
     }
 
     private void bindEvents() {
-        authUrlInput.setOnEditorActionListener((v, actionId, event) -> {
-            saveAuthUrl();
-            return false;
-        });
         serverUrlInput.setOnEditorActionListener((v, actionId, event) -> {
             saveServerUrl();
             return false;
         });
-        serverKeyInput.setOnEditorActionListener((v, actionId, event) -> {
-            saveServerKey();
+        serverUserInput.setOnEditorActionListener((v, actionId, event) -> {
+            saveServerUser();
+            return false;
+        });
+        serverPasswordInput.setOnEditorActionListener((v, actionId, event) -> {
+            saveServerPassword();
             return false;
         });
         sendSmsCheckBox.setOnCheckedChangeListener((v, c) -> saveNeedSendSms());
-        getServerKeyButton.setOnClickListener((v) -> openAuthView());
     }
 
     private void showSettings() {
@@ -114,8 +103,8 @@ public class MainActivity extends Activity {
     private SettingsToShow getSettingsToShow() {
         AppSettings st = AppSettings.getInstance();
         return new SettingsToShow(
-            st.getAuthUrl(),
             st.getServerUrl(),
+            st.getServerUser(),
             st.getServerKey(),
             st.getNeedSendSms()
         );
@@ -124,18 +113,12 @@ public class MainActivity extends Activity {
     private void fillSettingFields(@NonNull SettingsToShow st) {
         lockSettingsSave = true;
 
-        showAuthUrl(st.authUrl);
         showServerUrl(st.serverUrl);
-        showServerKey(st.serverKey);
+        showServerUser(st.serverUser);
+        showServerPassword(st.serverKey);
         showNeedSendSms(st.needSendSms);
 
         lockSettingsSave = false;
-    }
-
-    public void showAuthUrl(@NonNull String authUrl) {
-        if (authUrlInput != null) {
-            authUrlInput.setText(authUrl);
-        }
     }
 
     public void showServerUrl(@NonNull String serverUrl) {
@@ -144,9 +127,15 @@ public class MainActivity extends Activity {
         }
     }
 
-    public void showServerKey(@NonNull String serverKey) {
-        if (serverKeyInput != null) {
-            serverKeyInput.setText(serverKey);
+    public void showServerUser(@NonNull String serverUser) {
+        if (serverUserInput != null) {
+            serverUserInput.setText(serverUser);
+        }
+    }
+
+    public void showServerPassword(@NonNull String serverKey) {
+        if (serverPasswordInput != null) {
+            serverPasswordInput.setText(serverKey);
         }
     }
 
@@ -154,20 +143,6 @@ public class MainActivity extends Activity {
         if (sendSmsCheckBox != null) {
             sendSmsCheckBox.setChecked(needSendSms);
         }
-    }
-
-    void saveAuthUrl() {
-        if (authUrlInput == null || lockSettingsSave) {
-            return;
-        }
-
-        BgTask.run(() -> {
-            Editable authUrlText = authUrlInput.getText();
-            if (authUrlText != null) {
-                AppSettings.getInstance().saveAuthUrl(authUrlText.toString());
-            }
-            return null;
-        });
     }
 
     void saveServerUrl() {
@@ -184,15 +159,29 @@ public class MainActivity extends Activity {
         });
     }
 
-    void saveServerKey() {
-        if (serverKeyInput == null || lockSettingsSave) {
+    void saveServerUser() {
+        if (serverUserInput == null || lockSettingsSave) {
             return;
         }
 
         BgTask.run(() -> {
-            Editable serverKeyText = serverKeyInput.getText();
-            if (serverKeyText != null) {
-                AppSettings.getInstance().saveServerKey(serverKeyText.toString());
+            Editable serverUserText = serverUserInput.getText();
+            if (serverUserText != null) {
+                AppSettings.getInstance().saveServerUser(serverUserText.toString());
+            }
+            return null;
+        });
+    }
+
+    void saveServerPassword() {
+        if (serverPasswordInput == null || lockSettingsSave) {
+            return;
+        }
+
+        BgTask.run(() -> {
+            Editable serverPasswordText = serverPasswordInput.getText();
+            if (serverPasswordText != null) {
+                AppSettings.getInstance().saveServerKey(serverPasswordText.toString());
             }
             return null;
         });
@@ -247,10 +236,6 @@ public class MainActivity extends Activity {
         logsField.setText(logs.toString().trim());
     }
 
-    private void openAuthView() {
-        this.startActivity(new Intent(this.getApplicationContext(), AuthActivity.class));
-    }
-
     private static class LogUpdater implements Runnable {
         public static final int DELAY = 1000;
 
@@ -274,16 +259,16 @@ public class MainActivity extends Activity {
 
     private static class SettingsToShow {
         @NonNull
-        final String authUrl;
-        @NonNull
         final String serverUrl;
+        @NonNull
+        final String serverUser;
         @NonNull
         final String serverKey;
         final boolean needSendSms;
 
-        SettingsToShow(@NonNull String authUrl, @NonNull String serverUrl, @NonNull String serverKey, boolean needSendSms) {
-            this.authUrl = authUrl;
+        SettingsToShow(@NonNull String serverUrl, @NonNull String serverUser, @NonNull String serverKey, boolean needSendSms) {
             this.serverUrl = serverUrl;
+            this.serverUser = serverUser;
             this.serverKey = serverKey;
             this.needSendSms = needSendSms;
         }

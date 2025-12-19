@@ -8,15 +8,6 @@
     tools:context=".activities.MainActivity">
 
     <EditText
-        android:id="@+id/authUrlInput"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:textSize="18sp"
-        android:hint="@string/auth_placeholder"
-        android:autofillHints="@android:string/no"
-        android:inputType="textUri" />
-
-    <EditText
         android:id="@+id/serverUrlInput"
         android:layout_width="match_parent"
         android:layout_height="48dp"
@@ -25,26 +16,30 @@
         android:autofillHints="@android:string/no"
         android:inputType="textUri" />
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="48dp">
+        android:layout_height="48dp"
+        android:orientation="horizontal">
         <EditText
-            android:id="@+id/serverKeyInput"
-            android:layout_width="match_parent"
+            android:id="@+id/serverUserInput"
+            android:layout_width="0dp"
             android:layout_height="48dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
             android:textSize="12sp"
-            android:hint="@string/server_key"
+            android:hint="@string/server_user"
             android:autofillHints="@android:string/no"
-            android:layout_marginEnd="50dp"
-            android:inputType="textPassword" />
-
-        <Button
-            android:id="@+id/getServerKeyButton"
-            android:layout_width="52dp"
+            android:inputType="text" />
+        <EditText
+            android:id="@+id/serverPasswordInput"
+            android:layout_width="0dp"
             android:layout_height="48dp"
-            android:layout_alignParentEnd="true"
-            android:text="@string/get" />
-    </RelativeLayout>
+            android:layout_weight="1"
+            android:textSize="12sp"
+            android:hint="@string/server_password"
+            android:autofillHints="@android:string/no"
+            android:inputType="textPassword" />
+    </LinearLayout>
 
     <CheckBox
         android:id="@+id/sendSmsCheckBox"

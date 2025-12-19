@@ -13,6 +13,7 @@ import life.andre.sms487.views.Toaster;
 public class AppSettings {
     public static final String SERVER_URL = "Server URL";
     public static final String AUTH_URL = "Auth URL";
+    public static final String SERVER_USER = "Server user";
     public static final String SERVER_KEY = "Server key";
     public static final String NEED_SEND_SMS = "Send SMS to server";
 
@@ -48,6 +49,11 @@ public class AppSettings {
     }
 
     @NonNull
+    public String getServerUser() {
+        return getString(SERVER_USER);
+    }
+
+    @NonNull
     public String getServerKey() {
         return getString(SERVER_KEY);
     }
@@ -56,12 +62,12 @@ public class AppSettings {
         return getBool(NEED_SEND_SMS);
     }
 
-    public void saveAuthUrl(@NonNull String authUrl) {
-        saveValue(AUTH_URL, authUrl);
-    }
-
     public void saveServerUrl(@NonNull String serverUrl) {
         saveValue(SERVER_URL, serverUrl);
+    }
+
+    public void saveServerUser(@NonNull String serverUser) {
+        saveValue(SERVER_USER, serverUser);
     }
 
     public void saveServerKey(@NonNull String serverKey) {
