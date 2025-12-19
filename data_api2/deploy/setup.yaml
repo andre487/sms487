@@ -5,7 +5,7 @@
     repo_path_local: "{{ playbook_dir }}/.."
 
     unit_name: "{{ app_name }}.service"
-    local_binary_path: build/sms487
+    local_binary_path: build/{{ app_name }}
 
     remote_bin_dir: "/home/{{ app_user }}/.local/bin"
     remote_cfg_dir: "/home/{{ app_user }}/.config/{{ app_name }}"
@@ -26,7 +26,7 @@
         GOARCH: amd64
         CGO_ENABLED: '0'
       ansible.builtin.command: >
-        go build -trimpath -ldflags "-s -w" -o ./deploy/build/sms487 .
+        go build -trimpath -ldflags "-s -w" -o ./deploy/build/{{ app_name }} .
       args:
         chdir: "{{ repo_path_local }}"
       tags:
@@ -76,7 +76,7 @@
 
     - name: Setup systemd unit
       ansible.builtin.template:
-        src: "provision/sms487.service.j2"
+        src: "provision/{{ app_name }}.service.j2"
         dest: "{{ remote_unit_dir }}/{{ unit_name }}"
         owner: "{{ app_user }}"
         group: "{{ app_user }}"
