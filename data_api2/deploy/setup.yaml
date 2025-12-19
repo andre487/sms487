@@ -29,10 +29,14 @@
         go build -trimpath -ldflags "-s -w" -o ./deploy/build/sms487 .
       args:
         chdir: "{{ repo_path_local }}"
+      tags:
+        - app-deploy
 
     - name: Enable linger for user (allow user services without active login)
       ansible.builtin.command: "loginctl enable-linger {{ app_user }}"
       changed_when: false
+      tags:
+        - app-deploy
 
     - name: Ensure directories exist
       ansible.builtin.file:
@@ -45,6 +49,8 @@
         - "{{ remote_bin_dir }}"
         - "{{ remote_cfg_dir }}"
         - "{{ remote_unit_dir }}"
+      tags:
+        - app-deploy
 
     - name: Upload wrapper
       ansible.builtin.copy:
@@ -54,6 +60,8 @@
         group: "{{ app_user }}"
         mode: "0755"
       notify: Restart myapp (user)
+      tags:
+        - app-deploy
 
     - name: Upload binary
       ansible.builtin.copy:
@@ -63,6 +71,8 @@
         group: "{{ app_user }}"
         mode: "0755"
       notify: Restart myapp (user)
+      tags:
+        - app-deploy
 
     - name: Setup systemd unit
       ansible.builtin.template:
@@ -74,6 +84,8 @@
       notify:
         - Daemon-reload user systemd
         - Restart myapp (user)
+      tags:
+        - app-deploy
 
     - name: Enable and start user service
       become: true
@@ -83,6 +95,8 @@
         scope: user
         enabled: true
         state: started
+      tags:
+        - app-deploy
 
   handlers:
     - name: Daemon-reload user systemd
@@ -91,6 +105,8 @@
       ansible.builtin.systemd:
         daemon_reload: true
         scope: user
+      tags:
+        - app-deploy
 
     - name: Restart myapp (user)
       become: true
@@ -99,3 +115,5 @@
         name: "{{ unit_name }}"
         scope: user
         state: restarted
+      tags:
+        - app-deploy
