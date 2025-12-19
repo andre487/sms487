@@ -397,7 +397,7 @@ func ParseDateUTC(s string) (time.Time, error) {
 
 	var lastErr error
 	for _, layout := range layouts {
-		t, err := time.ParseInLocation(layout, s, time.UTC)
+		t, err := time.Parse(layout, s)
 		if err == nil {
 			return t.UTC(), nil
 		}
