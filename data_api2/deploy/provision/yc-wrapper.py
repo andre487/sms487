@@ -11,7 +11,6 @@ SEC_CONFIG = (
     ('SQS_QUEUE_URL', 'e6qq93te4b88t6qv2ak0', 'prod-queue'),
     ('HTTP_USER', 'e6qq93te4b88t6qv2ak0', 'api2-http-user'),
     ('HTTP_PASSWORD', 'e6qq93te4b88t6qv2ak0', 'api2-http-password'),
-    ('TIME_FORMAT', 'e6qq93te4b88t6qv2ak0', 'api2-time-format'),
 )
 
 
@@ -27,6 +26,7 @@ def main():
     env.update({
         'LISTEN_ADDR': '127.0.0.1',
         'LISTEN_PORT': '8080',
+        'TIME_ZONE': 'Europe/Moscow',
     })
     for env_name, sec_id, field_key in SEC_CONFIG:
         env[env_name] = get_lb_secret_field(sec_id, field_key)

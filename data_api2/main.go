@@ -202,9 +202,13 @@ func main() {
 		log.Fatal("SQS_QUEUE_URL is empty")
 	}
 
-	timeFormat := os.Getenv("TIME_FORMAT")
-	if timeFormat == "" {
-		timeFormat = "02 Jan 2006 15:04:05 UTC"
+	timeZoneStr := os.Getenv("TIME_ZONE")
+	if timeZoneStr == "" {
+		timeZoneStr = "UTC"
+	}
+	timeZone, err := time.LoadLocation(timeZoneStr)
+	if err != nil {
+		log.Fatalf("Invalid time zone: %s", timeZoneStr)
 	}
 
 	logLevel := GetLogLevel()
@@ -292,7 +296,7 @@ func main() {
 			if item.Tel == "org.telegram.messenger" {
 				continue
 			}
-			sqsMsg.Data = append(sqsMsg.Data, CreateSqsMessageData(item, timeFormat, logger))
+			sqsMsg.Data = append(sqsMsg.Data, CreateSqsMessageData(item, timeZone, logger))
 		}
 
 		smsCount := len(sqsMsg.Data)
@@ -337,14 +341,14 @@ func main() {
 	addr := fmt.Sprintf("%s:%s", listenAddr, listenPort)
 	logger.Info(fmt.Sprintf("Listening on http://%s", addr))
 
-	err := http.ListenAndServe(addr, handler)
-	if err != nil {
+	serveErr := http.ListenAndServe(addr, handler)
+	if serveErr != nil {
 		logger.Error(fmt.Sprintf("Server error: %s", err))
 		os.Exit(1)
 	}
 }
 
-func CreateSqsMessageData(item RequestItem, timeFormat string, logger *slog.Logger) SqsMessageData {
+func CreateSqsMessageData(item RequestItem, timeZone *time.Location, logger *slog.Logger) SqsMessageData {
 	var data SqsMessageData
 	data.MessageType = item.MessageType
 	if data.MessageType == "" {
@@ -368,7 +372,7 @@ func CreateSqsMessageData(item RequestItem, timeFormat string, logger *slog.Logg
 
 	dt, err := ParseDateUTC(item.DateTime)
 	if err == nil {
-		data.PrintableDateTime = dt.UTC().Format(timeFormat)
+		data.PrintableDateTime = dt.In(timeZone).Format("02 Jan 2006 15:04:05 MST")
 	} else {
 		logger.Warn(fmt.Sprintf("Error parsing date: %s", err))
 		data.PrintableDateTime = item.DateTime
