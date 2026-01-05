@@ -1,7 +1,6 @@
 # SMS487
 
-SMS handler for Android. Sends messages from phone to server
-for seeng them on PC.
+Notifications handler for Android. Sends notifications (and SMS) from phone to a server for traversing them to SQS.
 
 ## Android client
 
@@ -11,4 +10,4 @@ Android client located in `client` dir. Requires Android 13.
 
 ## Data API
 
-Flask server located in `data_api` dir. It uses Python 3.
+API server located in `data_api2` dir.
