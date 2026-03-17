@@ -293,7 +293,7 @@ func main() {
 				"sms_date_time", item.SmsDateTime,
 				"text_length", len(item.Text),
 			)
-			if item.Tel == "org.telegram.messenger" {
+			if item.Tel == "org.telegram.messenger" || item.Tel == "ru.oneme.app" {
 				continue
 			}
 			sqsMsg.Data = append(sqsMsg.Data, CreateSqsMessageData(item, timeZone, logger))
